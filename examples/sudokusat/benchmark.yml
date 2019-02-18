@@ -9,7 +9,7 @@ limits:
 
 steps:
   run:
-    - step: reprobench.executors.RunsolverExecutor
+    - step: reprobench.executors.PynisherExecutor
     # - step: sudoku.validate
     # - step: sudoku.score
   compile:

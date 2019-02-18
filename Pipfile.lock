@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "563cae541078ee4d5b73c10ecb3fe34deb7e5609aef2702c239ee616e975aef6"
+            "sha256": "1ff42f07393bd5fc739531955eb596eb6087b55c5b18989bcde01505044bba24"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,13 +16,41 @@
         ]
     },
     "default": {
+        "docutils": {
+            "hashes": [
+                "sha256:02aec4bd92ab067f6ff27a38a38a41173bf01bed8f89157768c1573f53e474a6",
+                "sha256:51e64ef2ebfb29cae1faa133b3710143496eca21c530f3f71424d77687764274",
+                "sha256:7a4bd47eaf6596e1295ecb11361139febe29b084a87bf005bf899f9a42edc3c6"
+            ],
+            "version": "==0.14"
+        },
         "peewee": {
             "hashes": [
-                "sha256:7f8e3f512ee0d4e2d9c2008ea446d69e23c9535466367b991d452825a1ddb654",
-                "sha256:f9f3ea7a0666533d48693d476b63b7a79c54aefb95954b4c2c1116e91a127a6a"
+                "sha256:7f8e3f512ee0d4e2d9c2008ea446d69e23c9535466367b991d452825a1ddb654"
             ],
             "index": "pypi",
             "version": "==3.8.2"
+        },
+        "psutil": {
+            "hashes": [
+                "sha256:5ce6b5eb0267233459f4d3980c205828482f450999b8f5b684d9629fea98782a",
+                "sha256:72cebfaa422b7978a1d3632b65ff734a34c6b34f4578b68a5c204d633756b810",
+                "sha256:77c231b4dff8c1c329a4cd1c22b96c8976c597017ff5b09993cd148d6a94500c",
+                "sha256:8846ab0be0cdccd6cc92ecd1246a16e2f2e49f53bd73e522c3a75ac291e1b51d",
+                "sha256:a013b4250ccbddc9d22feca0f986a1afc71717ad026c0f2109bbffd007351191",
+                "sha256:ad43b83119eeea6d5751023298cd331637e542cbd332196464799e25a5519f8f",
+                "sha256:c177777c787d247d02dae6c855330f9ed3e1abf8ca1744c26dd5ff968949999a",
+                "sha256:ec1ef313530a9457e48d25e3fdb1723dfa636008bf1b970027462d46f2555d59",
+                "sha256:ef3e5e02b3c5d1df366abe7b4820400d5c427579668ad4465ff189d28ded5ebd"
+            ],
+            "version": "==5.5.1"
+        },
+        "pynisher": {
+            "hashes": [
+                "sha256:1b1079315ad1009de108c9ad701f6ae5274264e64503fc22c2de366d99953f34"
+            ],
+            "index": "pypi",
+            "version": "==0.5.0"
         },
         "pyyaml": {
             "hashes": [
