@@ -1,7 +1,7 @@
-class Runner():
+class Runner:
     def __init__(self, config):
         self.config = config
-    
+
     def run(self):
         pass
 
@@ -20,13 +20,13 @@ class Tool:
 
     def version(self):
         return "1.0.0"
-    
+
     def pre_run(self, context):
         pass
 
     def cmdline(self, context):
         pass
-    
+
     def post_run(self, context):
         pass
 

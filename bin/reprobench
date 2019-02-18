@@ -3,8 +3,9 @@
 import argparse
 import logging
 import sys
-import yaml
+import strictyaml
 
+from reprobench.core.schema import schema
 from reprobench.utils import import_class
 
 if __name__ == "__main__":
@@ -26,7 +27,8 @@ if __name__ == "__main__":
     elif args.debug:
         logging.basicConfig(level=logging.DEBUG)
 
-    config = yaml.load(args.config)
+    config_text = args.config.read()
+    config = strictyaml.load(config_text, schema=schema).data
     Executor = import_class(args.runner)
     executor = Executor(config)
     executor.run()

@@ -33,8 +33,6 @@ class PynisherExecutor(Step):
 
         fun()
 
-        log.debug(fun)
-
         context["run"].status = Run.DONE
         context["run"].verdict = Run.SUCCESS
         context["run"].save()
@@ -47,7 +45,7 @@ class PynisherExecutor(Step):
         RunStatistic.create(
             run=context["run"],
             key=RunStatistic.CPU_TIME,
-            value=fun.resources_function[0],
+            value=fun.resources_function[0] + fun.resources_function[1],
         )  # utime
         RunStatistic.create(
             run=context["run"],

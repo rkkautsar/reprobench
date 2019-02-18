@@ -8,9 +8,9 @@ black = "==18.9b0" # pre-release
 pylint = "*"
 
 [packages]
-pyyaml = "*"
 peewee = "*"
 pynisher = "*"
+strictyaml = "*"
 
 [requires]
 python_version = "3.7"

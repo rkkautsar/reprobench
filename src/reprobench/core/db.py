@@ -1,11 +1,17 @@
 from pathlib import Path
-from datetime import datetime 
+from datetime import datetime
 from peewee import (
-    Proxy, Model, DateTimeField, CharField, ForeignKeyField,
-    IntegerField, BooleanField
+    Proxy,
+    Model,
+    DateTimeField,
+    CharField,
+    ForeignKeyField,
+    IntegerField,
+    BooleanField,
 )
 
 db = Proxy()
+
 
 class BaseModel(Model):
     created_at = DateTimeField(default=datetime.now)
@@ -44,14 +50,14 @@ class ParameterCategory(BaseModel):
 
 
 class Parameter(BaseModel):
-    category = ForeignKeyField(ParameterCategory, backref="parameters", on_delete="cascade")
+    category = ForeignKeyField(
+        ParameterCategory, backref="parameters", on_delete="cascade"
+    )
     key = CharField()
     value = CharField()
-    
+
     class Meta:
-        indexes = (
-            (('category', 'key'), True),
-        )
+        indexes = ((("category", "key"), True),)
 
 
 class Run(BaseModel):
@@ -85,7 +91,9 @@ class Run(BaseModel):
     )
 
     tool = ForeignKeyField(TaskCategory, backref="runs", on_delete="cascade")
-    parameter_category = ForeignKeyField(ParameterCategory, backref="runs", on_delete="cascade")
+    parameter_category = ForeignKeyField(
+        ParameterCategory, backref="runs", on_delete="cascade"
+    )
     task = ForeignKeyField(Task, backref="runs", on_delete="cascade")
     status = IntegerField(choices=STATUS_CHOICES, default=PENDING)
     verdict = CharField(choices=VERDICT_CHOICES, max_length=3, null=True)
@@ -109,36 +117,42 @@ class RunStatistic(BaseModel):
         (MEM_USAGE, "Max Memory Usage (KiB)"),
     )
 
-
     run = ForeignKeyField(Run, backref="statistics", on_delete="cascade")
     key = CharField(choices=KEY_CHOICES)
     value = CharField()
 
 
 MODELS = [
-    Limit, TaskCategory, Task, ParameterCategory,
-    Parameter, Run, RunStatistic, Tool
+    Limit,
+    TaskCategory,
+    Task,
+    ParameterCategory,
+    Parameter,
+    Run,
+    RunStatistic,
+    Tool,
 ]
+
 
 def db_bootstrap(config):
     db.connect()
     db.create_tables(MODELS)
 
-    Limit.insert_many([
-        {"type": key, "value": value} for (key, value) in config['limits'].items()
-    ]).execute()
+    Limit.insert_many(
+        [{"type": key, "value": value} for (key, value) in config["limits"].items()]
+    ).execute()
 
-    Tool.insert_many([
-        {"name": name , "module": module } for (name, module) in config['tools'].items()
-    ]).execute()
+    Tool.insert_many(
+        [{"name": name, "module": module} for (name, module) in config["tools"].items()]
+    ).execute()
 
-    for (category, parameters) in config['parameters'].items():
+    for (category, parameters) in config["parameters"].items():
         parameter_category = ParameterCategory.create(title=category)
         for (key, value) in parameters.items():
             Parameter.create(category=parameter_category, key=key, value=value)
-    
-    for (category, task) in config['tasks'].items():
+
+    for (category, task) in config["tasks"].items():
         task_category = TaskCategory.create(title=category)
-        assert task['type'] == 'folder'
-        for file in Path().glob(task['path']):
+        assert task["type"] == "folder"
+        for file in Path().glob(task["path"]):
             Task.create(category=task_category, path=str(file))
