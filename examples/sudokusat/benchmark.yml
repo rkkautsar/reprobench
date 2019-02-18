@@ -1,0 +1,34 @@
+title: sudoku-sat-2019
+description: Sudoku SAT 2019
+
+limits:
+  time: 900 # s
+  memory: 4096 # MB
+  output: 1024 # MB
+  cores: 1,2,4,8
+
+steps:
+  run:
+    - step: reprobench.executors.RunsolverExecutor
+    # - step: sudoku.validate
+    # - step: sudoku.score
+  compile:
+    - step: reprobench.compilers.summarizer
+
+tasks:
+  easy:
+    type: folder
+    path: ./tasks/sudoku/easy/**/*.txt
+  hard:
+    type: folder
+    path: ./tasks/sudoku/hard/**/*.txt
+
+tools:
+  team1: tools.Team1SudokuSolver
+  # team2: tools.sudoku_team2
+
+parameters:
+  riss:
+    solver: riss
+  glucose:
+    solver: glucose

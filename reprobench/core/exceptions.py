@@ -1,0 +1,3 @@
+class ExecutableNotFoundError(RuntimeError):
+    pass
+
