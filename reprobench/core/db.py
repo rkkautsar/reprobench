@@ -90,7 +90,7 @@ class Run(BaseModel):
         (SUCCESS, "Run Successfully"),
     )
 
-    tool = ForeignKeyField(TaskCategory, backref="runs", on_delete="cascade")
+    tool = ForeignKeyField(Tool, backref="runs", on_delete="cascade")
     parameter_category = ForeignKeyField(
         ParameterCategory, backref="runs", on_delete="cascade"
     )

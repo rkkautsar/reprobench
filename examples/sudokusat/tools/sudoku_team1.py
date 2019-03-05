@@ -1,25 +1,22 @@
 import os
 import subprocess
-from reprobench.tools.reprozip import ReprozipTool
+from reprobench.tools.executable import ExecutableTool
+from reprobench.core.db import Parameter
 from reprobench.utils import silent_run
 
 
-class Team1SudokuSolver(ReprozipTool):
+class Team1SudokuSolver(ExecutableTool):
     name = "Team 1 Sudoku Solver"
-    path = os.path.join(os.path.dirname(__file__), "sudoku_team1.rpz")
-    runner = "docker"
-
-    def pre_run(self, context):
-        task = context["task"]
-        assert task["type"] == "file"
-        silent_run(
-            self.base_command + ["upload", self.dir, f"{task['path']}:input.txt"]
-        )
+    path = os.path.join(os.path.dirname(__file__), "sudoku_team1")
 
     def cmdline(self, context):
-        parameters = context["parameter"]
-        solver = "riss"
-        if "solver" in parameters:
-            solver = parameters["solver"]
+        task = os.path.abspath(context["run"].task.path)
+        parameters = context["run"].parameter_category.parameters
 
-        return self.base_command + ["run", self.dir, f"run_{solver}"]
+        solver_query = parameters.where(Parameter.key == "solver").first()
+        if solver_query is None:
+            solver = "glucose"
+        else:
+            solver = solver_query.value
+
+        return [self.path, f"-s={solver}", task]

@@ -1,0 +1,237 @@
+[[package]]
+category = "main"
+description = "Produce colored terminal text with an xml-like markup"
+name = "ansimarkup"
+optional = false
+python-versions = "*"
+version = "1.4.0"
+
+[package.dependencies]
+colorama = "*"
+
+[package.extras]
+devel = ["bumpversion (>=0.5.2)", "check-manifest (>=0.35)", "readme-renderer (>=16.0)", "flake8", "pep8-naming"]
+tests = ["tox (>=2.6.0)", "pytest (>=3.0.3)", "pytest-cov (>=2.3.1)"]
+
+[[package]]
+category = "dev"
+description = "A small Python module for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
+name = "appdirs"
+optional = false
+python-versions = "*"
+version = "1.4.3"
+
+[[package]]
+category = "dev"
+description = "Classes Without Boilerplate"
+name = "attrs"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+version = "19.1.0"
+
+[package.extras]
+dev = ["coverage", "hypothesis", "pympler", "pytest", "six", "zope.interface", "sphinx", "pre-commit"]
+docs = ["sphinx", "zope.interface"]
+tests = ["coverage", "hypothesis", "pympler", "pytest", "six", "zope.interface"]
+
+[[package]]
+category = "main"
+description = "Pretty and helpful exceptions, automatically"
+name = "better-exceptions-fork"
+optional = false
+python-versions = "*"
+version = "0.2.1.post6"
+
+[package.dependencies]
+ansimarkup = ">=1.3.0"
+colorama = "*"
+pygments = ">=2.2.0"
+
+[[package]]
+category = "dev"
+description = "The uncompromising code formatter."
+name = "black"
+optional = false
+python-versions = ">=3.6"
+version = "18.9b0"
+
+[package.dependencies]
+appdirs = "*"
+attrs = ">=17.4.0"
+click = ">=6.5"
+toml = ">=0.9.4"
+
+[package.extras]
+d = ["aiohttp (>=3.3.2)"]
+
+[[package]]
+category = "dev"
+description = "Composable command line interface toolkit"
+name = "click"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+version = "7.0"
+
+[[package]]
+category = "main"
+description = "Cross-platform colored terminal text."
+name = "colorama"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+version = "0.4.1"
+
+[[package]]
+category = "main"
+description = "Docutils -- Python Documentation Utilities"
+name = "docutils"
+optional = false
+python-versions = "*"
+version = "0.14"
+
+[[package]]
+category = "main"
+description = "Python logging made (stupidly) simple"
+name = "loguru"
+optional = false
+python-versions = ">=3.5"
+version = "0.2.5"
+
+[package.dependencies]
+ansimarkup = ">=1.4.0"
+better-exceptions-fork = ">=0.2.1.post6"
+colorama = ">=0.3.4"
+
+[package.extras]
+dev = ["codecov (>=2.0.15)", "isort (>=4.3.4)", "pytest (>=3.9.0)", "pytest-cov (>=2.5.1)", "Sphinx (>=1.7.4)", "sphinx-autobuild (>=0.7)", "sphinx-rtd-theme (>=0.3)"]
+
+[[package]]
+category = "main"
+description = "a little orm"
+name = "peewee"
+optional = false
+python-versions = "*"
+version = "3.8.2"
+
+[[package]]
+category = "main"
+description = ""
+name = "psmon"
+optional = false
+python-versions = ">=3.6"
+version = "0.1.1"
+
+[package.dependencies]
+psutil = "^5.5"
+
+[package.source]
+reference = ""
+type = "directory"
+url = "../psmon"
+
+[[package]]
+category = "main"
+description = "Cross-platform lib for process and system monitoring in Python."
+name = "psutil"
+optional = false
+python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+version = "5.5.1"
+
+[package.extras]
+enum = ["enum34"]
+
+[[package]]
+category = "main"
+description = "Pygments is a syntax highlighting package written in Python."
+name = "pygments"
+optional = false
+python-versions = "*"
+version = "2.3.1"
+
+[[package]]
+category = "main"
+description = "A small Python library to limit the resources used by a function by executing it inside a subprocess."
+name = "pynisher"
+optional = false
+python-versions = "*"
+version = "0.5.0"
+
+[package.dependencies]
+docutils = ">=0.3"
+psutil = "*"
+setuptools = "*"
+
+[[package]]
+category = "main"
+description = "Extensions to the standard Python datetime module"
+name = "python-dateutil"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
+version = "2.8.0"
+
+[package.dependencies]
+six = ">=1.5"
+
+[[package]]
+category = "main"
+description = "ruamel.yaml is a YAML parser/emitter that supports roundtrip preservation of comments, seq/map flow style, and map key order"
+name = "ruamel.yaml"
+optional = false
+python-versions = "*"
+version = "0.15.89"
+
+[package.extras]
+docs = ["ryd"]
+jinja2 = ["ruamel.yaml.jinja2 (>=0.2)"]
+
+[[package]]
+category = "main"
+description = "Python 2 and 3 compatibility utilities"
+name = "six"
+optional = false
+python-versions = ">=2.6, !=3.0.*, !=3.1.*"
+version = "1.12.0"
+
+[[package]]
+category = "main"
+description = "Strict, typed YAML parser"
+name = "strictyaml"
+optional = false
+python-versions = "*"
+version = "1.0.0"
+
+[package.dependencies]
+python-dateutil = ">=2.6.0"
+"ruamel.yaml" = ">=0.14.2"
+
+[[package]]
+category = "dev"
+description = "Python Library for Tom's Obvious, Minimal Language"
+name = "toml"
+optional = false
+python-versions = "*"
+version = "0.10.0"
+
+[metadata]
+content-hash = "16cdb18001dd3d3d8270a403675aa44809651d69226ca8cd042bd7b73de3c8fa"
+python-versions = ">=3.6"
+
+[metadata.hashes]
+ansimarkup = ["06365e3ef89a12734fc408b2449cb4642d5fe2e603e95e7296eff9e98a0fe0b4", "174d920481416cec8d5a707af542d6fba25a1df1c21d8996479c32ba453649a4"]
+appdirs = ["9e5896d1372858f8dd3344faf4e5014d21849c756c8d5701f78f8a103b372d92", "d8b24664561d0d34ddfaec54636d502d7cea6e29c3eaf68f3df6180863e2166e"]
+attrs = ["69c0dbf2ed392de1cb5ec704444b08a5ef81680a61cb899dc08127123af36a79", "f0b870f674851ecbfbbbd364d6b5cbdff9dcedbc7f3f5e18a6891057f21fe399"]
+better-exceptions-fork = ["5f0983da51e956dbdaf8b9a3d10e2774b382ce6c6ff2e54685c33e2dbe8f1472"]
+black = ["817243426042db1d36617910df579a54f1afd659adb96fc5032fcf4b36209739", "e030a9a28f542debc08acceb273f228ac422798e5215ba2a791a6ddeaaca22a5"]
+click = ["2335065e6395b9e67ca716de5f7526736bfa6ceead690adf616d925bdc622b13", "5b94b49521f6456670fdb30cd82a4eca9412788a93fa6dd6df72c94d5a8ff2d7"]
+colorama = ["05eed71e2e327246ad6b38c540c4a3117230b19679b875190486ddd2d721422d", "f8ac84de7840f5b9c4e3347b3c1eaa50f7e49c2b07596221daec5edaabbd7c48"]
+docutils = ["02aec4bd92ab067f6ff27a38a38a41173bf01bed8f89157768c1573f53e474a6", "51e64ef2ebfb29cae1faa133b3710143496eca21c530f3f71424d77687764274", "7a4bd47eaf6596e1295ecb11361139febe29b084a87bf005bf899f9a42edc3c6"]
+loguru = ["68297d9f23064c2f4764bb5d0c5c767f3ed7f9fc1218244841878f5fc7c94add", "ebac59630946721fd6207264679b267a8bdc290b086226067d6aad86830e3123"]
+peewee = ["7f8e3f512ee0d4e2d9c2008ea446d69e23c9535466367b991d452825a1ddb654"]
+psmon = []
+psutil = ["5ce6b5eb0267233459f4d3980c205828482f450999b8f5b684d9629fea98782a", "72cebfaa422b7978a1d3632b65ff734a34c6b34f4578b68a5c204d633756b810", "77c231b4dff8c1c329a4cd1c22b96c8976c597017ff5b09993cd148d6a94500c", "8846ab0be0cdccd6cc92ecd1246a16e2f2e49f53bd73e522c3a75ac291e1b51d", "a013b4250ccbddc9d22feca0f986a1afc71717ad026c0f2109bbffd007351191", "ad43b83119eeea6d5751023298cd331637e542cbd332196464799e25a5519f8f", "c177777c787d247d02dae6c855330f9ed3e1abf8ca1744c26dd5ff968949999a", "ec1ef313530a9457e48d25e3fdb1723dfa636008bf1b970027462d46f2555d59", "ef3e5e02b3c5d1df366abe7b4820400d5c427579668ad4465ff189d28ded5ebd"]
+pygments = ["5ffada19f6203563680669ee7f53b64dabbeb100eb51b61996085e99c03b284a", "e8218dd399a61674745138520d0d4cf2621d7e032439341bc3f647bff125818d"]
+pynisher = ["1b1079315ad1009de108c9ad701f6ae5274264e64503fc22c2de366d99953f34"]
+python-dateutil = ["7e6584c74aeed623791615e26efd690f29817a27c73085b78e4bad02493df2fb", "c89805f6f4d64db21ed966fda138f8a5ed7a4fdbc1a8ee329ce1b74e3c74da9e"]
+"ruamel.yaml" = ["0ae64b150ec39667ce2815227271207d27a6218bc501b73e70a7403f2cf987ee", "0e6aa488ec65fcaf7cca609d83a2b0e13d429a6080dd6ef3fd89dcbf67f13c1d", "1085219e373381c8a4ac911be2f167d2c67485af82199db0abee11cfe06283d5", "181aeecf6d037e34c325c191b0a14188921964dd02c34a4d01bf7881060c22d0", "1bafe5773c559ef8e06d53f35bfcaad0510ef069db8b3fb50bf9816b3c531633", "20bc4549b86f7e5a558c06e51c97821d8b7658d4b01d3e21713a53db6f45779a", "325b5b1df1b29ecaaa3dab6745ee0a35d51e58aa19b90cab8ba11c498d438cb7", "3e89d657a11fee61120d304efcab92409ea4a21c9629626cbb7aabbac7b713d9", "551142c578813ee25e4952dda820701f0201d0292e8807e8fb5490d19bab8181", "6d8bf658b64ebeccb67bccccd01833cdbe5369c1436365d41052d23e5cbf716f", "76aadb21b3186599057c8874104c8467270307e12faed124dc5ee1cfcd4e240f", "86d034aa9e2ab3eacc5f75f5cd6a469a2af533b6d9e60ea92edbba540d21b9b7", "aa4bfa597c58f2efcae98add337ada85ded45288936a15ddc2d29ff3f5ce3ddf", "b76a4cf08e9392765cf6a25eae63a12fb27c6cc4a8ee5416a49cd54627151f46", "bd9976f13d14f6cb6da1748c7678198b6f9346cbbe0ad18eb74c024a7a2c0d08", "c3c1af293b9e6a84b5da3954f4ae81b30d07a626717cfb6f099ffe0901ff1eac", "c64ae6da2da174fce281a088d7634c6e545db5fb989a3cecec2aa9cef2634a92", "ca742877ea6948cb80c70aaf5d76011694eb072d98264a704b04ffc2d4c0d440", "cfefc391d5a3a7e8b1c6195f364d2f11f898f07eef277ef8e93a4e3ccafbd7c2", "f004249eb8b873c4f48361dc814450e47dab53b5312334cff0a9d381a4589f03", "fc6a2b2f4453944ab8bbe4d6d2eba0c864c098baa8487b08e4340a93a1f811c7", "fffc4dd4097451c0ae1c6cb89bbff1a8248fda6366adb08d1c7bbc4ea2e6a637"]
+six = ["3350809f0555b11f552448330d0b52d5f24c91a322ea4a15ef22629740f3761c", "d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73"]
+strictyaml = ["998f0bc8b3f912800171adb292893b13cc463c7133ea1d87997d944d8718360c"]
+toml = ["229f81c57791a41d65e399fc06bf0848bab550a9dfd5ed66df18ce5f05e73d5c", "235682dd292d5899d361a811df37e04a8828a5b1da3115886b73cf81ebc9100e", "f1db651f9657708513243e61e6cc67d101a39bad662eaa9b5546f789338e07a3"]

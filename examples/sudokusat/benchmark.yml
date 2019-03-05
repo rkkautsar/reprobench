@@ -2,14 +2,14 @@ title: sudoku-sat-2019
 description: Sudoku SAT 2019
 
 limits:
-  time: 10 # s
-  memory: 1024 # MB
-  output: 1024 # MB
+  time: 2 # s
+  memory: 1073741824 # bytes
+  output: 1073741824 # bytes
   cores: 1,2,4,8
 
 steps:
   run:
-    - step: reprobench.executors.PynisherExecutor
+    - step: reprobench.executors.PsmonExecutor
     # - step: sudoku.validate
     # - step: sudoku.score
   compile:

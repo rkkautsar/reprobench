@@ -1,12 +1,10 @@
-import logging
 import pynisher
 import subprocess
+from loguru import logger
 from pathlib import Path
 
 from reprobench.core.bases import Step
-from reprobench.core.db import Run, RunStatistic
-
-log = logging.getLogger(__name__)
+from reprobench.core.db import db, Run, RunStatistic
 
 
 class PynisherExecutor(Step):
@@ -15,7 +13,7 @@ class PynisherExecutor(Step):
         limits = context["limits"]
         tool.pre_run(context)
 
-        cwd = context["working_directory"]
+        cwd = context["run"].directory
         out_file = (Path(cwd) / "run.out").open("wb")
         err_file = (Path(cwd) / "run.err").open("wb")
 
@@ -27,18 +25,19 @@ class PynisherExecutor(Step):
                 tool.cmdline(context), cwd=cwd, stdout=out_file, stderr=err_file
             )
 
+        logger.debug(f"Running {cwd}")
+
         fun = pynisher.enforce_limits(
             cpu_time_in_s=limits["time"], mem_in_mb=limits["memory"]
         )(run_tool)
 
         fun()
 
+        logger.debug(f"Finished {cwd}")
+
         context["run"].status = Run.DONE
         context["run"].verdict = Run.SUCCESS
         context["run"].save()
-
-        tool.post_run(context)
-
         RunStatistic.create(
             run=context["run"], key=RunStatistic.WALL_TIME, value=fun.wall_clock_time
         )
@@ -52,4 +51,6 @@ class PynisherExecutor(Step):
             key=RunStatistic.MEM_USAGE,
             value=fun.resources_function[2],
         )  # maxrss
+
+        tool.post_run(context)
 

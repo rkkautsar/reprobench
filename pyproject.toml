@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "reprobench"
+version = "0.1.0"
+description = "Reproducible Benchmark for Everyone"
+authors = ["Rakha Kanz Kautsar <rkkautsar@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = ">=3.6"
+peewee = "^3.8"
+strictyaml = "^1.0"
+pynisher = "^0.5.0"
+loguru = "^0.2.5"
+psmon = {path = "../psmon"}
+
+[tool.poetry.dev-dependencies]
+black = "=18.9b0"
+
+[tool.poetry.scripts]
+reprobench = "reprobench.console:run"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

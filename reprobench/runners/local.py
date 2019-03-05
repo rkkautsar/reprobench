@@ -1,15 +1,31 @@
 import os
 import itertools
-import logging
+from loguru import logger
+from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from datetime import datetime
-from peewee import SqliteDatabase
+from playhouse.sqliteq import SqliteQueueDatabase
 from reprobench.core.bases import Runner
 from reprobench.core.db import db, db_bootstrap, Run, Tool, ParameterCategory, Task
 from reprobench.utils import import_class
 
 
-log = logging.getLogger(__name__)
+def execute_run(run_id, config):
+    # database = SqliteQueueDatabase(db_name, autostart=True)
+    # db.initialize(database)
+    run = Run.get_by_id(run_id)
+    ToolClass = import_class(run.tool.module)
+    tool_instance = ToolClass()
+
+    context = config.copy()
+    context["tool"] = tool_instance
+    context["run"] = run
+    logger.info(f"Processing task: {run.directory}")
+
+    for runstep in config["steps"]["run"]:
+        Step = import_class(runstep["step"])
+        step = Step()
+        step.run(context)
 
 
 class LocalRunner(Runner):
@@ -19,15 +35,16 @@ class LocalRunner(Runner):
         self.timestamp = now.strftime("%Y%m%d-%H%M%S")
 
     def setup(self):
-        db_name = f"{self.config['title']}_{self.timestamp}.db"
-        log.info(f"Creating Database: {db_name}")
-        database = SqliteDatabase(db_name)
+        self.db_name = f"{self.config['title']}_{self.timestamp}.db"
+        logger.info(f"Creating Database: {self.db_name}")
+        database = SqliteQueueDatabase(self.db_name, autostart=True)
         db.initialize(database)
         db_bootstrap(self.config)
 
     def create_working_directory(
         self, tool_name, parameter_category, task_category, filename
     ):
+        logger.debug(f"{tool_name} {parameter_category} {task_category} {filename}")
         path = (
             Path("./output") / tool_name / parameter_category / task_category / filename
         )
@@ -36,16 +53,15 @@ class LocalRunner(Runner):
 
     def run(self):
         self.setup()
+        queue = []
+
         for tool_name, tool_module in self.config["tools"].items():
             ToolClass = import_class(tool_module)
             tool_instance = ToolClass()
             tool_instance.setup()
 
-            for (
-                (parameter_category, parameter),
-                (task_category, task),
-            ) in itertools.product(
-                self.config["parameters"].items(), self.config["tasks"].items()
+            for (parameter_category_name, (task_category, task)) in itertools.product(
+                self.config["parameters"], self.config["tasks"].items()
             ):
                 # only folder task type for now
                 assert task["type"] == "folder"
@@ -53,32 +69,28 @@ class LocalRunner(Runner):
                 files = Path().glob(task["path"])
                 for file in files:
                     context = self.config.copy()
-                    context["working_directory"] = self.create_working_directory(
-                        tool_name, parameter_category, task_category, file.name
+                    directory = self.create_working_directory(
+                        tool_name, parameter_category_name, task_category, file.name
                     )
-                    context["tool"] = tool_instance
-                    context["parameter"] = parameter
-                    context["task_category"] = task_category
-                    context["task"] = {"type": "file", "path": str(file.resolve())}
-
-                    log.info(f"Processing task: {context['working_directory']}")
 
                     tool = Tool.get(Tool.module == tool_module)
                     parameter_category = ParameterCategory.get(
-                        ParameterCategory.title == parameter_category
+                        ParameterCategory.title == parameter_category_name
                     )
                     task = Task.get(Task.path == str(file))
 
                     run = Run.create(
-                        tool=tool, task=task, parameter_category=parameter_category
+                        tool=tool,
+                        task=task,
+                        parameter_category=parameter_category,
+                        directory=directory,
                     )
 
-                    context["run"] = run
+                    queue.append((run.id, self.config))
+                    # execute_run(run.id, self.config)
 
-                    for runstep in self.config["steps"]["run"]:
-                        Step = import_class(runstep["step"])
-                        step = Step()
-                        step.run(context)
+            with ThreadPool() as p:
+                p.starmap(execute_run, queue)
 
             tool_instance.teardown()
 
