@@ -15,11 +15,6 @@ db = Proxy()
 
 class BaseModel(Model):
     created_at = DateTimeField(default=datetime.now)
-    updated_at = DateTimeField(default=datetime.now)
-
-    def save(self, *args, **kwargs):
-        self.updated_at = datetime.now()
-        super().save(*args, **kwargs)
 
     class Meta:
         database = db
@@ -73,6 +68,7 @@ class Run(BaseModel):
         (CANCELED, "Canceled"),
         (PENDING, "Pending"),
         (SUBMITTED, "Submitted"),
+        (RUNNING, "Running"),
         (DONE, "Done"),
     )
 

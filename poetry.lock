@@ -65,7 +65,7 @@ toml = ">=0.9.4"
 d = ["aiohttp (>=3.3.2)"]
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Composable command line interface toolkit"
 name = "click"
 optional = false
@@ -212,7 +212,7 @@ python-versions = "*"
 version = "0.10.0"
 
 [metadata]
-content-hash = "16cdb18001dd3d3d8270a403675aa44809651d69226ca8cd042bd7b73de3c8fa"
+content-hash = "f2faa190d5543f47190220deec7e9b33457bd070b42d01a89c515eeffb65c8a3"
 python-versions = ">=3.6"
 
 [metadata.hashes]

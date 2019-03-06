@@ -39,7 +39,17 @@ class PsmonExecutor(Step):
         logger.debug(stats)
 
         context["run"].status = Run.DONE
-        context["run"].verdict = Run.SUCCESS
+        context["run"].return_code = stats["return_code"]
+
+        if stats["error"] == TimeoutError:
+            context["run"].verdict = Run.TIMEOUT
+        elif stats["error"] == MemoryError:
+            context["run"].verdict = Run.MEMOUT
+        elif stats["error"] or stats["return_code"] != 0:
+            context["run"].verdict = Run.RUNTIME_ERR
+        else:
+            context["run"].verdict = Run.SUCCESS
+
         context["run"].save()
 
         RunStatistic.create(

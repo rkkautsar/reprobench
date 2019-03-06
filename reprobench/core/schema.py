@@ -9,7 +9,7 @@ limits_schema = Map(
     }
 )
 
-module_schema = Regex(r"\w+(\.\w+)*")
+module_schema = Regex(r"\.?\w+(\.\w+)*")
 
 step_schema = Seq(Map({"step": module_schema}))
 
