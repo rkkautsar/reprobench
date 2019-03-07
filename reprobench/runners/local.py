@@ -2,14 +2,41 @@ import os
 import signal
 import itertools
 import time
+import atexit
+from tqdm import tqdm
 from loguru import logger
-from multiprocessing.pool import ThreadPool
+from multiprocessing.pool import Pool
 from pathlib import Path
 from datetime import datetime
-from playhouse.sqliteq import SqliteQueueDatabase
+from playhouse.apsw_ext import APSWDatabase
 from reprobench.core.bases import Runner
 from reprobench.core.db import db, db_bootstrap, Run, Tool, ParameterCategory, Task
 from reprobench.utils import import_class
+
+
+def execute_run(args):
+    run_id, config, db_path = args
+
+    run = Run.get_by_id(run_id)
+    ToolClass = import_class(run.tool.module)
+    tool_instance = ToolClass()
+    db.initialize(APSWDatabase(str(db_path)))
+    context = config.copy()
+    context["tool"] = tool_instance
+    context["run"] = run
+    logger.info(f"Processing task: {run.directory}")
+
+    @atexit.register
+    def exit():
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+        os.killpg(os.getpgid(0), signal.SIGTERM)
+        sleep(3)
+        os.killpg(os.getpgid(0), signal.SIGKILL)
+
+    for runstep in config["steps"]["run"]:
+        Step = import_class(runstep["step"])
+        step = Step()
+        step.run(context)
 
 
 class LocalRunner(Runner):
@@ -19,25 +46,12 @@ class LocalRunner(Runner):
         self.resume = resume
         self.queue = []
 
-    def execute_run(self, run_id):
-        run = Run.get_by_id(run_id)
-        ToolClass = import_class(run.tool.module)
-        tool_instance = ToolClass()
-
-        context = self.config.copy()
-        context["tool"] = tool_instance
-        context["run"] = run
-        logger.info(f"Processing task: {run.directory}")
-
-        for runstep in self.config["steps"]["run"]:
-            Step = import_class(runstep["step"])
-            step = Step()
-            step.run(context)
-
     def setup(self):
-        signal.signal(signal.SIGTERM, self.exit)
-        signal.signal(signal.SIGINT, self.exit)
-        signal.signal(signal.SIGHUP, signal.SIG_IGN)
+        # signal.signal(signal.SIGTERM, self.exit)
+        # signal.signal(signal.SIGINT, self.exit)
+        # signal.signal(signal.SIGHUP, signal.SIG_IGN)
+
+        atexit.register(self.exit)
 
         self.db_path = Path(self.output_dir) / f"{self.config['title']}.benchmark.db"
         db_created = Path(self.db_path).is_file()
@@ -50,7 +64,7 @@ class LocalRunner(Runner):
 
         Path(self.output_dir).mkdir(parents=True, exist_ok=True)
         logger.debug(f"Creating Database: {self.db_path}")
-        self.database = SqliteQueueDatabase(self.db_path, autostart=True)
+        self.database = APSWDatabase(str(self.db_path))
         db.initialize(self.database)
 
         if not db_created:
@@ -72,20 +86,14 @@ class LocalRunner(Runner):
         path.mkdir(parents=True, exist_ok=True)
         return path
 
-    def exit(self, *args):
-        signal.signal(signal.SIGINT, signal.SIG_IGN)
-        signal.signal(signal.SIGTERM, signal.SIG_IGN)
-        logger.warning("it is not guaranteed that all processes will be terminated!")
-        logger.info("Sending SIGTERM...")
-        os.killpg(os.getpgid(0), signal.SIGTERM)
-        logger.info("Sleeping for 3s...")
-        time.sleep(3)
-        logger.warning("Sending SIGKILL...")
-        os.killpg(os.getpgid(0), signal.SIGKILL)
+    def exit(self):
+        if self.num_in_queue > 0:
+            self.pool.terminate()
+            self.pool.join()
 
     def populate_unfinished_runs(self):
         query = Run.select(Run.id).where(Run.status < Run.DONE)
-        self.queue = [run.id for run in query]
+        self.queue = [(run.id, self.config, self.db_path) for run in query]
 
     def init_runs(self):
         for tool_name, tool_module in self.config["tools"].items():
@@ -116,7 +124,7 @@ class LocalRunner(Runner):
                         status=Run.SUBMITTED,
                     )
 
-                    self.queue.append(run.id)
+                    self.queue.append((run.id, self.config, self.db_path))
 
     def run(self):
         self.setup()
@@ -125,7 +133,8 @@ class LocalRunner(Runner):
             logger.info("Resuming unfinished runs...")
             self.populate_unfinished_runs()
 
-        if len(self.queue) == 0:
+        self.num_in_queue = len(self.queue)
+        if self.num_in_queue == 0:
             logger.success("No tasks remaining to run")
             exit(0)
 
@@ -138,12 +147,18 @@ class LocalRunner(Runner):
             tools.append(tool_instance)
 
         logger.debug("Executing runs...")
-        with ThreadPool() as p:
-            p.map(self.execute_run, self.queue)
+
+        self.pool = Pool()
+        it = self.pool.imap_unordered(execute_run, self.queue)
+        for result in tqdm(it, total=self.num_in_queue):
+            self.num_in_queue -= 1
+
+        self.pool.close()
+        self.pool.join()
 
         logger.debug("Running teardown on all tools...")
         for tool in tools:
             tool.teardown()
 
-        self.database.stop()
+        # self.database.stop()
 

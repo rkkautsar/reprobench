@@ -14,15 +14,9 @@ from reprobench.runners import LocalRunner
 
 @click.group()
 @click.version_option(version="0.1.0")
-@click.option("--verbose", "-v", "verbosity", count=True, default=1, help="Verbosity")
-@click.option("--quiet", "-q", "verbosity", flag_value=0, help="Silence log")
+@click.option("--verbose", "-v", "verbosity", count=True, default=0, help="Verbosity")
 def cli(verbosity):
     logger.remove()
-
-    if type(verbosity) == bool and verbosity == False:
-        verbosity = 2
-    elif verbosity != 0:
-        verbosity += 1
 
     if verbosity == 0:
         logger.add(sys.stderr, level="ERROR")

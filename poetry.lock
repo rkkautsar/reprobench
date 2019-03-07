@@ -22,6 +22,14 @@ python-versions = "*"
 version = "1.4.3"
 
 [[package]]
+category = "main"
+description = "Another Python SQLite Wrapper"
+name = "apsw"
+optional = false
+python-versions = "*"
+version = "3.9.2-r1"
+
+[[package]]
 category = "dev"
 description = "Classes Without Boilerplate"
 name = "attrs"
@@ -211,13 +219,25 @@ optional = false
 python-versions = "*"
 version = "0.10.0"
 
+[[package]]
+category = "main"
+description = "Fast, Extensible Progress Meter"
+name = "tqdm"
+optional = false
+python-versions = ">=2.6, !=3.0.*, !=3.1.*"
+version = "4.31.1"
+
+[package.extras]
+dev = ["py-make (>=0.1.0)", "twine", "argopt", "pydoc-markdown"]
+
 [metadata]
-content-hash = "f2faa190d5543f47190220deec7e9b33457bd070b42d01a89c515eeffb65c8a3"
+content-hash = "16fe5813d7af439d7a18694138e3f71f7aa2c1c445f9a47c41df69f6be0fd29d"
 python-versions = ">=3.6"
 
 [metadata.hashes]
 ansimarkup = ["06365e3ef89a12734fc408b2449cb4642d5fe2e603e95e7296eff9e98a0fe0b4", "174d920481416cec8d5a707af542d6fba25a1df1c21d8996479c32ba453649a4"]
 appdirs = ["9e5896d1372858f8dd3344faf4e5014d21849c756c8d5701f78f8a103b372d92", "d8b24664561d0d34ddfaec54636d502d7cea6e29c3eaf68f3df6180863e2166e"]
+apsw = ["dab96fd164dde9e59f7f27228291498217fa0e74048e2c08c7059d7e39589270"]
 attrs = ["69c0dbf2ed392de1cb5ec704444b08a5ef81680a61cb899dc08127123af36a79", "f0b870f674851ecbfbbbd364d6b5cbdff9dcedbc7f3f5e18a6891057f21fe399"]
 better-exceptions-fork = ["5f0983da51e956dbdaf8b9a3d10e2774b382ce6c6ff2e54685c33e2dbe8f1472"]
 black = ["817243426042db1d36617910df579a54f1afd659adb96fc5032fcf4b36209739", "e030a9a28f542debc08acceb273f228ac422798e5215ba2a791a6ddeaaca22a5"]
@@ -235,3 +255,4 @@ python-dateutil = ["7e6584c74aeed623791615e26efd690f29817a27c73085b78e4bad02493d
 six = ["3350809f0555b11f552448330d0b52d5f24c91a322ea4a15ef22629740f3761c", "d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73"]
 strictyaml = ["998f0bc8b3f912800171adb292893b13cc463c7133ea1d87997d944d8718360c"]
 toml = ["229f81c57791a41d65e399fc06bf0848bab550a9dfd5ed66df18ce5f05e73d5c", "235682dd292d5899d361a811df37e04a8828a5b1da3115886b73cf81ebc9100e", "f1db651f9657708513243e61e6cc67d101a39bad662eaa9b5546f789338e07a3"]
+tqdm = ["d385c95361699e5cf7622485d9b9eae2d4864b21cd5a2374a9c381ffed701021", "e22977e3ebe961f72362f6ddfb9197cc531c9737aaf5f607ef09740c849ecd05"]

@@ -1,8 +1,7 @@
 from pathlib import Path
 from datetime import datetime
-from peewee import (
-    Proxy,
-    Model,
+from peewee import Proxy, Model
+from playhouse.apsw_ext import (
     DateTimeField,
     CharField,
     ForeignKeyField,
