@@ -1,3 +1,4 @@
+import signal
 import click
 import atexit
 import strictyaml
