@@ -3,6 +3,7 @@ import signal
 import click
 import atexit
 import strictyaml
+import time
 from loguru import logger
 from playhouse.apsw_ext import APSWDatabase
 from reprobench.core.schema import schema
@@ -35,7 +36,7 @@ def run(config, database, run_id):
     def exit():
         signal.signal(signal.SIGTERM, signal.SIG_IGN)
         os.killpg(os.getpgid(0), signal.SIGTERM)
-        sleep(3)
+        time.sleep(3)
         os.killpg(os.getpgid(0), signal.SIGKILL)
 
     for runstep in config["steps"]["run"]:
