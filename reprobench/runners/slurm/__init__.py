@@ -15,16 +15,24 @@ from reprobench.core.bases import Runner
 from reprobench.core.db import db, db_bootstrap, Run, Tool, ParameterCategory, Task
 from reprobench.utils import import_class
 
+DIR = os.path.dirname(os.path.realpath(__file__))
+
 
 class SlurmRunner(Runner):
     def __init__(
-        self, config, config_path, output_dir="./output", conda_module, conda_env, resume=False, teardown=False
+        self,
+        config,
+        config_path,
+        conda_module,
+        python_prefix,
+        resume=False,
+        teardown=False,
     ):
         self.config = config
         self.config_path = config_path
         self.output_dir = output_dir
         self.conda_module = conda_module
-        self.conda_env = conda_env
+        self.python_prefix = python_prefix
         self.resume = resume
         self.teardown = teardown
         self.queue = []
@@ -66,13 +74,7 @@ class SlurmRunner(Runner):
         return path
 
     def exit(self):
-        if self.num_in_queue > 0:
-            self.pool.terminate()
-            self.pool.join()
-
-    # def populate_unfinished_runs(self):
-    #     query = Run.select(Run.id).where(Run.status < Run.DONE)
-    #     self.queue = [(run.id, self.config, self.db_path) for run in query]
+        pass
 
     def init_runs(self):
         for tool_name, tool_module in self.config["tools"].items():
@@ -115,17 +117,18 @@ class SlurmRunner(Runner):
                 tool_instance.setup()
                 tools.append(tool_instance)
             logger.debug("Generating template")
-            
-            with open("./slurm.job.tpl") as tpl:
+
+            with open(Path(DIR) / "./slurm.job.tpl") as tpl:
                 template = Template(tpl.read())
-                template.safe_substitute(**self)
-            
-            slurm_job_path = Path(self.output_dir) / "slurm.job"
-            with open(slurm_job_path, "w") as job:
-                job.write(template)
+                job_str = template.safe_substitute(**self)
+
+            with open(Path(self.output_dir) / "slurm.job", "w") as job:
+                job.write(job_str)
 
             logger.info("Submitting job array to SLURM...")
-            subprocess.run(["sbatch", f"--array=1-{len(self.queue)}", slurm_job_path.resolve()])
+            subprocess.run(
+                ["sbatch", f"--array=1-{len(self.queue)}", slurm_job_path.resolve()]
+            )
         else:
             logger.debug("Running teardown on all tools...")
             for tool_module in self.config["tools"].values():
