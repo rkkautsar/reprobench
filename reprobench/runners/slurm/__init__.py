@@ -23,7 +23,6 @@ class SlurmRunner(Runner):
         self,
         config,
         config_path,
-        conda_module,
         python_path,
         output_dir="./output",
         resume=False,
@@ -32,7 +31,6 @@ class SlurmRunner(Runner):
         self.config = config
         self.config_path = config_path
         self.output_dir = output_dir
-        self.conda_module = conda_module
         self.python_path = python_path
         self.resume = resume
         self.teardown = teardown
@@ -124,7 +122,6 @@ class SlurmRunner(Runner):
                 template = Template(tpl.read())
                 job_str = template.safe_substitute(
                     python_path=self.python_path,
-                    conda_module=self.conda_module,
                     config_path=self.config_path,
                     db_path=self.db_path,
                 )
@@ -133,9 +130,14 @@ class SlurmRunner(Runner):
                 job.write(job_str)
 
             logger.info("Submitting job array to SLURM...")
-            subprocess.run(
-                ["sbatch", f"--array=1-{len(self.queue)}", slurm_job_path.resolve()]
-            )
+            sbatch_cmd = [
+                "sbatch",
+                "-a",
+                f"1-{len(self.queue)}",
+                slurm_job_path.resolve(),
+            ]
+            logger.debug(" ".join(sbatch_cmd))
+            subprocess.run(sbatch_cmd)
         else:
             logger.debug("Running teardown on all tools...")
             for tool_module in self.config["tools"].values():
