@@ -20,7 +20,7 @@ from reprobench.utils import import_class
 def run(config, database, run_id):
     config = config.read()
     config = strictyaml.load(config, schema=schema).data
-    db.initialize(APSWDatabase(str(db_path)))
+    db.initialize(APSWDatabase(str(database)))
     run = Run.get_by_id(run_id)
     ToolClass = import_class(run.tool.module)
     tool_instance = ToolClass()
