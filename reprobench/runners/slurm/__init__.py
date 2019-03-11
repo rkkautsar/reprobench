@@ -25,6 +25,7 @@ class SlurmRunner(Runner):
         config_path,
         conda_module,
         python_prefix,
+        output_dir="./output",
         resume=False,
         teardown=False,
     ):
