@@ -134,7 +134,7 @@ class SlurmRunner(Runner):
                 "sbatch",
                 "-a",
                 f"1-{len(self.queue)}",
-                slurm_job_path.resolve(),
+                str(slurm_job_path.resolve()),
             ]
             logger.debug(" ".join(sbatch_cmd))
             subprocess.run(sbatch_cmd)
