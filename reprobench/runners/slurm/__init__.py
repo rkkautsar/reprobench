@@ -24,7 +24,7 @@ class SlurmRunner(Runner):
         config,
         config_path,
         conda_module,
-        python_prefix,
+        python_path,
         output_dir="./output",
         resume=False,
         teardown=False,
@@ -33,7 +33,7 @@ class SlurmRunner(Runner):
         self.config_path = config_path
         self.output_dir = output_dir
         self.conda_module = conda_module
-        self.python_prefix = python_prefix
+        self.python_path = python_path
         self.resume = resume
         self.teardown = teardown
         self.queue = []
