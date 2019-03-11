@@ -7,7 +7,7 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = ">=3.6"
-peewee = "^3.8"
+peewee = "^3.9"
 strictyaml = "^1.0"
 pynisher = "^0.5.0"
 loguru = "^0.2.5"
