@@ -73,13 +73,13 @@ def local_runner(output_dir, resume, teardown, conda_module, python_prefix, conf
     config_text = config.read()
     config = strictyaml.load(config_text, schema=schema).data
     runner = SlurmRunner(
-        config,
-        output_dir,
-        resume,
-        teardown,
-        conda_module,
-        python_prefix,
+        config=config,
         config_path=config_path,
+        output_dir=output_dir,
+        resume=resume,
+        teardown=teardown,
+        conda_module=conda_module,
+        python_prefix=python_prefix,
     )
     runner.run()
 
