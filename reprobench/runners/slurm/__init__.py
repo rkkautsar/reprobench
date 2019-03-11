@@ -119,7 +119,8 @@ class SlurmRunner(Runner):
                 tools.append(tool_instance)
             logger.debug("Generating template")
 
-            with open(Path(DIR) / "./slurm.job.tpl") as tpl:
+            slurm_job_path = Path(DIR) / "./slurm.job.tpl"
+            with open(slurm_job_path) as tpl:
                 template = Template(tpl.read())
                 job_str = template.safe_substitute(
                     python_prefix=self.python_prefix,
