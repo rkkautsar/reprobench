@@ -123,7 +123,7 @@ class SlurmRunner(Runner):
             with open(slurm_job_path) as tpl:
                 template = Template(tpl.read())
                 job_str = template.safe_substitute(
-                    python_prefix=self.python_prefix,
+                    python_path=self.python_path,
                     conda_module=self.conda_module,
                     config_path=self.config_path,
                     db_path=self.db_path,

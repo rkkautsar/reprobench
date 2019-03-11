@@ -66,9 +66,9 @@ def local_runner(output_dir, resume, config):
 @click.option("-r", "--resume", is_flag=True)
 @click.option("-t", "--teardown", is_flag=True)
 @click.option("-c", "--conda-module", required=True)
-@click.option("-p", "--python-prefix", required=True)
+@click.option("-p", "--python-path", required=True)
 @click.argument("config", type=click.File("r"))
-def local_runner(output_dir, resume, teardown, conda_module, python_prefix, config):
+def local_runner(output_dir, resume, teardown, conda_module, python_path, config):
     config_path = os.path.realpath(config.name)
     config_text = config.read()
     config = strictyaml.load(config_text, schema=schema).data
@@ -79,7 +79,7 @@ def local_runner(output_dir, resume, teardown, conda_module, python_prefix, conf
         resume=resume,
         teardown=teardown,
         conda_module=conda_module,
-        python_prefix=python_prefix,
+        python_path=python_path,
     )
     runner.run()
 
