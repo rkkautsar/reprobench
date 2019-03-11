@@ -121,7 +121,12 @@ class SlurmRunner(Runner):
 
             with open(Path(DIR) / "./slurm.job.tpl") as tpl:
                 template = Template(tpl.read())
-                job_str = template.safe_substitute(**self)
+                job_str = template.safe_substitute(
+                    python_prefix=self.python_prefix,
+                    conda_module=self.conda_module,
+                    config_path=self.config_path,
+                    db_path=self.db_path,
+                )
 
             with open(Path(self.output_dir) / "slurm.job", "w") as job:
                 job.write(job_str)
