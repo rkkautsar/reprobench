@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 
+import os.path
 import argparse
-from loguru import logger
 import sys
 import strictyaml
 import click
+from loguru import logger
 
 from reprobench.core.schema import schema
 from reprobench.utils import import_class
 
-from reprobench.runners import LocalRunner
+from reprobench.runners import LocalRunner, SlurmRunner
 
 
 @click.group()
@@ -41,6 +42,7 @@ def run():
     "--output-dir",
     type=click.Path(file_okay=False, writable=True, resolve_path=True),
     default="./output",
+    required=True,
     show_default=True,
 )
 @click.option("-r", "--resume", is_flag=True)
@@ -49,6 +51,36 @@ def local_runner(output_dir, resume, config):
     config_text = config.read()
     config = strictyaml.load(config_text, schema=schema).data
     runner = LocalRunner(config, output_dir, resume)
+    runner.run()
+
+
+@run.command("slurm")
+@click.option(
+    "-o",
+    "--output-dir",
+    type=click.Path(file_okay=False, writable=True, resolve_path=True),
+    default="./output",
+    required=True,
+    show_default=True,
+)
+@click.option("-r", "--resume", is_flag=True)
+@click.option("-t", "--teardown", is_flag=True)
+@click.option("-c", "--conda-module", required=True)
+@click.option("-e", "--conda-env", required=True)
+@click.argument("config", type=click.File("r"))
+def local_runner(output_dir, resume, teardown, conda_module, conda_env, config):
+    config_path = os.path.realpath(config.name)
+    config_text = config.read()
+    config = strictyaml.load(config_text, schema=schema).data
+    runner = SlurmRunner(
+        config,
+        output_dir,
+        resume,
+        teardown,
+        conda_module,
+        conda_env,
+        config_path=config_path,
+    )
     runner.run()
 
 
