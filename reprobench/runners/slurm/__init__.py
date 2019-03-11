@@ -117,8 +117,7 @@ class SlurmRunner(Runner):
                 tools.append(tool_instance)
             logger.debug("Generating template")
 
-            slurm_job_path = Path(DIR) / "./slurm.job.tpl"
-            with open(slurm_job_path) as tpl:
+            with open(Path(DIR) / "./slurm.job.tpl") as tpl:
                 template = Template(tpl.read())
                 job_str = template.safe_substitute(
                     python_path=self.python_path,
@@ -126,7 +125,8 @@ class SlurmRunner(Runner):
                     db_path=self.db_path,
                 )
 
-            with open(Path(self.output_dir) / "slurm.job", "w") as job:
+            slurm_job_path = Path(self.output_dir) / "slurm.job"
+            with open(slurm_job_path, "w") as job:
                 job.write(job_str)
 
             logger.info("Submitting job array to SLURM...")
