@@ -107,19 +107,15 @@ version = "3.9.2"
 
 [[package]]
 category = "main"
-description = ""
+description = "Process monitoring"
 name = "psmon"
 optional = false
 python-versions = ">=3.6"
-version = "0.1.1"
+version = "1.0.0"
 
 [package.dependencies]
-psutil = "^5.5"
-
-[package.source]
-reference = ""
-type = "directory"
-url = "../psmon"
+loguru = ">=0.2.5,<0.3.0"
+psutil = ">=5.5,<6.0"
 
 [[package]]
 category = "main"
@@ -206,7 +202,7 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*"
 version = "4.31.1"
 
 [metadata]
-content-hash = "0f7df6bcd990f9308d4d85f7b558dde0fcd853b9577e009811a7129ef55f6a9e"
+content-hash = "fcc8e06901f0e581862947da93cf829de3d14c018d23e3f68af0ea7433a2ef15"
 python-versions = ">=3.6"
 
 [metadata.hashes]
@@ -221,7 +217,7 @@ colorama = ["05eed71e2e327246ad6b38c540c4a3117230b19679b875190486ddd2d721422d", 
 docutils = ["02aec4bd92ab067f6ff27a38a38a41173bf01bed8f89157768c1573f53e474a6", "51e64ef2ebfb29cae1faa133b3710143496eca21c530f3f71424d77687764274", "7a4bd47eaf6596e1295ecb11361139febe29b084a87bf005bf899f9a42edc3c6"]
 loguru = ["68297d9f23064c2f4764bb5d0c5c767f3ed7f9fc1218244841878f5fc7c94add", "ebac59630946721fd6207264679b267a8bdc290b086226067d6aad86830e3123"]
 peewee = ["074331625cf4335a27af3a8f644eabe2858cd3fc91fa95a7f18db16bd640f7cc"]
-psmon = []
+psmon = ["9cd51d6c1b8c17e5c20edbba19752816a3b085fce5145efc2c4acb431687ba25", "e7c1b3841b3e57a0211b2411787ecfc7bb121ac39ef2fefe16ed7a989dfc1f38"]
 psutil = ["5ce6b5eb0267233459f4d3980c205828482f450999b8f5b684d9629fea98782a", "72cebfaa422b7978a1d3632b65ff734a34c6b34f4578b68a5c204d633756b810", "77c231b4dff8c1c329a4cd1c22b96c8976c597017ff5b09993cd148d6a94500c", "8846ab0be0cdccd6cc92ecd1246a16e2f2e49f53bd73e522c3a75ac291e1b51d", "a013b4250ccbddc9d22feca0f986a1afc71717ad026c0f2109bbffd007351191", "ad43b83119eeea6d5751023298cd331637e542cbd332196464799e25a5519f8f", "c177777c787d247d02dae6c855330f9ed3e1abf8ca1744c26dd5ff968949999a", "ec1ef313530a9457e48d25e3fdb1723dfa636008bf1b970027462d46f2555d59", "ef3e5e02b3c5d1df366abe7b4820400d5c427579668ad4465ff189d28ded5ebd"]
 pygments = ["5ffada19f6203563680669ee7f53b64dabbeb100eb51b61996085e99c03b284a", "e8218dd399a61674745138520d0d4cf2621d7e032439341bc3f647bff125818d"]
 pynisher = ["1b1079315ad1009de108c9ad701f6ae5274264e64503fc22c2de366d99953f34"]
