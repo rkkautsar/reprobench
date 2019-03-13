@@ -1,7 +1,8 @@
 import subprocess
 from loguru import logger
 from pathlib import Path
-from psmon.main import run
+from psmon import ProcessMonitor
+from psmon.limiters import WallTimeLimiter, CpuTimeLimiter, MaxMemoryLimiter
 
 from reprobench.core.bases import Step
 from reprobench.core.db import db, Run, RunStatistic
@@ -24,16 +25,18 @@ class PsmonExecutor(Step):
         logger.debug(f"Running {cwd}")
         logger.trace(cmd)
 
-        stats = run(
+        monitor = ProcessMonitor(
             cmd,
             cwd=cwd,
             stdout=out_file,
             stderr=err_file,
-            cpu_time_limit=limits["time"],
-            wall_time_limit=limits["time"] + 15,
-            memory_limit=limits["memory"],
             freq=15,
         )
+        monitor.subscribe("wall_time", WallTimeLimiter(limits["time"] + 15))
+        monitor.subscribe("cpu_time", CpuTimeLimiter(limits["time"]))
+        monitor.subscribe("max_memory", MaxMemoryLimiter(limits["memory"]))
+        
+        stats = monitor.run()
 
         logger.debug(f"Finished {cwd}")
         logger.debug(stats)
