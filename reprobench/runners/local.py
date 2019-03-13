@@ -30,7 +30,7 @@ def execute_run(args):
     def exit():
         signal.signal(signal.SIGTERM, signal.SIG_IGN)
         os.killpg(os.getpgid(0), signal.SIGTERM)
-        sleep(3)
+        time.sleep(3)
         os.killpg(os.getpgid(0), signal.SIGKILL)
 
     for runstep in config["steps"]["run"]:
@@ -47,10 +47,6 @@ class LocalRunner(Runner):
         self.queue = []
 
     def setup(self):
-        # signal.signal(signal.SIGTERM, self.exit)
-        # signal.signal(signal.SIGINT, self.exit)
-        # signal.signal(signal.SIGHUP, signal.SIG_IGN)
-
         atexit.register(self.exit)
 
         self.db_path = Path(self.output_dir) / f"{self.config['title']}.benchmark.db"
