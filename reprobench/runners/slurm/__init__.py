@@ -24,6 +24,7 @@ class SlurmRunner(Runner):
         config,
         config_path,
         python_path,
+        template_file=os.path.join(DIR, "./slurm.job.tpl"),
         output_dir="./output",
         resume=False,
         teardown=False,
@@ -34,6 +35,7 @@ class SlurmRunner(Runner):
         self.python_path = python_path
         self.resume = resume
         self.teardown = teardown
+        self.template_file = template_file
         self.queue = []
 
     def setup(self):
@@ -117,7 +119,7 @@ class SlurmRunner(Runner):
                 tools.append(tool_instance)
             logger.debug("Generating template")
 
-            with open(Path(DIR) / "./slurm.job.tpl") as tpl:
+            with open(self.template_file) as tpl:
                 template = Template(tpl.read())
                 job_str = template.safe_substitute(
                     python_path=self.python_path,

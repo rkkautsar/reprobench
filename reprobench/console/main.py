@@ -63,16 +63,22 @@ def local_runner(output_dir, resume, config):
     required=True,
     show_default=True,
 )
+@click.option(
+    "-t",
+    "--template",
+    type=click.Path(dir_okay=False, resolve_path=True, required=False),
+)
 @click.option("-r", "--resume", is_flag=True)
-@click.option("-t", "--teardown", is_flag=True)
+@click.option("-d", "--teardown", is_flag=True)
 @click.option("-p", "--python-path", required=True)
 @click.argument("config", type=click.File("r"))
-def local_runner(output_dir, resume, teardown, python_path, config):
+def slurm_runner(output_dir, template, resume, teardown, python_path, config):
     config_path = os.path.realpath(config.name)
     config_text = config.read()
     config = strictyaml.load(config_text, schema=schema).data
     runner = SlurmRunner(
         config=config,
+        template_file=template,
         config_path=config_path,
         output_dir=output_dir,
         resume=resume,
