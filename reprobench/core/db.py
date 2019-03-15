@@ -71,27 +71,12 @@ class Run(BaseModel):
         (DONE, "Done"),
     )
 
-    TIMEOUT = "TLE"
-    MEMOUT = "MEM"
-    RUNTIME_ERR = "RTE"
-    OUTPUT_LIMIT = "OLE"
-    SUCCESS = "OK"
-
-    VERDICT_CHOICES = (
-        (TIMEOUT, "Time Limit Exceeded"),
-        (MEMOUT, "Memory Limit Exceeded"),
-        (RUNTIME_ERR, "Runtime Error"),
-        (OUTPUT_LIMIT, "Output Limit Exceeded"),
-        (SUCCESS, "Run Successfully"),
-    )
-
     tool = ForeignKeyField(Tool, backref="runs", on_delete="cascade")
     parameter_category = ForeignKeyField(
         ParameterCategory, backref="runs", on_delete="cascade"
     )
     task = ForeignKeyField(Task, backref="runs", on_delete="cascade")
     status = IntegerField(choices=STATUS_CHOICES, default=PENDING)
-    verdict = CharField(choices=VERDICT_CHOICES, max_length=3, null=True)
     directory = CharField(null=True)
     valid = BooleanField(null=True)
     return_signal = IntegerField(null=True)
@@ -100,23 +85,6 @@ class Run(BaseModel):
     class Meta:
         only_save_dirty = True
 
-
-class RunStatistic(BaseModel):
-    CPU_TIME = "cpu"
-    WALL_TIME = "wall"
-    MEM_USAGE = "mem"
-
-    KEY_CHOICES = (
-        (CPU_TIME, "CPU Time (s)"),
-        (WALL_TIME, "Wall Clock Time (s)"),
-        (MEM_USAGE, "Max Memory Usage (KiB)"),
-    )
-
-    run = ForeignKeyField(Run, backref="statistics", on_delete="cascade")
-    key = CharField(choices=KEY_CHOICES)
-    value = CharField()
-
-
 MODELS = [
     Limit,
     TaskCategory,
@@ -124,7 +92,6 @@ MODELS = [
     ParameterCategory,
     Parameter,
     Run,
-    RunStatistic,
     Tool,
 ]
 

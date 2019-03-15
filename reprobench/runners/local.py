@@ -35,8 +35,7 @@ def execute_run(args):
 
     for runstep in config["steps"]["run"]:
         Step = import_class(runstep["step"])
-        step = Step()
-        step.run(context)
+        result = Step.execute(context)
 
 
 class LocalRunner(Runner):
@@ -54,7 +53,8 @@ class LocalRunner(Runner):
 
         if db_created and not self.resume:
             logger.error(
-                "It seems that a previous runs exist at the output directory. Please use --resume to resume runs."
+                "It seems that a previous runs already exist at the output directory.\
+                Please use --resume to resume unfinished runs."
             )
             exit(1)
 
@@ -68,6 +68,11 @@ class LocalRunner(Runner):
             db_bootstrap(self.config)
             logger.info("Initializing runs...")
             self.init_runs()
+
+        logger.info("Registering steps...")
+        for runstep in self.config["steps"].values():
+            Step = import_class(runstep["step"])
+            Step.register(runstep["config"])
 
     def create_working_directory(
         self, tool_name, parameter_category, task_category, filename

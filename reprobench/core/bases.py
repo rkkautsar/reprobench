@@ -1,13 +1,18 @@
 class Runner:
     def __init__(self, config):
-        self.config = config
+        pass
 
     def run(self):
         pass
 
 
 class Step:
-    def run(self, context):
+    @classmethod
+    def register(cls):
+        pass
+
+    @classmethod
+    def execute(cls, context):
         pass
 
 

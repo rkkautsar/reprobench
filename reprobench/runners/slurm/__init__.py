@@ -2,18 +2,17 @@ import os
 import signal
 import itertools
 import time
-import atexit
 import subprocess
 from string import Template
-from tqdm import tqdm
 from loguru import logger
 from multiprocessing.pool import Pool
 from pathlib import Path
-from datetime import datetime
 from playhouse.apsw_ext import APSWDatabase
 from reprobench.core.bases import Runner
 from reprobench.core.db import db, db_bootstrap, Run, Tool, ParameterCategory, Task
 from reprobench.utils import import_class
+
+from .utils import create_ranges
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -24,7 +23,8 @@ class SlurmRunner(Runner):
         config,
         config_path,
         python_path,
-        template_file=os.path.join(DIR, "./slurm.job.tpl"),
+        run_template_file=os.path.join(DIR, "./slurm.run.job.tpl"),
+        compile_template_file=os.path.join(DIR, "./slurm.compile.job.tpl"),
         output_dir="./output",
         resume=False,
         teardown=False,
@@ -35,12 +35,11 @@ class SlurmRunner(Runner):
         self.python_path = python_path
         self.resume = resume
         self.teardown = teardown
-        self.template_file = template_file
+        self.run_template_file = run_template_file
+        self.compile_template_file = compile_template_file
         self.queue = []
 
     def setup(self):
-        atexit.register(self.exit)
-
         self.db_path = Path(self.output_dir) / f"{self.config['title']}.benchmark.db"
         db_created = Path(self.db_path).is_file()
 
@@ -74,8 +73,9 @@ class SlurmRunner(Runner):
         path.mkdir(parents=True, exist_ok=True)
         return path
 
-    def exit(self):
-        pass
+    def populate_unfinished_runs(self):
+        query = Run.select(Run.id).where(Run.status < Run.DONE)
+        self.queue = [(run.id, self.config, self.db_path) for run in query]
 
     def init_runs(self):
         for tool_name, tool_module in self.config["tools"].items():
@@ -110,6 +110,11 @@ class SlurmRunner(Runner):
     def run(self):
         if not self.teardown:
             self.setup()
+
+            if self.resume:
+                logger.info("Resuming unfinished runs...")
+                self.populate_unfinished_runs()
+
             logger.debug("Running setup on all tools...")
             tools = []
             for tool_module in self.config["tools"].values():
@@ -119,9 +124,12 @@ class SlurmRunner(Runner):
                 tools.append(tool_instance)
             logger.debug("Generating template")
 
-            with open(self.template_file) as tpl:
+            with open(self.run_template_file) as tpl:
                 template = Template(tpl.read())
                 job_str = template.safe_substitute(
+                    mem=self.config["limits"]["memory"] / 1024 / 1024,  # mb
+                    time=1 + (self.config["limits"]["time"] + 15) / 60,  # minutes
+                    run_ids=create_ranges(self.queue),
                     python_path=self.python_path,
                     config_path=self.config_path,
                     db_path=self.db_path,
@@ -132,12 +140,7 @@ class SlurmRunner(Runner):
                 job.write(job_str)
 
             logger.info("Submitting job array to SLURM...")
-            sbatch_cmd = [
-                "sbatch",
-                "-a",
-                f"1-{len(self.queue)}",
-                str(slurm_job_path.resolve()),
-            ]
+            sbatch_cmd = ["sbatch", str(slurm_job_path.resolve())]
             logger.debug(" ".join(sbatch_cmd))
             subprocess.run(sbatch_cmd)
         else:
