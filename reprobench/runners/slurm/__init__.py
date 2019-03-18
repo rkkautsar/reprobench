@@ -19,25 +19,22 @@ DIR = os.path.dirname(os.path.realpath(__file__))
 
 class SlurmRunner(Runner):
     def __init__(
-        self,
-        config,
-        config_path,
-        python_path,
-        run_template_file=os.path.join(DIR, "./slurm.run.job.tpl"),
-        compile_template_file=os.path.join(DIR, "./slurm.compile.job.tpl"),
-        output_dir="./output",
-        resume=False,
-        teardown=False,
+        self, config, config_path, python_path, output_dir="./output", **kwargs
     ):
         self.config = config
         self.config_path = config_path
         self.output_dir = output_dir
         self.python_path = python_path
-        self.resume = resume
-        self.teardown = teardown
-        self.run_template_file = run_template_file
-        self.compile_template_file = compile_template_file
+        self.resume = kwargs.get("resume", False)
+        self.teardown = kwargs.get("teardown", False)
+        self.run_template_file = kwargs.get("run_template_file")
+        self.compile_template_file = kwargs.get("compile_template_file")
         self.queue = []
+
+        if self.run_template_file is None:
+            self.run_template_file = os.path.join(DIR, "./slurm.run.job.tpl")
+        if self.compile_template_file is None:
+            self.compile_template_file = (os.path.join(DIR, "./slurm.compile.job.tpl"),)
 
     def setup(self):
         self.db_path = Path(self.output_dir) / f"{self.config['title']}.benchmark.db"
