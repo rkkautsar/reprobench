@@ -129,8 +129,8 @@ class SlurmRunner(Runner):
             with open(self.run_template_file) as tpl:
                 template = Template(tpl.read())
                 job_str = template.safe_substitute(
-                    mem=self.config["limits"]["memory"] / 1024 / 1024,  # mb
-                    time=1 + (self.config["limits"]["time"] + 15) / 60,  # minutes
+                    mem=int(1 + self.config["limits"]["memory"] / 1024 / 1024),  # mb
+                    time=int(1 + (self.config["limits"]["time"] + 15) / 60),  # minutes
                     run_ids=create_ranges(self.queue),
                     python_path=self.python_path,
                     config_path=self.config_path,
