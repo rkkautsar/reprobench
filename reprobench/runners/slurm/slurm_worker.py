@@ -41,8 +41,7 @@ def run(config, database, run_id):
 
     for runstep in config["steps"]["run"]:
         Step = import_class(runstep["step"])
-        step = Step()
-        step.execute(context)
+        Step.execute(context, runstep.get("config", {}))
 
 
 if __name__ == "__main__":

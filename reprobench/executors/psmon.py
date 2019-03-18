@@ -11,11 +11,11 @@ from .db import RunStatistic
 
 class PsmonExecutor(Step):
     @classmethod
-    def register(cls):
+    def register(cls, config={}):
         RunStatistic.create_table()
 
     @classmethod
-    def execute(cls, context):
+    def execute(cls, context, config={}):
         tool = context["tool"]
         limits = context["limits"]
         tool.pre_run(context)

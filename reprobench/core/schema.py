@@ -1,4 +1,16 @@
-from strictyaml import Map, Regex, Seq, Str, Int, Optional, Seq, MapPattern, Enum, Bool
+from strictyaml import (
+    Map,
+    Regex,
+    Seq,
+    Str,
+    Int,
+    Optional,
+    Seq,
+    MapPattern,
+    Enum,
+    Bool,
+    Any,
+)
 
 limits_schema = Map(
     {
@@ -11,7 +23,9 @@ limits_schema = Map(
 
 module_schema = Regex(r"\.?\w+(\.\w+)*")
 
-step_schema = Seq(Map({"step": module_schema}))
+step_schema = Seq(
+    Map({"step": module_schema, Optional("config"): MapPattern(Str(), Any())})
+)
 
 schema = Map(
     {

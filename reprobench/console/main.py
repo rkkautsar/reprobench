@@ -64,13 +64,8 @@ def local_runner(output_dir, resume, config):
     required=True,
     show_default=True,
 )
-@click.option(
-    "--run-template", type=click.Path(dir_okay=False, resolve_path=True, required=False)
-)
-@click.option(
-    "--compile-template",
-    type=click.Path(dir_okay=False, resolve_path=True, required=False),
-)
+@click.option("--run-template", type=click.Path(dir_okay=False, resolve_path=True))
+@click.option("--compile-template", type=click.Path(dir_okay=False, resolve_path=True))
 @click.option("-r", "--resume", is_flag=True)
 @click.option("-d", "--teardown", is_flag=True)
 @click.option("-p", "--python-path", required=True)

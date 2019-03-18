@@ -1,4 +1,4 @@
-from reprobench.core.db import BaseModel
+from reprobench.core.db import BaseModel, Run
 from playhouse.apsw_ext import ForeignKeyField, FloatField, CharField, IntegerField
 
 

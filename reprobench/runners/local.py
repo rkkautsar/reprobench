@@ -1,16 +1,19 @@
-import os
-import signal
-import itertools
-import time
 import atexit
-from tqdm import tqdm
-from loguru import logger
+import itertools
+import os
+import shutil
+import signal
+import time
+from datetime import datetime
 from multiprocessing.pool import Pool
 from pathlib import Path
-from datetime import datetime
+
+from loguru import logger
 from playhouse.apsw_ext import APSWDatabase
+from tqdm import tqdm
+
 from reprobench.core.bases import Runner
-from reprobench.core.db import db, db_bootstrap, Run, Tool, ParameterCategory, Task
+from reprobench.core.db import ParameterCategory, Run, Task, Tool, db, db_bootstrap
 from reprobench.utils import import_class
 
 
@@ -35,7 +38,7 @@ def execute_run(args):
 
     for runstep in config["steps"]["run"]:
         Step = import_class(runstep["step"])
-        result = Step.execute(context)
+        Step.execute(context, runstep.get("config", {}))
 
 
 class LocalRunner(Runner):
@@ -47,6 +50,7 @@ class LocalRunner(Runner):
 
     def setup(self):
         atexit.register(self.exit)
+        self.setup_finished = False
 
         self.db_path = Path(self.output_dir) / f"{self.config['title']}.benchmark.db"
         db_created = Path(self.db_path).is_file()
@@ -56,6 +60,7 @@ class LocalRunner(Runner):
                 "It seems that a previous runs already exist at the output directory.\
                 Please use --resume to resume unfinished runs."
             )
+            self.setup_finished = True
             exit(1)
 
         Path(self.output_dir).mkdir(parents=True, exist_ok=True)
@@ -70,9 +75,11 @@ class LocalRunner(Runner):
             self.init_runs()
 
         logger.info("Registering steps...")
-        for runstep in self.config["steps"].values():
+        for runstep in itertools.chain.from_iterable(self.config["steps"].values()):
             Step = import_class(runstep["step"])
-            Step.register(runstep["config"])
+            Step.register(runstep.get("config", {}))
+
+        self.setup_finished = True
 
     def create_working_directory(
         self, tool_name, parameter_category, task_category, filename
@@ -88,9 +95,12 @@ class LocalRunner(Runner):
         return path
 
     def exit(self):
-        if self.num_in_queue > 0:
+        if len(self.queue) > 0 and hasattr(self, "pool"):
             self.pool.terminate()
             self.pool.join()
+
+        if not self.resume and not self.setup_finished:
+            shutil.rmtree(self.output_dir)
 
     def populate_unfinished_runs(self):
         query = Run.select(Run.id).where(Run.status < Run.DONE)
@@ -106,7 +116,6 @@ class LocalRunner(Runner):
 
                 files = Path().glob(task["path"])
                 for file in files:
-                    context = self.config.copy()
                     directory = self.create_working_directory(
                         tool_name, parameter_category_name, task_category, file.name
                     )
@@ -134,8 +143,7 @@ class LocalRunner(Runner):
             logger.info("Resuming unfinished runs...")
             self.populate_unfinished_runs()
 
-        self.num_in_queue = len(self.queue)
-        if self.num_in_queue == 0:
+        if len(self.queue) == 0:
             logger.success("No tasks remaining to run")
             exit(0)
 
@@ -151,8 +159,9 @@ class LocalRunner(Runner):
 
         self.pool = Pool()
         it = self.pool.imap_unordered(execute_run, self.queue)
-        for result in tqdm(it, total=self.num_in_queue):
-            self.num_in_queue -= 1
+        num_in_queue = len(self.queue)
+        for _ in tqdm(it, total=num_in_queue):
+            num_in_queue -= 1
 
         self.pool.close()
         self.pool.join()
@@ -162,4 +171,3 @@ class LocalRunner(Runner):
             tool.teardown()
 
         # self.database.stop()
-

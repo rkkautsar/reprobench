@@ -60,6 +60,11 @@ class SlurmRunner(Runner):
             logger.info("Initializing runs...")
             self.init_runs()
 
+        logger.info("Registering steps...")
+        for runstep in itertools.chain.from_iterable(self.config["steps"].values()):
+            Step = import_class(runstep["step"])
+            Step.register(runstep.get("config", {}))
+
     def create_working_directory(
         self, tool_name, parameter_category, task_category, filename
     ):

@@ -10,10 +10,9 @@ limits:
 steps:
   run:
     - step: reprobench.executors.PsmonExecutor
-    # - step: sudoku.validate
-    # - step: sudoku.score
-  compile:
-    - step: reprobench.compilers.summarizer
+    - step: sudoku.validate.Validator
+      config:
+        check_consistency: true
 
 tasks:
   easy:
@@ -25,7 +24,6 @@ tasks:
 
 tools:
   team1: tools.Team1SudokuSolver
-  # team2: tools.sudoku_team2
 
 parameters:
   riss:

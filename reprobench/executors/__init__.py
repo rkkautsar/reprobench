@@ -1,3 +1,2 @@
-from .runsolver import RunsolverExecutor
-from .pynisher import PynisherExecutor
+# from .runsolver import RunsolverExecutor
 from .psmon import PsmonExecutor

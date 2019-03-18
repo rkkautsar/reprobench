@@ -8,11 +8,11 @@ class Runner:
 
 class Step:
     @classmethod
-    def register(cls):
+    def register(cls, config={}):
         pass
 
     @classmethod
-    def execute(cls, context):
+    def execute(cls, context, config={}):
         pass
 
 
