@@ -24,13 +24,14 @@ tasks:
       sudoku/*.txt
       !**/*.zip
 
-tools:
-  team1: tools.Team1SudokuSolver
-
 parameters:
   default:
     solver:
       - riss
       - glucose
-    number_range: 1..5
-    const_param: constants
+
+tools:
+  team1:
+    module: tools.Team1SudokuSolver
+    parameters:
+      - default

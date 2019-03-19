@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 from reprobench.core.bases import Runner
 from reprobench.core.bootstrap import bootstrap
-from reprobench.core.db import ParameterCategory, Run, Task, Tool, db
+from reprobench.core.db import Run, db
 from reprobench.task_sources.local import LocalSource
 from reprobench.utils import import_class
 
@@ -23,11 +23,10 @@ def execute_run(args):
     run_id, config, db_path = args
 
     run = Run.get_by_id(run_id)
-    ToolClass = import_class(run.tool.module)
-    tool_instance = ToolClass()
+    tool = import_class(run.tool.module)
     db.initialize(APSWDatabase(str(db_path)))
     context = config.copy()
-    context["tool"] = tool_instance
+    context["tool"] = tool
     context["run"] = run
     logger.info(f"Processing task: {run.directory}")
 
@@ -39,8 +38,8 @@ def execute_run(args):
         os.killpg(os.getpgid(0), signal.SIGKILL)
 
     for runstep in config["steps"]["run"]:
-        Step = import_class(runstep["step"])
-        Step.execute(context, runstep.get("config", {}))
+        step = import_class(runstep["step"])
+        step.execute(context, runstep.get("config", {}))
 
 
 class LocalRunner(Runner):
@@ -81,8 +80,8 @@ class LocalRunner(Runner):
             self.pool.terminate()
             self.pool.join()
 
-        if not self.resume and not self.setup_finished:
-            shutil.rmtree(self.output_dir)
+        # if not self.resume and not self.setup_finished:
+        #     shutil.rmtree(self.output_dir)
 
     def populate_unfinished_runs(self):
         query = Run.select(Run.id).where(Run.status < Run.DONE)
@@ -109,5 +108,5 @@ class LocalRunner(Runner):
 
         logger.debug("Running teardown on all tools...")
         for tool in self.config["tools"].values():
-            import_class(tool).teardown()
+            import_class(tool["module"]).teardown()
 

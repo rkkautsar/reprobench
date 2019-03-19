@@ -10,7 +10,7 @@ from pathlib import Path
 from playhouse.apsw_ext import APSWDatabase
 from reprobench.core.bases import Runner
 from reprobench.core.bootstrap import bootstrap
-from reprobench.core.db import db, Run, Tool, ParameterCategory, Task
+from reprobench.core.db import db, Run
 from reprobench.utils import import_class
 
 from .utils import create_ranges

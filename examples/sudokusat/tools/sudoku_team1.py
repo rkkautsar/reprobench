@@ -9,9 +9,10 @@ class Team1SudokuSolver(ExecutableTool):
     name = "Team 1 Sudoku Solver"
     path = os.path.join(os.path.dirname(__file__), "sudoku_team1")
 
-    def cmdline(self, context):
+    @classmethod
+    def cmdline(cls, context):
         task = os.path.abspath(context["run"].task.path)
-        parameters = context["run"].parameter_category.parameters
+        parameters = context["run"].parameter_group.parameters
 
         solver_query = parameters.where(Parameter.key == "solver").first()
         if solver_query is None:
@@ -19,4 +20,4 @@ class Team1SudokuSolver(ExecutableTool):
         else:
             solver = solver_query.value
 
-        return [self.path, f"-s={solver}", task]
+        return [cls.path, f"-s={solver}", task]

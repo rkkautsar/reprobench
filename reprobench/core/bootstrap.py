@@ -8,11 +8,12 @@ from reprobench.core.db import (
     MODELS,
     Limit,
     Parameter,
-    ParameterCategory,
+    ParameterGroup,
     Run,
     Task,
-    TaskCategory,
+    TaskGroup,
     Tool,
+    ToolParameterGroup,
     db,
 )
 from reprobench.task_sources.doi import DOISource
@@ -30,13 +31,9 @@ def _bootstrap_db(config):
         [{"type": key, "value": value} for (key, value) in config["limits"].items()]
     ).execute()
 
-    Tool.insert_many(
-        [{"name": name, "module": module} for (name, module) in config["tools"].items()]
-    ).execute()
-
 
 def _bootstrap_parameters(config):
-    for (category, parameters) in config["parameters"].items():
+    for (group, parameters) in config["parameters"].items():
         ranged_enum_parameters = {
             key: value
             for key, value in parameters.items()
@@ -52,9 +49,9 @@ def _bootstrap_parameters(config):
         ranged_parameters = {**ranged_enum_parameters, **ranged_numbers_parameters}
 
         if len(ranged_parameters) == 0:
-            parameter_category = ParameterCategory.create(title=category)
+            parameter_group = ParameterGroup.create(name=group)
             for (key, value) in parameters.items():
-                Parameter.create(category=parameter_category, key=key, value=value)
+                Parameter.create(group=parameter_group, key=key, value=value)
             return
 
         constant_parameters = {
@@ -62,25 +59,51 @@ def _bootstrap_parameters(config):
             for key, value in parameters.items()
             if key not in ranged_parameters
         }
+
         tuples = [
             [(key, value) for value in values]
             for key, values in ranged_parameters.items()
         ]
 
         for combination in itertools.product(*tuples):
-            category_suffix = ",".join(f"{key}={value}" for key, value in combination)
-            parameter_category = ParameterCategory.create(
-                title=f"{category}[{category_suffix}]"
-            )
+            combination_str = ",".join(f"{key}={value}" for key, value in combination)
+            parameter_group = ParameterGroup.create(name=f"{group}[{combination_str}]")
             parameters = {**dict(combination), **constant_parameters}
             for (key, value) in parameters.items():
-                Parameter.create(category=parameter_category, key=key, value=value)
+                Parameter.create(group=parameter_group, key=key, value=value)
+
+
+def _bootstrap_tools(config):
+    logger.info("Bootstrapping and running setups on tools...")
+
+    Tool.insert_many(
+        [
+            {
+                "name": name,
+                "module": tool["module"],
+                "version": import_class(tool["module"]).version(),
+            }
+            for (name, tool) in config["tools"].items()
+        ]
+    ).execute()
+
+    for tool in config["tools"].values():
+        import_class(tool["module"]).setup()
+        for prefix in tool["parameters"]:
+            for parameter_group in ParameterGroup.select().where(
+                ParameterGroup.name.startswith(prefix)
+            ):
+                if parameter_group.name != prefix and parameter_group.name[-1] != "]":
+                    continue
+                ToolParameterGroup.create(
+                    tool=tool["module"], parameter_group=parameter_group
+                )
 
 
 def _bootstrap_tasks(config):
     logger.info("Bootstrapping tasks...")
-    for (category, task) in config["tasks"].items():
-        task_category = TaskCategory.create(title=category)
+    for (group, task) in config["tasks"].items():
+        task_group = TaskGroup.create(name=group)
 
         source = None
         if task["type"] == "local":
@@ -96,13 +119,7 @@ def _bootstrap_tasks(config):
 
         files = source.setup()
         for file in files:
-            Task.create(category=task_category, path=str(file))
-
-
-def _setup_tools(config):
-    logger.info("Running setups on tools...")
-    for tool in config["tools"].values():
-        import_class(tool).setup()
+            Task.create(group=task_group, path=str(file))
 
 
 def _register_steps(config):
@@ -112,32 +129,25 @@ def _register_steps(config):
 
 
 def _bootstrap_runs(config, output_dir):
-    tools = Tool.select(Tool.id, Tool.name).iterator()
-    parameters = ParameterCategory.select(
-        ParameterCategory.id, ParameterCategory.title
-    ).iterator()
-    tasks = (
-        Task.select(Task.id, Task.path, TaskCategory.title)
-        .join(TaskCategory)
-        .iterator()
-    )
+    tools_parameter_groups = ToolParameterGroup.select().iterator()
+    tasks = Task.select().iterator()
 
-    for (tool, parameter, task) in tqdm(
-        itertools.product(tools, parameters, tasks), desc="Bootstrapping runs"
+    for (tool_parameter_group, task) in tqdm(
+        itertools.product(tools_parameter_groups, tasks), desc="Bootstrapping runs"
     ):
         directory = (
             Path(output_dir)
-            / tool.name
-            / parameter.title
-            / task.category.title
+            / tool_parameter_group.tool_id
+            / tool_parameter_group.parameter_group_id
+            / task.group_id
             / Path(task.path).name
         )
         directory.mkdir(parents=True, exist_ok=True)
 
         Run.create(
-            tool=tool,
+            tool=tool_parameter_group.tool_id,
             task=task,
-            parameter_category=parameter,
+            parameter_group=tool_parameter_group.parameter_group_id,
             directory=directory,
             status=Run.SUBMITTED,
         )
@@ -146,7 +156,7 @@ def _bootstrap_runs(config, output_dir):
 def bootstrap(config, output_dir):
     _bootstrap_db(config)
     _bootstrap_parameters(config)
+    _bootstrap_tools(config)
     _bootstrap_tasks(config)
-    _setup_tools(config)
     _register_steps(config)
     _bootstrap_runs(config, output_dir)

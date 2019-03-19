@@ -1,12 +1,13 @@
 import itertools
 import re
+from datetime import datetime
 from math import sqrt
 from pathlib import Path
 from typing import List
 
 import numpy as np
 from loguru import logger
-from playhouse.apsw_ext import BooleanField, ForeignKeyField
+from playhouse.apsw_ext import BooleanField, DateTimeField, ForeignKeyField
 
 from reprobench.core.bases import Step
 from reprobench.core.db import BaseModel, Run, db
@@ -14,6 +15,7 @@ from reprobench.executors.db import RunStatistic
 
 
 class SudokuVerdict(BaseModel):
+    created_at = DateTimeField(default=datetime.now)
     run = ForeignKeyField(Run, backref="sudoku_verdicts", on_delete="cascade")
     is_valid = BooleanField()
 

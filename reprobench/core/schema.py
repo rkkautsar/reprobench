@@ -36,7 +36,9 @@ schema = Map(
         "limits": limits_schema,
         "steps": Map({"run": step_schema, Optional("compile"): step_schema}),
         "tasks": MapPattern(Str(), MapPattern(Str(), Any())),
-        "tools": MapPattern(Str(), module_schema),
+        "tools": MapPattern(
+            Str(), Map({"module": module_schema, "parameters": Seq(Str())})
+        ),
         "parameters": MapPattern(Str(), MapPattern(Str(), Any())),
     }
 )

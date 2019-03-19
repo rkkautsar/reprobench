@@ -7,51 +7,56 @@ from playhouse.apsw_ext import (
     ForeignKeyField,
     IntegerField,
     BooleanField,
+    CompositeKey,
 )
 
 db = Proxy()
 
 
 class BaseModel(Model):
-    created_at = DateTimeField(default=datetime.now)
-
     class Meta:
         database = db
 
 
 class Limit(BaseModel):
-    type = CharField(max_length=32, unique=True)
+    type = CharField(max_length=32, primary_key=True)
     value = CharField()
 
 
-class TaskCategory(BaseModel):
-    title = CharField()
+class TaskGroup(BaseModel):
+    name = CharField(primary_key=True)
 
 
 class Task(BaseModel):
-    category = ForeignKeyField(TaskCategory, backref="tasks", on_delete="cascade")
-    path = CharField()
+    group = ForeignKeyField(TaskGroup, backref="tasks", on_delete="cascade")
+    path = CharField(primary_key=True)
 
 
 class Tool(BaseModel):
-    module = CharField(unique=True)
+    module = CharField(primary_key=True)
     name = CharField()
     version = CharField(null=True)
 
 
-class ParameterCategory(BaseModel):
-    title = CharField()
+class ParameterGroup(BaseModel):
+    name = CharField(primary_key=True)
 
 
 class Parameter(BaseModel):
-    category = ForeignKeyField(
-        ParameterCategory, backref="parameters", on_delete="cascade"
-    )
+    group = ForeignKeyField(ParameterGroup, backref="parameters", on_delete="cascade")
     key = CharField()
     value = CharField()
 
     class Meta:
-        indexes = ((("category", "key"), True),)
+        primary_key = CompositeKey("group", "key")
+
+
+class ToolParameterGroup(BaseModel):
+    tool = ForeignKeyField(Tool)
+    parameter_group = ForeignKeyField(ParameterGroup)
+
+    class Meta:
+        primary_key = CompositeKey("tool", "parameter_group")
 
 
 class Run(BaseModel):
@@ -71,9 +76,10 @@ class Run(BaseModel):
         (DONE, "Done"),
     )
 
+    created_at = DateTimeField(default=datetime.now)
     tool = ForeignKeyField(Tool, backref="runs", on_delete="cascade")
-    parameter_category = ForeignKeyField(
-        ParameterCategory, backref="runs", on_delete="cascade"
+    parameter_group = ForeignKeyField(
+        ParameterGroup, backref="runs", on_delete="cascade"
     )
     task = ForeignKeyField(Task, backref="runs", on_delete="cascade")
     status = IntegerField(choices=STATUS_CHOICES, default=PENDING)
@@ -83,5 +89,13 @@ class Run(BaseModel):
         only_save_dirty = True
 
 
-MODELS = [Limit, TaskCategory, Task, ParameterCategory, Parameter, Run, Tool]
-
+MODELS = (
+    Limit,
+    TaskGroup,
+    Task,
+    Tool,
+    ParameterGroup,
+    Parameter,
+    Run,
+    ToolParameterGroup,
+)
