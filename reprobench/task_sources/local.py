@@ -4,7 +4,7 @@ from .base import BaseTaskSource
 
 
 class LocalSource(BaseTaskSource):
-    def __init__(self, path, patterns="", **kwargs):
+    def __init__(self, path=None, patterns="", **kwargs):
         super().__init__(path)
         self.patterns = patterns
 

@@ -15,6 +15,7 @@ from reprobench.core.db import (
     Tool,
     db,
 )
+from reprobench.task_sources.doi import DOISource
 from reprobench.task_sources.local import LocalSource
 from reprobench.task_sources.url import UrlSource
 from reprobench.utils import import_class
@@ -49,6 +50,12 @@ def _bootstrap_tasks(config):
             source = LocalSource(**task)
         elif task["type"] == "url":
             source = UrlSource(**task)
+        elif task["type"] == "doi":
+            source = DOISource(**task)
+        else:
+            raise NotImplementedError(
+                f"No implementation for task source {task['type']}"
+            )
 
         files = source.setup()
         for file in files:
