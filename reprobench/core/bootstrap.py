@@ -18,7 +18,7 @@ from reprobench.core.db import (
 from reprobench.task_sources.doi import DOISource
 from reprobench.task_sources.local import LocalSource
 from reprobench.task_sources.url import UrlSource
-from reprobench.utils import import_class
+from reprobench.utils import import_class, is_range_str, str_to_range
 
 
 def _bootstrap_db(config):
@@ -34,10 +34,47 @@ def _bootstrap_db(config):
         [{"name": name, "module": module} for (name, module) in config["tools"].items()]
     ).execute()
 
+
+def _bootstrap_parameters(config):
     for (category, parameters) in config["parameters"].items():
-        parameter_category = ParameterCategory.create(title=category)
-        for (key, value) in parameters.items():
-            Parameter.create(category=parameter_category, key=key, value=value)
+        ranged_enum_parameters = {
+            key: value
+            for key, value in parameters.items()
+            if isinstance(parameters[key], list)
+        }
+
+        ranged_numbers_parameters = {
+            key: str_to_range(value)
+            for key, value in parameters.items()
+            if isinstance(value, str) and is_range_str(value)
+        }
+
+        ranged_parameters = {**ranged_enum_parameters, **ranged_numbers_parameters}
+
+        if len(ranged_parameters) == 0:
+            parameter_category = ParameterCategory.create(title=category)
+            for (key, value) in parameters.items():
+                Parameter.create(category=parameter_category, key=key, value=value)
+            return
+
+        constant_parameters = {
+            key: value
+            for key, value in parameters.items()
+            if key not in ranged_parameters
+        }
+        tuples = [
+            [(key, value) for value in values]
+            for key, values in ranged_parameters.items()
+        ]
+
+        for combination in itertools.product(*tuples):
+            category_suffix = ",".join(f"{key}={value}" for key, value in combination)
+            parameter_category = ParameterCategory.create(
+                title=f"{category}[{category_suffix}]"
+            )
+            parameters = {**dict(combination), **constant_parameters}
+            for (key, value) in parameters.items():
+                Parameter.create(category=parameter_category, key=key, value=value)
 
 
 def _bootstrap_tasks(config):
@@ -108,6 +145,7 @@ def _bootstrap_runs(config, output_dir):
 
 def bootstrap(config, output_dir):
     _bootstrap_db(config)
+    _bootstrap_parameters(config)
     _bootstrap_tasks(config)
     _setup_tools(config)
     _register_steps(config)

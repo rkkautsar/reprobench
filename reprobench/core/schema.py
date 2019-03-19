@@ -37,6 +37,6 @@ schema = Map(
         "steps": Map({"run": step_schema, Optional("compile"): step_schema}),
         "tasks": MapPattern(Str(), MapPattern(Str(), Any())),
         "tools": MapPattern(Str(), module_schema),
-        "parameters": MapPattern(Str(), MapPattern(Str(), Str())),
+        "parameters": MapPattern(Str(), MapPattern(Str(), Any())),
     }
 )

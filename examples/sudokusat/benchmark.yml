@@ -15,16 +15,6 @@ steps:
         check_consistency: true
 
 tasks:
-  # easy:
-  #   type: local
-  #   path: ./tasks/sudoku/easy
-  #   patterns: |
-  #     **/*.txt
-  # hard:
-  #   type: local
-  #   path: ./tasks/sudoku/hard
-  #   patterns: |
-  #     **/*.txt
   zenodo:
     type: doi
     doi: 10.5072/zenodo.261834
@@ -38,7 +28,9 @@ tools:
   team1: tools.Team1SudokuSolver
 
 parameters:
-  riss:
-    solver: riss
-  glucose:
-    solver: glucose
+  default:
+    solver:
+      - riss
+      - glucose
+    number_range: 1..5
+    const_param: constants
