@@ -13,7 +13,9 @@ from playhouse.apsw_ext import APSWDatabase
 from tqdm import tqdm
 
 from reprobench.core.bases import Runner
-from reprobench.core.db import ParameterCategory, Run, Task, Tool, db, db_bootstrap
+from reprobench.core.bootstrap import bootstrap
+from reprobench.core.db import ParameterCategory, Run, Task, Tool, db
+from reprobench.task_sources.local import LocalSource
 from reprobench.utils import import_class
 
 
@@ -68,31 +70,11 @@ class LocalRunner(Runner):
         self.database = APSWDatabase(str(self.db_path))
         db.initialize(self.database)
 
+        # TODO: maybe use .bootstrapped file instead?
         if not db_created:
-            logger.info("Bootstrapping db...")
-            db_bootstrap(self.config)
-            logger.info("Initializing runs...")
-            self.init_runs()
-
-        logger.info("Registering steps...")
-        for runstep in itertools.chain.from_iterable(self.config["steps"].values()):
-            Step = import_class(runstep["step"])
-            Step.register(runstep.get("config", {}))
+            bootstrap(self.config, self.output_dir)
 
         self.setup_finished = True
-
-    def create_working_directory(
-        self, tool_name, parameter_category, task_category, filename
-    ):
-        path = (
-            Path(self.output_dir)
-            / tool_name
-            / parameter_category
-            / task_category
-            / filename
-        )
-        path.mkdir(parents=True, exist_ok=True)
-        return path
 
     def exit(self):
         if len(self.queue) > 0 and hasattr(self, "pool"):
@@ -106,54 +88,13 @@ class LocalRunner(Runner):
         query = Run.select(Run.id).where(Run.status < Run.DONE)
         self.queue = [(run.id, self.config, self.db_path) for run in query]
 
-    def init_runs(self):
-        for tool_name, tool_module in self.config["tools"].items():
-            for (parameter_category_name, (task_category, task)) in itertools.product(
-                self.config["parameters"], self.config["tasks"].items()
-            ):
-                # only folder task type for now
-                assert task["type"] == "folder"
-
-                files = Path().glob(task["path"])
-                for file in files:
-                    directory = self.create_working_directory(
-                        tool_name, parameter_category_name, task_category, file.name
-                    )
-
-                    tool = Tool.get(Tool.module == tool_module)
-                    parameter_category = ParameterCategory.get(
-                        ParameterCategory.title == parameter_category_name
-                    )
-                    task = Task.get(Task.path == str(file))
-
-                    run = Run.create(
-                        tool=tool,
-                        task=task,
-                        parameter_category=parameter_category,
-                        directory=directory,
-                        status=Run.SUBMITTED,
-                    )
-
-                    self.queue.append((run.id, self.config, self.db_path))
-
     def run(self):
         self.setup()
-
-        if self.resume:
-            logger.info("Resuming unfinished runs...")
-            self.populate_unfinished_runs()
+        self.populate_unfinished_runs()
 
         if len(self.queue) == 0:
             logger.success("No tasks remaining to run")
             exit(0)
-
-        logger.debug("Running setup on all tools...")
-        tools = []
-        for tool_module in self.config["tools"].values():
-            ToolClass = import_class(tool_module)
-            tool_instance = ToolClass()
-            tool_instance.setup()
-            tools.append(tool_instance)
 
         logger.debug("Executing runs...")
 
@@ -167,7 +108,6 @@ class LocalRunner(Runner):
         self.pool.join()
 
         logger.debug("Running teardown on all tools...")
-        for tool in tools:
-            tool.teardown()
+        for tool in self.config["tools"].values():
+            import_class(tool).teardown()
 
-        # self.database.stop()

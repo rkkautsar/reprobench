@@ -27,15 +27,15 @@ step_schema = Seq(
     Map({"step": module_schema, Optional("config"): MapPattern(Str(), Any())})
 )
 
+task_sources = Enum(["local", "url"])
+
 schema = Map(
     {
         "title": Str(),
         Optional("description"): Str(),
         "limits": limits_schema,
         "steps": Map({"run": step_schema, Optional("compile"): step_schema}),
-        "tasks": MapPattern(
-            Str(), Map({"type": Enum(["folder"]), Optional("path"): Str()})
-        ),
+        "tasks": MapPattern(Str(), MapPattern(Str(), Any())),
         "tools": MapPattern(Str(), module_schema),
         "parameters": MapPattern(Str(), MapPattern(Str(), Str())),
     }

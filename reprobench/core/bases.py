@@ -20,20 +20,26 @@ class Tool:
     name = "Base Tool"
     REQUIRED_PATHS = []
 
-    def setup(self):
+    @classmethod
+    def setup(cls):
         pass
 
-    def version(self):
+    @classmethod
+    def version(cls):
         return "1.0.0"
 
-    def pre_run(self, context):
+    @classmethod
+    def pre_run(cls, context):
         pass
 
-    def cmdline(self, context):
+    @classmethod
+    def cmdline(cls, context):
         pass
 
-    def post_run(self, context):
+    @classmethod
+    def post_run(cls, context):
         pass
 
-    def teardown(self):
+    @classmethod
+    def teardown(cls):
         pass

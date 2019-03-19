@@ -76,7 +76,11 @@ class Validator(Step):
 
     @classmethod
     def _filter_empty_lines(cls, lines):
-        return [line for line in lines if len(line.strip()) != 0]
+        return [
+            line
+            for line in lines
+            if len(line.strip()) != 0 and line.startswith(("+", "|"))
+        ]
 
     @classmethod
     def execute(cls, context, config={}):

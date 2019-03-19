@@ -2,7 +2,7 @@ title: sudoku-sat-2019
 description: Sudoku SAT 2019
 
 limits:
-  time: 2 # s
+  time: 10 # s
   memory: 1073741824 # bytes
   output: 1073741824 # bytes
   cores: 1,2,4,8
@@ -15,12 +15,30 @@ steps:
         check_consistency: true
 
 tasks:
-  easy:
-    type: folder
-    path: ./tasks/sudoku/easy/**/*.txt
-  hard:
-    type: folder
-    path: ./tasks/sudoku/hard/**/*.txt
+  # easy:
+  #   type: local
+  #   path: ./tasks/sudoku/easy
+  #   patterns: |
+  #     **/*.txt
+  # hard:
+  #   type: local
+  #   path: ./tasks/sudoku/hard
+  #   patterns: |
+  #     **/*.txt
+  url:
+    type: url
+    url: https://sandbox.zenodo.org/api/files/30cff33d-adb8-484f-bc4f-f47a926b6287/sudoku.zip
+    path: ./tasks/sudoku/url
+    patterns: |
+      sudoku/**/*.txt
+  # sudoku:
+  #   type: doi
+  #   doi: 10.5072/zenodo.261834
+  #   path: ./tasks/sudoku/zenodo
+  #   extract_archives: true
+  #   patterns: |
+  #     sudoku/*.txt
+  #     !**/*.zip
 
 tools:
   team1: tools.Team1SudokuSolver
