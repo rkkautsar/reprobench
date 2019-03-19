@@ -20,7 +20,7 @@ pathspec = "^0.5.9"
 requests = "^2.21"
 
 [tool.poetry.dev-dependencies]
-black = "=18.9b0"
+black = "=19.3b0"
 
 [tool.poetry.scripts]
 reprobench = "reprobench.console.main:cli"
