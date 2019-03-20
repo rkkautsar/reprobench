@@ -63,10 +63,11 @@ class SlurmRunner(Runner):
     def run(self):
         if not self.teardown:
             self.setup()
+            self.populate_unfinished_runs()
 
-            if self.resume:
-                logger.info("Resuming unfinished runs...")
-                self.populate_unfinished_runs()
+            if len(self.queue) == 0:
+                logger.success("No tasks remaining to run")
+                exit(0)
 
             logger.debug("Generating template")
             with open(self.run_template_file) as tpl:
