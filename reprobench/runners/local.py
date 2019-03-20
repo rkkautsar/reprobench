@@ -80,8 +80,8 @@ class LocalRunner(Runner):
             self.pool.terminate()
             self.pool.join()
 
-        # if not self.resume and not self.setup_finished:
-        #     shutil.rmtree(self.output_dir)
+        if not self.resume and not self.setup_finished:
+            shutil.rmtree(self.output_dir)
 
     def populate_unfinished_runs(self):
         query = Run.select(Run.id).where(Run.status < Run.DONE)

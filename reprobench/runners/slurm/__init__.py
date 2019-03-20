@@ -58,7 +58,7 @@ class SlurmRunner(Runner):
 
     def populate_unfinished_runs(self):
         query = Run.select(Run.id).where(Run.status < Run.DONE)
-        self.queue = [(run.id, self.config, self.db_path) for run in query]
+        self.queue = [run.id for run in query]
 
     def run(self):
         if not self.teardown:
