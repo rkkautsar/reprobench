@@ -9,6 +9,7 @@ limits:
 
 steps:
   run:
+    - step: reprobench.core.sysinfo.CollectSystemInfo
     - step: reprobench.executors.PsmonExecutor
     - step: sudoku.validate.Validator
       config:

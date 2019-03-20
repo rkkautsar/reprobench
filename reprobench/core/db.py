@@ -8,6 +8,7 @@ from playhouse.apsw_ext import (
     IntegerField,
     BooleanField,
     CompositeKey,
+    FloatField,
 )
 
 db = Proxy()
@@ -28,7 +29,7 @@ class TaskGroup(BaseModel):
 
 
 class Task(BaseModel):
-    group = ForeignKeyField(TaskGroup, backref="tasks", on_delete="cascade")
+    group = ForeignKeyField(TaskGroup, backref="tasks")
     path = CharField(primary_key=True)
 
 
@@ -43,7 +44,7 @@ class ParameterGroup(BaseModel):
 
 
 class Parameter(BaseModel):
-    group = ForeignKeyField(ParameterGroup, backref="parameters", on_delete="cascade")
+    group = ForeignKeyField(ParameterGroup, backref="parameters")
     key = CharField()
     value = CharField()
 
@@ -77,11 +78,9 @@ class Run(BaseModel):
     )
 
     created_at = DateTimeField(default=datetime.now)
-    tool = ForeignKeyField(Tool, backref="runs", on_delete="cascade")
-    parameter_group = ForeignKeyField(
-        ParameterGroup, backref="runs", on_delete="cascade"
-    )
-    task = ForeignKeyField(Task, backref="runs", on_delete="cascade")
+    tool = ForeignKeyField(Tool, backref="runs")
+    parameter_group = ForeignKeyField(ParameterGroup, backref="runs")
+    task = ForeignKeyField(Task, backref="runs")
     status = IntegerField(choices=STATUS_CHOICES, default=PENDING)
     directory = CharField(null=True)
 

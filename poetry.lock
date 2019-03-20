@@ -177,6 +177,14 @@ enum = ["enum34"]
 
 [[package]]
 category = "main"
+description = "Get CPU info with pure Python 2 & 3"
+name = "py-cpuinfo"
+optional = false
+python-versions = "*"
+version = "4.0.0"
+
+[[package]]
+category = "main"
 description = "Pygments is a syntax highlighting package written in Python."
 name = "pygments"
 optional = false
@@ -289,7 +297,7 @@ secure = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "cer
 socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7,<2.0)"]
 
 [metadata]
-content-hash = "0cd4d37d172acff6f8e907a0d2ef4229a6d8141d28e437908a8dbd5efc963ca0"
+content-hash = "95484ab99e6eb1e631dea6eba16cbcf25d2381ea42d67f73eb1040f476ba7113"
 python-versions = ">=3.6"
 
 [metadata.hashes]
@@ -310,6 +318,7 @@ pathspec = ["54a5eab895d89f342b52ba2bffe70930ef9f8d96e398cccf530d21fa0516a873"]
 peewee = ["074331625cf4335a27af3a8f644eabe2858cd3fc91fa95a7f18db16bd640f7cc"]
 psmon = ["c8427569fa3e65ac23802e3746b811142a5811d3a99311350be63d9ae2be53b2", "ecbd4e3a34b5f20ac5c62e4cd1e19f7384c6d72f2dd7d66c7b4bc36b529b8385"]
 psutil = ["23e9cd90db94fbced5151eaaf9033ae9667c033dffe9e709da761c20138d25b6", "27858d688a58cbfdd4434e1c40f6c79eb5014b709e725c180488ccdf2f721729", "354601a1d1a1322ae5920ba397c58d06c29728a15113598d1a8158647aaa5385", "9c3a768486194b4592c7ae9374faa55b37b9877fd9746fb4028cb0ac38fd4c60", "c1fd45931889dc1812ba61a517630d126f6185f688eac1693171c6524901b7de", "d463a142298112426ebd57351b45c39adb41341b91f033aa903fa4c6f76abecc", "e1494d20ffe7891d07d8cb9a8b306c1a38d48b13575265d090fc08910c56d474", "ec4b4b638b84d42fc48139f9352f6c6587ee1018d55253542ee28db7480cc653", "fa0a570e0a30b9dd618bffbece590ae15726b47f9f1eaf7518dfb35f4d7dcd21"]
+py-cpuinfo = ["6615d4527118d4ea1db4d86dac4340725b3906aa04bf36b7902f7af4425fb25f"]
 pygments = ["5ffada19f6203563680669ee7f53b64dabbeb100eb51b61996085e99c03b284a", "e8218dd399a61674745138520d0d4cf2621d7e032439341bc3f647bff125818d"]
 pynisher = ["1b1079315ad1009de108c9ad701f6ae5274264e64503fc22c2de366d99953f34"]
 python-dateutil = ["7e6584c74aeed623791615e26efd690f29817a27c73085b78e4bad02493df2fb", "c89805f6f4d64db21ed966fda138f8a5ed7a4fdbc1a8ee329ce1b74e3c74da9e"]
