@@ -65,7 +65,7 @@ class LocalRunner(Runner):
             exit(1)
 
         Path(self.output_dir).mkdir(parents=True, exist_ok=True)
-        logger.debug(f"Creating Database: {self.db_path}")
+        logger.debug(f"Using Database: {self.db_path}")
         self.database = APSWDatabase(str(self.db_path))
         db.initialize(self.database)
 

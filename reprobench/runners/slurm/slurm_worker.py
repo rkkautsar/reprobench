@@ -25,10 +25,9 @@ def run(config, database, run_id):
     config = strictyaml.load(config, schema=schema).data
     db.initialize(APSWDatabase(str(database)))
     run = Run.get_by_id(run_id)
-    ToolClass = import_class(run.tool.module)
-    tool_instance = ToolClass()
+    tool = import_class(run.tool.module)
     context = config.copy()
-    context["tool"] = tool_instance
+    context["tool"] = tool
     context["run"] = run
     logger.info(f"Processing task: {run.directory}")
 
@@ -40,8 +39,8 @@ def run(config, database, run_id):
         os.killpg(os.getpgid(0), signal.SIGKILL)
 
     for runstep in config["steps"]["run"]:
-        Step = import_class(runstep["step"])
-        Step.execute(context, runstep.get("config", {}))
+        step = import_class(runstep["step"])
+        step.execute(context, runstep.get("config", {}))
 
 
 if __name__ == "__main__":

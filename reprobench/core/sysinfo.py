@@ -69,4 +69,4 @@ class CollectSystemInfo(Step):
                 info = cls._get_system_info()
                 Node.create(hostname=hostname, **info)
 
-            RunNode.create(run=context["run"], node=hostname)
+            RunNode.replace(run=context["run"], node=hostname)
