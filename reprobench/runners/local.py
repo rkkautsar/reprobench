@@ -24,7 +24,7 @@ def execute_run(args):
 
     run = Run.get_by_id(run_id)
     tool = import_class(run.tool.module)
-    db.initialize(APSWDatabase(str(db_path)), pragmas=(("journal_mode", "wal"),))
+    db.initialize(APSWDatabase(str(db_path), pragmas=(("journal_mode", "wal"),)))
     context = config.copy()
     context["tool"] = tool
     context["run"] = run
