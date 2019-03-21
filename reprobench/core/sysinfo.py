@@ -64,7 +64,7 @@ class CollectSystemInfo(Step):
         hostname = platform.node()
 
         with db.atomic("EXCLUSIVE"):
-            is_exist = Node.select(Node.hostname == hostname).count() > 0
+            is_exist = Node.where(Node.hostname == hostname).count() > 0
             if not is_exist:
                 info = cls._get_system_info()
                 Node.create(hostname=hostname, **info)
