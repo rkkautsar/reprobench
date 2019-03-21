@@ -22,9 +22,12 @@ from reprobench.utils import import_class
 def execute_run(args):
     run_id, config, db_path = args
 
-    run = Run.get_by_id(run_id)
+    db.initialize(APSWDatabase(str(db_path)))
+
+    with db.atomic("EXCLUSIVE"):
+        run = Run.get_by_id(run_id)
+
     tool = import_class(run.tool.module)
-    db.initialize(APSWDatabase(str(db_path), pragmas=(("journal_mode", "wal"),)))
     context = config.copy()
     context["tool"] = tool
     context["run"] = run
