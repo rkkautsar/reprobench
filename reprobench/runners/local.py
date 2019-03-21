@@ -24,7 +24,7 @@ def execute_run(args):
 
     run = Run.get_by_id(run_id)
     tool = import_class(run.tool.module)
-    db.initialize(APSWDatabase(str(db_path)))
+    db.initialize(APSWDatabase(str(db_path)), pragmas=(("journal_mode", "wal"),))
     context = config.copy()
     context["tool"] = tool
     context["run"] = run
@@ -90,13 +90,13 @@ class LocalRunner(Runner):
     def run(self):
         self.setup()
         self.populate_unfinished_runs()
+        db.close()
 
         if len(self.queue) == 0:
             logger.success("No tasks remaining to run")
             exit(0)
 
         logger.debug("Executing runs...")
-
         self.pool = Pool()
         it = self.pool.imap_unordered(execute_run, self.queue)
         num_in_queue = len(self.queue)

@@ -64,6 +64,7 @@ class SlurmRunner(Runner):
         if not self.teardown:
             self.setup()
             self.populate_unfinished_runs()
+            db.close()
 
             if len(self.queue) == 0:
                 logger.success("No tasks remaining to run")

@@ -23,7 +23,8 @@ from reprobench.utils import import_class
 def run(config, database, run_id):
     config = config.read()
     config = strictyaml.load(config, schema=schema).data
-    db.initialize(APSWDatabase(str(database)))
+    db.initialize(APSWDatabase(str(database), pragmas=(("journal_mode", "wal"),))
+
     run = Run.get_by_id(run_id)
     tool = import_class(run.tool.module)
     context = config.copy()
@@ -39,6 +40,7 @@ def run(config, database, run_id):
         os.killpg(os.getpgid(0), signal.SIGKILL)
 
     for runstep in config["steps"]["run"]:
+        logger.debug(f"Running step {runstep['step']}")
         step = import_class(runstep["step"])
         step.execute(context, runstep.get("config", {}))
 
