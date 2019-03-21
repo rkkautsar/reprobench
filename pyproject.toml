@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "reprobench"
-version = "0.5.2"
+version = "0.5.3"
 readme = "README.md"
 description = "Reproducible Benchmark for Everyone"
 authors = ["Rakha Kanz Kautsar <rkkautsar@gmail.com>"]
@@ -12,7 +12,7 @@ peewee = "^3.9"
 strictyaml = "^1.0"
 pynisher = "^0.5.0"
 loguru = "^0.2.5"
-psmon = "^1.0.0"
+psmon = "^1.1.0"
 click = "^7.0"
 apsw = "^3.9"
 tqdm = "^4.31"
