@@ -25,7 +25,9 @@ class PsmonExecutor(Step):
         err_file = (Path(cwd) / "run.err").open("wb")
 
         context["run"].status = Run.RUNNING
-        context["run"].save()
+
+        with db.atomic("EXCLUSIVE"):
+            context["run"].save()
 
         cmd = tool.cmdline(context)
         logger.debug(f"Running {cwd}")
@@ -44,8 +46,6 @@ class PsmonExecutor(Step):
         logger.debug(stats)
 
         context["run"].status = Run.DONE
-        context["run"].save()
-
         verdict = None
         if stats["error"] == TimeoutError:
             verdict = RunStatistic.TIMEOUT
@@ -56,14 +56,16 @@ class PsmonExecutor(Step):
         else:
             verdict = RunStatistic.SUCCESS
 
-        RunStatistic.create(
-            run=context["run"],
-            cpu_time=stats["cpu_time"],
-            wall_time=stats["wall_time"],
-            max_memory=stats["max_memory"],
-            return_code=stats["return_code"],
-            verdict=verdict,
-        )
+        with db.atomic("EXCLUSIVE"):
+            context["run"].save()
+            RunStatistic.create(
+                run=context["run"],
+                cpu_time=stats["cpu_time"],
+                wall_time=stats["wall_time"],
+                max_memory=stats["max_memory"],
+                return_code=stats["return_code"],
+                verdict=verdict,
+            )
 
         tool.post_run(context)
 
