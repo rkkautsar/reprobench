@@ -109,5 +109,4 @@ class Validator(Step):
             parsed = cls._parse_sudoku(output)
             is_valid = cls._check_sudoku_constraints(parsed)
 
-        with db.atomic("EXCLUSIVE"):
-            SudokuVerdict.create(run=context["run"], is_valid=is_valid)
+        SudokuVerdict.create(run=context["run"], is_valid=is_valid)

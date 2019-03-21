@@ -63,12 +63,11 @@ class CollectSystemInfo(Step):
     def execute(cls, context, config={}):
         hostname = platform.node()
 
-        with db.atomic("EXCLUSIVE"):
-            is_exist = Node.select().where(Node.hostname == hostname).count() > 0
-            if not is_exist:
-                info = cls._get_system_info()
-                Node.create(hostname=hostname, **info)
+        is_exist = Node.select().where(Node.hostname == hostname).count() > 0
+        if not is_exist:
+            info = cls._get_system_info()
+            Node.create(hostname=hostname, **info)
 
-            RunNode.insert(run=context["run"], node=hostname).on_conflict(
-                "replace"
-            ).execute()
+        RunNode.insert(run=context["run"], node=hostname).on_conflict(
+            "replace"
+        ).execute()

@@ -24,9 +24,8 @@ class PsmonExecutor(Step):
         out_file = (Path(cwd) / "run.out").open("wb")
         err_file = (Path(cwd) / "run.err").open("wb")
 
-        with db.atomic("EXCLUSIVE"):
-            context["run"].status = Run.RUNNING
-            context["run"].save()
+        context["run"].status = Run.RUNNING
+        context["run"].save()
 
         cmd = tool.cmdline(context)
         logger.debug(f"Running {cwd}")
@@ -44,28 +43,27 @@ class PsmonExecutor(Step):
         logger.debug(f"Finished {cwd}")
         logger.debug(stats)
 
-        with db.atomic("EXCLUSIVE"):
-            context["run"].status = Run.DONE
-            context["run"].save()
+        context["run"].status = Run.DONE
+        context["run"].save()
 
-            verdict = None
-            if stats["error"] == TimeoutError:
-                verdict = RunStatistic.TIMEOUT
-            elif stats["error"] == MemoryError:
-                verdict = RunStatistic.MEMOUT
-            elif stats["error"] or stats["return_code"] != 0:
-                verdict = RunStatistic.RUNTIME_ERR
-            else:
-                verdict = RunStatistic.SUCCESS
+        verdict = None
+        if stats["error"] == TimeoutError:
+            verdict = RunStatistic.TIMEOUT
+        elif stats["error"] == MemoryError:
+            verdict = RunStatistic.MEMOUT
+        elif stats["error"] or stats["return_code"] != 0:
+            verdict = RunStatistic.RUNTIME_ERR
+        else:
+            verdict = RunStatistic.SUCCESS
 
-            RunStatistic.create(
-                run=context["run"],
-                cpu_time=stats["cpu_time"],
-                wall_time=stats["wall_time"],
-                max_memory=stats["max_memory"],
-                return_code=stats["return_code"],
-                verdict=verdict,
-            )
+        RunStatistic.create(
+            run=context["run"],
+            cpu_time=stats["cpu_time"],
+            wall_time=stats["wall_time"],
+            max_memory=stats["max_memory"],
+            return_code=stats["return_code"],
+            verdict=verdict,
+        )
 
         tool.post_run(context)
 
