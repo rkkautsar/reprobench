@@ -11,13 +11,13 @@ class Team1SudokuSolver(ExecutableTool):
 
     @classmethod
     def cmdline(cls, context):
-        task = os.path.abspath(context["run"].task.path)
-        parameters = context["run"].parameter_group.parameters
+        task = os.path.abspath(context["run"]["task"])
+        parameters = context["run"]["parameters"]
+        solver_parameter = [p for p in parameters if p["key"] == "solver"]
 
-        solver_query = parameters.where(Parameter.key == "solver").first()
-        if solver_query is None:
+        if len(solver_parameter) == 0:
             solver = "glucose"
         else:
-            solver = solver_query.value
+            solver = solver_parameter[0]["value"]
 
         return [cls.path, f"-s={solver}", task]

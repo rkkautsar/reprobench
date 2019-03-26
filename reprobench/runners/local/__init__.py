@@ -5,44 +5,23 @@ import shutil
 import signal
 import time
 from datetime import datetime
+from multiprocessing import Process
 from multiprocessing.pool import Pool
 from pathlib import Path
+
 
 from loguru import logger
 from playhouse.apsw_ext import APSWDatabase
 from tqdm import tqdm
 
-from reprobench.core.bases import Runner
+from reprobench.core.base import Runner
 from reprobench.core.bootstrap import bootstrap
 from reprobench.core.db import Run, db
+from reprobench.core.server import BenchmarkServer
 from reprobench.task_sources.local import LocalSource
 from reprobench.utils import import_class
 
-
-def execute_run(args):
-    run_id, config, db_path = args
-
-    db.initialize(APSWDatabase(str(db_path)))
-
-    with db.atomic("EXCLUSIVE"):
-        run = Run.get_by_id(run_id)
-
-    tool = import_class(run.tool.module)
-    context = config.copy()
-    context["tool"] = tool
-    context["run"] = run
-    logger.info(f"Processing task: {run.directory}")
-
-    @atexit.register
-    def exit():
-        signal.signal(signal.SIGTERM, signal.SIG_IGN)
-        os.killpg(os.getpgid(0), signal.SIGTERM)
-        time.sleep(3)
-        os.killpg(os.getpgid(0), signal.SIGKILL)
-
-    for runstep in config["steps"]["run"]:
-        step = import_class(runstep["step"])
-        step.execute(context, runstep.get("config", {}))
+from .worker import execute
 
 
 class LocalRunner(Runner):
@@ -50,7 +29,9 @@ class LocalRunner(Runner):
         self.config = config
         self.output_dir = output_dir
         self.resume = resume
+        self.handlers = []
         self.queue = []
+        self.server_address = "tcp://127.0.0.1:31334"
 
     def setup(self):
         atexit.register(self.exit)
@@ -58,6 +39,9 @@ class LocalRunner(Runner):
 
         self.db_path = Path(self.output_dir) / f"{self.config['title']}.benchmark.db"
         db_created = Path(self.db_path).is_file()
+
+        for step in itertools.chain.from_iterable(self.config["steps"].values()):
+            self.handlers.append(import_class(step["step"]))
 
         if db_created and not self.resume:
             logger.error(
@@ -88,7 +72,7 @@ class LocalRunner(Runner):
 
     def populate_unfinished_runs(self):
         query = Run.select(Run.id).where(Run.status < Run.DONE)
-        self.queue = [(run.id, self.config, self.db_path) for run in query]
+        self.queue = [(run.id, self.config, self.server_address) for run in query]
 
     def run(self):
         self.setup()
@@ -101,15 +85,22 @@ class LocalRunner(Runner):
 
         logger.debug("Executing runs...")
         self.pool = Pool()
-        it = self.pool.imap_unordered(execute_run, self.queue)
+
         num_in_queue = len(self.queue)
+        server = BenchmarkServer(
+            self.handlers, str(self.db_path), num_in_queue, address=self.server_address
+        )
+
+        server.start()
+
+        it = self.pool.imap_unordered(execute, self.queue)
         for _ in tqdm(it, total=num_in_queue):
             num_in_queue -= 1
 
         self.pool.close()
         self.pool.join()
+        server.join()
 
         logger.debug("Running teardown on all tools...")
         for tool in self.config["tools"].values():
             import_class(tool["module"]).teardown()
-

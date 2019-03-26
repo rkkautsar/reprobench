@@ -7,7 +7,7 @@ import functools
 import operator
 from pathlib import Path
 
-from reprobench.core.bases import Step
+from reprobench.core.base import Step
 from reprobench.core.db import Run, RunStatistic
 from reprobench.utils import find_executable, silent_run
 

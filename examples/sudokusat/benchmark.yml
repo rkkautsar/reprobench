@@ -2,37 +2,37 @@ title: sudoku-sat-2019
 description: Sudoku SAT 2019
 
 limits:
-  time: 10 # s
-  memory: 1073741824 # bytes
-  output: 1073741824 # bytes
-  cores: 1,2,4,8
+	time: 10 # s
+	memory: 1073741824 # bytes
+	output: 1073741824 # bytes
+	cores: 1,2,4,8
 
 steps:
-  run:
-    - step: reprobench.core.sysinfo.CollectSystemInfo
-    - step: reprobench.executors.PsmonExecutor
-    - step: sudoku.validate.Validator
-      config:
-        check_consistency: true
+	run:
+		- step: reprobench.core.sysinfo.CollectSystemInfo
+		- step: reprobench.executors.PsmonExecutor
+		- step: sudoku.validate.Validator
+		  config:
+			  check_consistency: true
 
 tasks:
-  zenodo:
-    type: doi
-    doi: 10.5072/zenodo.261834
-    path: ./tasks/sudoku/zenodo
-    extract_archives: true
-    patterns: |
-      sudoku/*.txt
-      !**/*.zip
+	sudoku:
+		type: doi
+		doi: 10.5072/zenodo.261834
+		path: ./tasks/sudoku/zenodo
+		extract_archives: true
+		patterns: |
+			sudoku/*.txt
+			!**/*.zip
 
 parameters:
-  default:
-    solver:
-      - riss
-      - glucose
+	default:
+		solver:
+			- riss
+			- glucose
 
 tools:
-  team1:
-    module: tools.Team1SudokuSolver
-    parameters:
-      - default
+	team1:
+		module: tools.Team1SudokuSolver
+		parameters:
+			- default

@@ -8,7 +8,7 @@ from loguru import logger
 from multiprocessing.pool import Pool
 from pathlib import Path
 from playhouse.apsw_ext import APSWDatabase
-from reprobench.core.bases import Runner
+from reprobench.core.base import Runner
 from reprobench.core.bootstrap import bootstrap
 from reprobench.core.db import db, Run
 from reprobench.utils import import_class
@@ -74,6 +74,7 @@ class SlurmRunner(Runner):
             with open(self.run_template_file) as tpl:
                 template = Template(tpl.read())
                 job_str = template.safe_substitute(
+                    output_dir=self.output_dir,
                     mem=int(1 + self.config["limits"]["memory"] / 1024 / 1024),  # mb
                     time=int(1 + (self.config["limits"]["time"] + 15) / 60),  # minutes
                     run_ids=create_ranges(self.queue),

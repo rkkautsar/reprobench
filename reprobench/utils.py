@@ -5,6 +5,7 @@ import subprocess
 from shutil import which
 
 import requests
+import msgpack
 from tqdm import tqdm
 
 from reprobench.core.exceptions import ExecutableNotFoundError
@@ -68,3 +69,27 @@ def str_to_range(range_str):
     if matches["step"]:
         return range(start, end, int(matches["step"]))
     return range(start, end)
+
+
+def encode_message(obj):
+    return msgpack.packb(obj, use_bin_type=True)
+
+
+def decode_message(msg):
+    return msgpack.unpackb(msg, raw=False)
+
+
+def send_event(socket, event_type, payload):
+    """
+    Used in the worker with a DEALER socket
+    """
+    socket.send_multipart([event_type, encode_message(payload)])
+
+
+def recv_event(socket):
+    """
+    Used in the SUB handler
+    """
+    event_type, payload, address = socket.recv_multipart()
+
+    return event_type, decode_message(payload), address

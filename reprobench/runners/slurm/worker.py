@@ -32,7 +32,7 @@ def run(config, database, run_id):
     context = config.copy()
     context["tool"] = tool
     context["run"] = run
-    logger.info(f"Processing task: {run.directory}")
+    logger.info(f"Processing task: {run['directory']}")
 
     @atexit.register
     def exit():
