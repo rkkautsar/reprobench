@@ -9,7 +9,7 @@ from multiprocessing import Process
 from multiprocessing.pool import Pool
 from pathlib import Path
 
-
+import click
 from loguru import logger
 from playhouse.apsw_ext import APSWDatabase
 from tqdm import tqdm
@@ -19,7 +19,7 @@ from reprobench.core.bootstrap import bootstrap
 from reprobench.core.db import Run, db
 from reprobench.core.server import BenchmarkServer
 from reprobench.task_sources.local import LocalSource
-from reprobench.utils import import_class
+from reprobench.utils import get_db_path, import_class, init_db, read_config
 
 from .worker import execute
 
@@ -29,38 +29,9 @@ class LocalRunner(Runner):
         self.config = config
         self.output_dir = kwargs.pop("output_dir", "./output")
         self.resume = kwargs.pop("resume", False)
-        self.server_address = kwargs.pop("server_address", "tcp://127.0.0.1:31313")
+        self.server_address = kwargs.pop("server", "tcp://127.0.0.1:31313")
         self.observers = []
         self.queue = []
-
-    def setup(self):
-        atexit.register(self.exit)
-        self.setup_finished = False
-
-        self.db_path = Path(self.output_dir) / f"{self.config['title']}.benchmark.db"
-        db_created = Path(self.db_path).is_file()
-
-        for observer in self.config["observers"]:
-            self.observers.append(import_class(observer["module"]))
-
-        if db_created and not self.resume:
-            logger.error(
-                "It seems that a previous runs already exist at the output directory.\
-                Please use --resume to resume unfinished runs."
-            )
-            self.setup_finished = True
-            exit(1)
-
-        Path(self.output_dir).mkdir(parents=True, exist_ok=True)
-        logger.debug(f"Using Database: {self.db_path}")
-        self.database = APSWDatabase(str(self.db_path))
-        db.initialize(self.database)
-
-        # TODO: maybe use .bootstrapped file instead?
-        if not db_created:
-            bootstrap(self.config, self.output_dir)
-
-        self.setup_finished = True
 
     def exit(self):
         if len(self.queue) > 0 and hasattr(self, "pool"):
@@ -75,7 +46,7 @@ class LocalRunner(Runner):
         self.queue = [(run.id, self.config, self.server_address) for run in query]
 
     def run(self):
-        self.setup()
+        init_db(get_db_path(self.output_dir))
         self.populate_unfinished_runs()
         db.close()
 
@@ -85,12 +56,6 @@ class LocalRunner(Runner):
 
         logger.debug("Executing runs...")
 
-        server = BenchmarkServer(
-            self.observers, str(self.db_path), address=self.server_address
-        )
-
-        server.start()
-
         with Pool() as pool:
             it = pool.imap_unordered(execute, self.queue)
             progress_bar = tqdm(desc="Executing runs", total=len(self.queue))
@@ -98,8 +63,27 @@ class LocalRunner(Runner):
                 progress_bar.update()
             progress_bar.close()
 
-        server.join()
-
         logger.debug("Running teardown on all tools...")
         for tool in self.config["tools"].values():
             import_class(tool["module"]).teardown()
+
+
+@click.command("local")
+@click.option(
+    "-o",
+    "--output-dir",
+    type=click.Path(file_okay=False, writable=True, resolve_path=True),
+    default="./output",
+    show_default=True,
+)
+@click.option("-r", "--resume", is_flag=True)
+@click.option("-s", "--server", default="tcp://127.0.0.1:31313")
+@click.argument("config", type=click.Path())
+def cli(config, output_dir, **kwargs):
+    config = read_config(config)
+    runner = LocalRunner(config, output_dir=output_dir, **kwargs)
+    runner.run()
+
+
+if __name__ == "__main__":
+    cli()

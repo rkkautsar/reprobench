@@ -1,16 +1,19 @@
 #!/usr/bin/env python
 
-import os
 import argparse
+import os
 import sys
-import strictyaml
+
 import click
+import strictyaml
 from loguru import logger
 
+from reprobench.core.bootstrap import cli as bootstrap_cli
+from reprobench.core.server import cli as server_cli
 from reprobench.core.schema import schema
-from reprobench.utils import import_class
+from reprobench.utils import import_class, read_config
 
-from reprobench.runners import LocalRunner, SlurmRunner
+from reprobench.runners import cli as runner_cli
 
 
 @click.group()
@@ -32,57 +35,9 @@ def cli(verbosity):
         logger.add(sys.stderr, level="TRACE")
 
 
-@cli.group()
-def run():
-    pass
-
-
-@run.command("local")
-@click.option(
-    "-o",
-    "--output-dir",
-    type=click.Path(file_okay=False, writable=True, resolve_path=True),
-    default="./output",
-    show_default=True,
-)
-@click.option("-r", "--resume", is_flag=True)
-@click.option("-s", "--server", default="tcp://127.0.0.1:31313")
-@click.argument("config", type=click.File("r"))
-def local_runner(config, output_dir, server, **kwargs):
-    config_text = config.read()
-    config = strictyaml.load(config_text, schema=schema).data
-    runner = LocalRunner(config, output_dir=output_dir, server_address=server, **kwargs)
-    runner.run()
-
-
-@run.command("slurm")
-@click.option(
-    "-o",
-    "--output-dir",
-    type=click.Path(file_okay=False, writable=True, resolve_path=True),
-    default="./output",
-    required=True,
-    show_default=True,
-)
-@click.option("--run-template", type=click.Path(dir_okay=False, resolve_path=True))
-@click.option("--compile-template", type=click.Path(dir_okay=False, resolve_path=True))
-@click.option("-r", "--resume", is_flag=True)
-@click.option("-d", "--teardown", is_flag=True)
-@click.option("-p", "--python-path", required=True)
-@click.option("-s", "--server", required=True)
-@click.argument("config", type=click.File("r"))
-def slurm_runner(config, output_dir, python_path, server, **kwargs):
-    config_path = os.path.realpath(config.name)
-    config_text = config.read()
-    config = strictyaml.load(config_text, schema=schema).data
-    runner = SlurmRunner(
-        config=config,
-        config_path=config_path,
-        python_path=python_path,
-        server_address=server,
-        **kwargs
-    )
-    runner.run()
+cli.add_command(bootstrap_cli)
+cli.add_command(server_cli)
+cli.add_command(runner_cli)
 
 
 if __name__ == "__main__":

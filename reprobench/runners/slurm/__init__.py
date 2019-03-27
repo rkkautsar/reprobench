@@ -1,17 +1,20 @@
+import itertools
 import os
 import signal
-import itertools
-import time
 import subprocess
-from string import Template
-from loguru import logger
+import time
 from multiprocessing.pool import Pool
 from pathlib import Path
+from string import Template
+
+import click
+from loguru import logger
 from playhouse.apsw_ext import APSWDatabase
+
 from reprobench.core.base import Runner
 from reprobench.core.bootstrap import bootstrap
-from reprobench.core.db import db, Run
-from reprobench.utils import import_class
+from reprobench.core.db import Run, db
+from reprobench.utils import get_db_path, import_class, init_db, read_config
 
 from .utils import create_ranges
 
@@ -19,14 +22,14 @@ DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 class SlurmRunner(Runner):
-    def __init__(self, config, config_path, python_path, server_address, **kwargs):
-        self.config = config
+    def __init__(self, config_path, python_path, server_address, **kwargs):
+        self.config = read_config(config_path)
         self.config_path = config_path
         self.python_path = python_path
         self.server_address = server_address
         self.output_dir = kwargs.pop("output_dir", "./output")
         self.resume = kwargs.pop("resume", False)
-        self.teardown = kwargs.pop("teardown", False)
+        self.templates = {}
         self.templates["server"] = kwargs.pop(
             "server_template_file", os.path.join(DIR, "./slurm.server.job.tpl")
         )
@@ -38,30 +41,11 @@ class SlurmRunner(Runner):
         )
         self.queue = []
 
-    def setup(self):
-        self.db_path = Path(self.output_dir) / f"{self.config['title']}.benchmark.db"
-        db_created = Path(self.db_path).is_file()
-
-        if db_created and not self.resume:
-            logger.error(
-                "It seems that a previous runs exist at the output directory. Please use --resume to resume runs."
-            )
-            exit(1)
-
-        Path(self.output_dir).mkdir(parents=True, exist_ok=True)
-        logger.debug(f"Using Database: {self.db_path}")
-        self.database = APSWDatabase(str(self.db_path))
-        db.initialize(self.database)
-
-        # TODO: maybe use .bootstrapped file instead?
-        if not db_created:
-            bootstrap(self.config, self.output_dir)
-
     def populate_unfinished_runs(self):
         query = Run.select(Run.id).where(Run.status < Run.DONE)
         self.queue = [run.id for run in query]
 
-    def generate_template(template_type):
+    def generate_template(self, template_type):
         template_file = self.templates[template_type]
         with open(template_file) as tpl:
             template = Template(tpl.read())
@@ -73,7 +57,6 @@ class SlurmRunner(Runner):
                 python_path=self.python_path,
                 config_path=self.config_path,
                 server_address=self.server_address,
-                db_path=self.db_path,
             )
 
         job_path = Path(self.output_dir) / f"slurm.{template_type}.job"
@@ -83,27 +66,45 @@ class SlurmRunner(Runner):
         return str(job_path.resolve())
 
     def run(self):
-        if not self.teardown:
-            self.setup()
-            self.populate_unfinished_runs()
-            db.close()
+        init_db(get_db_path(self.output_dir))
+        self.populate_unfinished_runs()
+        db.close()
 
-            if len(self.queue) == 0:
-                logger.success("No tasks remaining to run")
-                exit(0)
+        if len(self.queue) == 0:
+            logger.success("No tasks remaining to run")
+            exit(0)
 
-            logger.debug("Generating templates...")
-            templates = {t: generate_template(t) for t in ["server", "run"]}
+        logger.debug("Generating templates...")
+        templates = {t: self.generate_template(t) for t in ["run"]}
 
-            logger.info("Submitting jobs to SLURM...")
-            server_cmd = ["sbatch", templates["server"]]
-            server_job = subprocess.check_output(server_cmd).decode()
-            logger.debug(f"Server job id: {server_job}")
+        logger.info("Submitting jobs to SLURM...")
 
-            run_cmd = ["sbatch", f"--depend=after:{server_job}", templates["run"]]
-            run_job = subprocess.check_output(run_cmd).decode()
-            logger.debug(f"Run job id: {run_job}")
-        else:
-            logger.debug("Running teardown on all tools...")
-            for tool_module in self.config["tools"].values():
-                import_class(tool_module).teardown()
+        run_cmd = ["sbatch", "--parsable", templates["run"]]
+        run_job = subprocess.check_output(run_cmd).decode().strip()
+        logger.debug(f"Run job id: {run_job}")
+
+
+@click.command("slurm")
+@click.option(
+    "-o",
+    "--output-dir",
+    type=click.Path(file_okay=False, writable=True, resolve_path=True),
+    default="./output",
+    required=True,
+    show_default=True,
+)
+@click.option("--run-template", type=click.Path(dir_okay=False, resolve_path=True))
+@click.option("--compile-template", type=click.Path(dir_okay=False, resolve_path=True))
+@click.option("-r", "--resume", is_flag=True)
+@click.option("-p", "--python-path", required=True, type=click.Path(resolve_path=True))
+@click.option("-s", "--server", required=True)
+@click.argument("config", type=click.Path())
+def cli(config, output_dir, python_path, server, **kwargs):
+    runner = SlurmRunner(
+        config_path=config, python_path=python_path, server_address=server, **kwargs
+    )
+    runner.run()
+
+
+if __name__ == "__main__":
+    cli()

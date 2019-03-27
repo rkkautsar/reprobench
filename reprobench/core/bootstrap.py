@@ -1,6 +1,7 @@
 import itertools
 from pathlib import Path
 
+import click
 from loguru import logger
 from tqdm import tqdm
 
@@ -19,7 +20,14 @@ from reprobench.core.db import (
 from reprobench.task_sources.doi import DOISource
 from reprobench.task_sources.local import LocalSource
 from reprobench.task_sources.url import UrlSource
-from reprobench.utils import import_class, is_range_str, str_to_range
+from reprobench.utils import (
+    get_db_path,
+    import_class,
+    init_db,
+    is_range_str,
+    read_config,
+    str_to_range,
+)
 
 
 def _bootstrap_db(config):
@@ -154,9 +162,31 @@ def _bootstrap_runs(config, output_dir):
 
 
 def bootstrap(config, output_dir):
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    db_path = get_db_path(output_dir)
+    init_db(db_path)
     _bootstrap_db(config)
     _bootstrap_parameters(config)
     _bootstrap_tools(config)
     _bootstrap_tasks(config)
     _register_steps(config)
     _bootstrap_runs(config, output_dir)
+
+
+@click.command(name="bootstrap")
+@click.option(
+    "-o",
+    "--output-dir",
+    type=click.Path(file_okay=False, writable=True, resolve_path=True),
+    default="./output",
+    required=True,
+    show_default=True,
+)
+@click.argument("config", type=click.Path())
+def cli(config, output_dir):
+    config = read_config(config)
+    bootstrap(config, output_dir)
+
+
+if __name__ == "__main__":
+    cli()

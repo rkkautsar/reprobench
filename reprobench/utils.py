@@ -1,13 +1,21 @@
 import importlib
 import logging
+import os
 import re
+import signal
 import subprocess
+import time
+from pathlib import Path
 from shutil import which
 
-import requests
 import msgpack
+import requests
+import strictyaml
+from playhouse.apsw_ext import APSWDatabase
 from tqdm import tqdm
 
+from reprobench.core.db import db
+from reprobench.core.schema import schema
 from reprobench.core.exceptions import ExecutableNotFoundError
 
 log = logging.getLogger(__name__)
@@ -93,3 +101,27 @@ def recv_event(socket):
     event_type, payload, address = socket.recv_multipart()
 
     return event_type, decode_message(payload), address
+
+
+def clean_up():
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
+    os.killpg(os.getpgid(0), signal.SIGTERM)
+    time.sleep(1)
+    os.killpg(os.getpgid(0), signal.SIGKILL)
+
+
+def get_db_path(output_dir):
+    return str((Path(output_dir) / f"benchmark.db").resolve())
+
+
+def init_db(db_path):
+    database = APSWDatabase(db_path)
+    db.initialize(database)
+
+
+def read_config(config_path):
+    with open(config_path, "r") as f:
+        config_text = f.read()
+        config = strictyaml.load(config_text, schema=schema).data
+
+    return config

@@ -7,15 +7,8 @@ from loguru import logger
 from playhouse.apsw_ext import APSWDatabase
 
 from reprobench.core.db import Run, db
-from reprobench.core.events import RUN_REGISTER, RUN_COMPLETE
-from reprobench.utils import import_class, decode_message, send_event
-
-
-def clean_up():
-    signal.signal(signal.SIGTERM, signal.SIG_IGN)
-    os.killpg(os.getpgid(0), signal.SIGTERM)
-    time.sleep(1)
-    os.killpg(os.getpgid(0), signal.SIGKILL)
+from reprobench.core.events import RUN_COMPLETE, RUN_REGISTER
+from reprobench.utils import clean_up, decode_message, import_class, send_event
 
 
 def execute(args):
