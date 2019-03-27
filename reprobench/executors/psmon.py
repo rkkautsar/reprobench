@@ -1,33 +1,29 @@
 import subprocess
-from loguru import logger
 from pathlib import Path
+
+from loguru import logger
 from psmon import ProcessMonitor
-from psmon.limiters import WallTimeLimiter, CpuTimeLimiter, MaxMemoryLimiter
+from psmon.limiters import CpuTimeLimiter, MaxMemoryLimiter, WallTimeLimiter
 
-from reprobench.core.bases import Step
-from reprobench.core.db import db, Run
+from reprobench.core.events import RUN_FINISH, RUN_START
+from reprobench.utils import send_event
+
+from .base import Executor
 from .db import RunStatistic
+from .events import STORE_RUNSTATS
 
 
-class PsmonExecutor(Step):
+class PsmonExecutor(Executor):
     @classmethod
-    def register(cls, config={}):
-        RunStatistic.create_table()
-
-    @classmethod
-    def execute(cls, context, config={}):
+    def execute(cls, context, config=None):
         tool = context["tool"]
         limits = context["limits"]
+        run_id = context["run"]["id"]
         tool.pre_run(context)
 
-        cwd = context["run"].directory
+        cwd = context["run"]["directory"]
         out_file = (Path(cwd) / "run.out").open("wb")
         err_file = (Path(cwd) / "run.err").open("wb")
-
-        context["run"].status = Run.RUNNING
-
-        with db.atomic("EXCLUSIVE"):
-            context["run"].save()
 
         cmd = tool.cmdline(context)
         logger.debug(f"Running {cwd}")
@@ -40,12 +36,12 @@ class PsmonExecutor(Step):
         monitor.subscribe("cpu_time", CpuTimeLimiter(limits["time"]))
         monitor.subscribe("max_memory", MaxMemoryLimiter(limits["memory"]))
 
+        send_event(context["socket"], RUN_START, run_id)
         stats = monitor.run()
+        send_event(context["socket"], RUN_FINISH, run_id)
 
         logger.debug(f"Finished {cwd}")
-        logger.debug(stats)
 
-        context["run"].status = Run.DONE
         verdict = None
         if stats["error"] == TimeoutError:
             verdict = RunStatistic.TIMEOUT
@@ -56,16 +52,9 @@ class PsmonExecutor(Step):
         else:
             verdict = RunStatistic.SUCCESS
 
-        with db.atomic("EXCLUSIVE"):
-            context["run"].save()
-            RunStatistic.create(
-                run=context["run"],
-                cpu_time=stats["cpu_time"],
-                wall_time=stats["wall_time"],
-                max_memory=stats["max_memory"],
-                return_code=stats["return_code"],
-                verdict=verdict,
-            )
+        del stats["error"]
+
+        payload = dict(run_id=run_id, verdict=verdict, **stats)
+        send_event(context["socket"], STORE_RUNSTATS, payload)
 
         tool.post_run(context)
-

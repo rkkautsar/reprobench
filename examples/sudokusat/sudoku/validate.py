@@ -9,9 +9,11 @@ import numpy as np
 from loguru import logger
 from playhouse.apsw_ext import BooleanField, DateTimeField, ForeignKeyField
 
-from reprobench.core.bases import Step
-from reprobench.core.db import BaseModel, Run, db
-from reprobench.executors.db import RunStatistic
+from reprobench.core.base import Step, Observer
+from reprobench.executors.db import BaseModel, Run
+from reprobench.utils import send_event
+
+STORE_SUDOKU_VERDICT = b"sudokuverdict:store"
 
 
 class SudokuVerdict(BaseModel):
@@ -20,9 +22,18 @@ class SudokuVerdict(BaseModel):
     is_valid = BooleanField()
 
 
-class Validator(Step):
+class SudokuObserver(Observer):
+    SUBSCRIBED_EVENTS = [STORE_SUDOKU_VERDICT]
+
     @classmethod
-    def register(cls, config={}):
+    def handle_event(cls, event_type, payload, **kwargs):
+        if event_type == STORE_SUDOKU_VERDICT:
+            SudokuVerdict.create(**payload)
+
+
+class SudokuValidator(Step):
+    @classmethod
+    def register(cls, config=None):
         SudokuVerdict.create_table()
 
     @classmethod
@@ -85,19 +96,15 @@ class Validator(Step):
         ]
 
     @classmethod
-    def execute(cls, context, config={}):
+    def execute(cls, context, config=None):
         task = cls._filter_empty_lines(
-            Path(context["run"].task.path).read_text().split("\n")
+            Path(context["run"]["task"]).read_text().split("\n")
         )
         output = cls._filter_empty_lines(
-            (Path(context["run"].directory) / "run.out").read_text().split("\n")
+            (Path(context["run"]["directory"]) / "run.out").read_text().split("\n")
         )
 
         is_valid = True
-
-        stats = RunStatistic.get(run=context["run"])
-        if stats.verdict != RunStatistic.SUCCESS:
-            is_valid = False
 
         if len(output) < len(task):
             is_valid = False
@@ -109,4 +116,5 @@ class Validator(Step):
             parsed = cls._parse_sudoku(output)
             is_valid = cls._check_sudoku_constraints(parsed)
 
-        SudokuVerdict.create(run=context["run"], is_valid=is_valid)
+        payload = dict(run=context["run"]["id"], is_valid=is_valid)
+        send_event(context["socket"], STORE_SUDOKU_VERDICT, payload)

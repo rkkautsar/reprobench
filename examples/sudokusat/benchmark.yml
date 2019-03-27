@@ -9,14 +9,19 @@ limits:
 
 steps:
   run:
-    - step: reprobench.core.sysinfo.CollectSystemInfo
-    - step: reprobench.executors.PsmonExecutor
-    - step: sudoku.validate.Validator
+    - module: reprobench.core.sysinfo.CollectSystemInfo
+    - module: reprobench.executors.PsmonExecutor
+    - module: sudoku.validate.SudokuValidator
       config:
         check_consistency: true
 
+observers:
+  - module: reprobench.core.sysinfo.SystemInfoObserver
+  - module: reprobench.executors.RunStatisticObserver
+  - module: sudoku.validate.SudokuObserver
+
 tasks:
-  zenodo:
+  sudoku:
     type: doi
     doi: 10.5072/zenodo.261834
     path: ./tasks/sudoku/zenodo
