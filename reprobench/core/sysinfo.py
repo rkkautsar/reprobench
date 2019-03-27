@@ -4,7 +4,7 @@ import psutil
 from cpuinfo import get_cpu_info
 from playhouse.apsw_ext import CharField, FloatField, ForeignKeyField, IntegerField
 
-from reprobench.core.base import Step
+from reprobench.core.base import Step, Observer
 from reprobench.core.db import BaseModel, Run, db
 from reprobench.utils import send_event, recv_event
 
@@ -33,6 +33,21 @@ MODELS = (Node, RunNode)
 STORE_SYSINFO = b"sysinfo:store"
 
 
+class SystemInfoObserver(Observer):
+    SUBSCRIBED_EVENTS = [STORE_SYSINFO]
+
+    @classmethod
+    def handle_event(cls, event_type, payload, **kwargs):
+        if event_type == STORE_SYSINFO:
+            node = payload["node"]
+            run = payload["run_id"]
+
+            Node.insert(**node).on_conflict("ignore").execute()
+            RunNode.insert(run=run, node=node["hostname"]).on_conflict(
+                "replace"
+            ).execute()
+
+
 class CollectSystemInfo(Step):
     @classmethod
     def register(cls, config={}):
@@ -59,17 +74,6 @@ class CollectSystemInfo(Step):
         info["swap_available"] = swap_info.free
 
         return info
-
-    @classmethod
-    def _handle_event(cls, event_type, payload):
-        if event_type == STORE_SYSINFO:
-            node = payload["node"]
-            run = payload["run_id"]
-
-            Node.insert(**node).on_conflict("ignore").execute()
-            RunNode.insert(run=run, node=node["hostname"]).on_conflict(
-                "replace"
-            ).execute()
 
     @classmethod
     def execute(cls, context, config={}):

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "reprobench"
-version = "0.5.9"
+version = "0.6.0.dev7"
 readme = "README.md"
 description = "Reproducible Benchmark for Everyone"
 authors = ["Rakha Kanz Kautsar <rkkautsar@gmail.com>"]

@@ -124,8 +124,8 @@ def _bootstrap_tasks(config):
 
 def _register_steps(config):
     logger.info("Registering steps...")
-    for runstep in itertools.chain.from_iterable(config["steps"].values()):
-        import_class(runstep["step"]).register(runstep.get("config", {}))
+    for step in itertools.chain.from_iterable(config["steps"].values()):
+        import_class(step["module"]).register(step.get("config", {}))
 
 
 def _bootstrap_runs(config, output_dir):

@@ -3,17 +3,19 @@ import zmq.green as zmq
 from loguru import logger
 
 from reprobench.core.db import Run
+from reprobench.core.base import Observer
 from reprobench.core.events import RUN_FINISH, RUN_REGISTER, RUN_START
 from reprobench.utils import decode_message, encode_message, recv_event
 
 
-def handle_event(context, backend_address, frontend=None):
-    socket = context.socket(zmq.SUB)
-    socket.setsockopt(zmq.SUBSCRIBE, b"")
-    socket.connect(backend_address)
+class CoreObserver(Observer):
+    SUBSCRIBED_EVENTS = [RUN_REGISTER, RUN_START, RUN_FINISH]
 
-    while True:
-        event_type, payload, address = recv_event(socket)
+    @classmethod
+    def handle_event(cls, event_type, payload, **kwargs):
+        frontend = kwargs.pop("frontend")
+        address = kwargs.pop("address")
+
         if event_type == RUN_REGISTER:
             run = Run.get(payload)
             run_dict = dict(

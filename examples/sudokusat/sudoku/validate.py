@@ -9,7 +9,7 @@ import numpy as np
 from loguru import logger
 from playhouse.apsw_ext import BooleanField, DateTimeField, ForeignKeyField
 
-from reprobench.core.base import Step
+from reprobench.core.base import Step, Observer
 from reprobench.executors.db import BaseModel, Run
 from reprobench.utils import recv_event, send_event
 
@@ -22,7 +22,16 @@ class SudokuVerdict(BaseModel):
     is_valid = BooleanField()
 
 
-class Validator(Step):
+class SudokuObserver(Observer):
+    SUBSCRIBED_EVENTS = [STORE_SUDOKU_VERDICT]
+
+    @classmethod
+    def handle_event(cls, event_type, payload, **kwargs):
+        if event_type == STORE_SUDOKU_VERDICT:
+            SudokuVerdict.create(**payload)
+
+
+class SudokuValidator(Step):
     @classmethod
     def register(cls, config={}):
         SudokuVerdict.create_table()
@@ -85,11 +94,6 @@ class Validator(Step):
             for line in lines
             if len(line.strip()) != 0 and line.startswith(("+", "|"))
         ]
-
-    @classmethod
-    def _handle_event(cls, event_type, payload):
-        if event_type == STORE_SUDOKU_VERDICT:
-            SudokuVerdict.create(**payload)
 
     @classmethod
     def execute(cls, context, config={}):

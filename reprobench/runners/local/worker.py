@@ -14,7 +14,7 @@ from reprobench.utils import import_class, decode_message, send_event
 def clean_up():
     signal.signal(signal.SIGTERM, signal.SIG_IGN)
     os.killpg(os.getpgid(0), signal.SIGTERM)
-    time.sleep(3)
+    time.sleep(1)
     os.killpg(os.getpgid(0), signal.SIGKILL)
 
 
@@ -28,9 +28,6 @@ def execute(args):
     socket.connect(server_address)
     send_event(socket, RUN_REGISTER, run_id)
     run = decode_message(socket.recv())
-    logger.trace(run)
-
-    logger.trace(run)
     tool = import_class(run["tool"])
     context = config.copy()
     context["tool"] = tool
@@ -39,7 +36,8 @@ def execute(args):
     logger.info(f"Processing task: {run['directory']}")
 
     for runstep in config["steps"]["run"]:
-        step = import_class(runstep["step"])
+        logger.debug(f"Running step {runstep['module']}")
+        step = import_class(runstep["module"])
         step.execute(context, runstep.get("config", {}))
 
     send_event(socket, RUN_COMPLETE, run_id)

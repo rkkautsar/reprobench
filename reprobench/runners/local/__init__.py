@@ -25,13 +25,13 @@ from .worker import execute
 
 
 class LocalRunner(Runner):
-    def __init__(self, config, output_dir="./output", resume=False):
+    def __init__(self, config, **kwargs):
         self.config = config
-        self.output_dir = output_dir
-        self.resume = resume
-        self.handlers = []
+        self.output_dir = kwargs.pop("output_dir", "./output")
+        self.resume = kwargs.pop("resume", False)
+        self.server_address = kwargs.pop("server_address", "tcp://127.0.0.1:31313")
+        self.observers = []
         self.queue = []
-        self.server_address = "tcp://127.0.0.1:31334"
 
     def setup(self):
         atexit.register(self.exit)
@@ -40,8 +40,8 @@ class LocalRunner(Runner):
         self.db_path = Path(self.output_dir) / f"{self.config['title']}.benchmark.db"
         db_created = Path(self.db_path).is_file()
 
-        for step in itertools.chain.from_iterable(self.config["steps"].values()):
-            self.handlers.append(import_class(step["step"]))
+        for observer in self.config["observers"]:
+            self.observers.append(import_class(observer["module"]))
 
         if db_created and not self.resume:
             logger.error(
@@ -84,21 +84,20 @@ class LocalRunner(Runner):
             exit(0)
 
         logger.debug("Executing runs...")
-        self.pool = Pool()
 
-        num_in_queue = len(self.queue)
         server = BenchmarkServer(
-            self.handlers, str(self.db_path), num_in_queue, address=self.server_address
+            self.observers, str(self.db_path), address=self.server_address
         )
 
         server.start()
 
-        it = self.pool.imap_unordered(execute, self.queue)
-        for _ in tqdm(it, total=num_in_queue):
-            num_in_queue -= 1
+        with Pool() as pool:
+            it = pool.imap_unordered(execute, self.queue)
+            progress_bar = tqdm(desc="Executing runs", total=len(self.queue))
+            for _ in it:
+                progress_bar.update()
+            progress_bar.close()
 
-        self.pool.close()
-        self.pool.join()
         server.join()
 
         logger.debug("Running teardown on all tools...")

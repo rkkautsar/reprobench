@@ -23,8 +23,8 @@ limits_schema = Map(
 
 module_schema = Regex(r"\.?\w+(\.\w+)*")
 
-step_schema = Seq(
-    Map({"step": module_schema, Optional("config"): MapPattern(Str(), Any())})
+plugin_schema = Map(
+    {"module": module_schema, Optional("config"): MapPattern(Str(), Any())}
 )
 
 task_sources = Enum(["local", "url"])
@@ -34,7 +34,10 @@ schema = Map(
         "title": Str(),
         Optional("description"): Str(),
         "limits": limits_schema,
-        "steps": Map({"run": step_schema, Optional("compile"): step_schema}),
+        "steps": Map(
+            {"run": Seq(plugin_schema), Optional("compile"): Seq(plugin_schema)}
+        ),
+        "observers": Seq(plugin_schema),
         "tasks": MapPattern(Str(), MapPattern(Str(), Any())),
         "tools": MapPattern(
             Str(), Map({"module": module_schema, "parameters": Seq(Str())})

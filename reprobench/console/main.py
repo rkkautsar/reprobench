@@ -14,7 +14,7 @@ from reprobench.runners import LocalRunner, SlurmRunner
 
 
 @click.group()
-@click.version_option(version="0.1.0")
+@click.version_option()
 @click.option("--verbose", "-v", "verbosity", count=True, default=0, help="Verbosity")
 def cli(verbosity):
     sys.path.append(os.getcwd())
@@ -43,15 +43,15 @@ def run():
     "--output-dir",
     type=click.Path(file_okay=False, writable=True, resolve_path=True),
     default="./output",
-    required=True,
     show_default=True,
 )
 @click.option("-r", "--resume", is_flag=True)
+@click.option("-s", "--server", default="tcp://127.0.0.1:31313")
 @click.argument("config", type=click.File("r"))
-def local_runner(output_dir, resume, config):
+def local_runner(config, output_dir, server, **kwargs):
     config_text = config.read()
     config = strictyaml.load(config_text, schema=schema).data
-    runner = LocalRunner(config, output_dir, resume)
+    runner = LocalRunner(config, output_dir=output_dir, server_address=server, **kwargs)
     runner.run()
 
 
@@ -69,22 +69,18 @@ def local_runner(output_dir, resume, config):
 @click.option("-r", "--resume", is_flag=True)
 @click.option("-d", "--teardown", is_flag=True)
 @click.option("-p", "--python-path", required=True)
+@click.option("-s", "--server", required=True)
 @click.argument("config", type=click.File("r"))
-def slurm_runner(
-    output_dir, run_template, compile_template, resume, teardown, python_path, config
-):
+def slurm_runner(config, output_dir, python_path, server, **kwargs):
     config_path = os.path.realpath(config.name)
     config_text = config.read()
     config = strictyaml.load(config_text, schema=schema).data
     runner = SlurmRunner(
         config=config,
-        run_template_file=run_template,
-        compile_template_file=compile_template,
         config_path=config_path,
-        output_dir=output_dir,
-        resume=resume,
-        teardown=teardown,
         python_path=python_path,
+        server_address=server,
+        **kwargs
     )
     runner.run()
 

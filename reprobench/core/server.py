@@ -5,7 +5,7 @@ import zmq.green as zmq
 from loguru import logger
 from playhouse.apsw_ext import APSWDatabase
 
-import reprobench.core.handler as core_handler
+from reprobench.core.observer import CoreObserver
 from reprobench.core.db import Run, db
 from reprobench.core.events import RUN_COMPLETE
 
@@ -13,12 +13,12 @@ BACKEND_ADDRESS = "inproc://backend"
 
 
 class BenchmarkServer(multiprocessing.Process):
-    def __init__(self, handlers, db_path, jobs_waited, **kwargs):
+    def __init__(self, observers, db_path, **kwargs):
         super().__init__()
         db.initialize(APSWDatabase(db_path))
         self.frontend_address = kwargs.pop("address", "tcp://*:31334")
-        self.handlers = handlers + [core_handler]
-        self.jobs_waited = jobs_waited
+        self.observers = observers + [CoreObserver]
+        self.jobs_waited = Run.select().where(Run.status < Run.DONE).count()
 
     def loop(self):
         while True:
@@ -36,17 +36,17 @@ class BenchmarkServer(multiprocessing.Process):
         self.backend = self.context.socket(zmq.PUB)
         self.backend.bind(BACKEND_ADDRESS)
 
-        greenlets = []
-        for handler in self.handlers:
+        observer_greenlets = []
+        for observer in self.observers:
             greenlet = gevent.spawn(
-                handler.handle_event,
+                observer.observe,
                 self.context,
                 backend_address=BACKEND_ADDRESS,
                 frontend=self.frontend,
             )
-            greenlets.append(greenlet)
+            observer_greenlets.append(greenlet)
 
         serverlet = gevent.spawn(self.loop)
         serverlet.join()
 
-        gevent.killall(greenlets)
+        gevent.killall(observer_greenlets)
