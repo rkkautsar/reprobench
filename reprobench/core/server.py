@@ -18,10 +18,10 @@ BACKEND_ADDRESS = "inproc://backend"
 
 
 class BenchmarkServer:
-    def __init__(self, observers, db_path, **kwargs):
+    def __init__(self, observers, db_path, address, **kwargs):
         super().__init__()
         db.initialize(APSWDatabase(db_path))
-        self.frontend_address = kwargs.pop("address", "tcp://*:31334")
+        self.frontend_address = address
         self.serve_forever = kwargs.pop("forever", False)
         self.observers = observers + [CoreObserver]
         self.jobs_waited = Run.select().where(Run.status < Run.DONE).count()
@@ -72,8 +72,8 @@ class BenchmarkServer:
     required=True,
     show_default=True,
 )
-@click.argument("server_address")
-def cli(config, output_dir, server_address):
+@click.argument("server_address", default="tcp://0.0.0.0:31313")
+def cli(config, output_dir, server_address, **kwargs):
     atexit.register(clean_up)
 
     config = read_config(config)
@@ -83,7 +83,7 @@ def cli(config, output_dir, server_address):
     for observer in config["observers"]:
         observers.append(import_class(observer["module"]))
 
-    server = BenchmarkServer(observers, database, address=server_address)
+    server = BenchmarkServer(observers, database, server_address, **kwargs)
     server.run()
 
 
