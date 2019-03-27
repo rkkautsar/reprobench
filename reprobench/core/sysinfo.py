@@ -6,7 +6,7 @@ from playhouse.apsw_ext import CharField, FloatField, ForeignKeyField, IntegerFi
 
 from reprobench.core.base import Step, Observer
 from reprobench.core.db import BaseModel, Run, db
-from reprobench.utils import send_event, recv_event
+from reprobench.utils import send_event
 
 
 class Node(BaseModel):
@@ -50,7 +50,7 @@ class SystemInfoObserver(Observer):
 
 class CollectSystemInfo(Step):
     @classmethod
-    def register(cls, config={}):
+    def register(cls, config=None):
         db.create_tables(MODELS)
 
     @classmethod
@@ -76,7 +76,7 @@ class CollectSystemInfo(Step):
         return info
 
     @classmethod
-    def execute(cls, context, config={}):
+    def execute(cls, context, config=None):
         hostname = platform.node()
         info = cls._get_system_info()
         run_id = context["run"]["id"]

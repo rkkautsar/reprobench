@@ -33,11 +33,11 @@ class Observer:
 
 class Step:
     @classmethod
-    def register(cls, config={}):
+    def register(cls, config=None):
         pass
 
     @classmethod
-    def execute(cls, context, config={}):
+    def execute(cls, context, config=None):
         pass
 
 

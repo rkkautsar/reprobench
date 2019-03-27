@@ -4,9 +4,7 @@ from signal import signal
 
 import zmq
 from loguru import logger
-from playhouse.apsw_ext import APSWDatabase
 
-from reprobench.core.db import Run, db
 from reprobench.core.events import RUN_COMPLETE, RUN_REGISTER
 from reprobench.utils import clean_up, decode_message, import_class, send_event
 

@@ -11,7 +11,7 @@ from playhouse.apsw_ext import BooleanField, DateTimeField, ForeignKeyField
 
 from reprobench.core.base import Step, Observer
 from reprobench.executors.db import BaseModel, Run
-from reprobench.utils import recv_event, send_event
+from reprobench.utils import send_event
 
 STORE_SUDOKU_VERDICT = b"sudokuverdict:store"
 
@@ -33,7 +33,7 @@ class SudokuObserver(Observer):
 
 class SudokuValidator(Step):
     @classmethod
-    def register(cls, config={}):
+    def register(cls, config=None):
         SudokuVerdict.create_table()
 
     @classmethod
@@ -96,7 +96,7 @@ class SudokuValidator(Step):
         ]
 
     @classmethod
-    def execute(cls, context, config={}):
+    def execute(cls, context, config=None):
         task = cls._filter_empty_lines(
             Path(context["run"]["task"]).read_text().split("\n")
         )

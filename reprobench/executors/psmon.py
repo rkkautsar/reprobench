@@ -15,7 +15,7 @@ from .events import STORE_RUNSTATS
 
 class PsmonExecutor(Executor):
     @classmethod
-    def execute(cls, context, config={}):
+    def execute(cls, context, config=None):
         tool = context["tool"]
         limits = context["limits"]
         run_id = context["run"]["id"]

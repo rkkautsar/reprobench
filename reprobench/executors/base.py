@@ -1,8 +1,5 @@
-from loguru import logger
-
 from reprobench.core.base import Step, Observer
 from reprobench.executors.events import STORE_RUNSTATS
-from reprobench.utils import recv_event
 
 from .db import RunStatistic
 
@@ -18,6 +15,6 @@ class RunStatisticObserver(Observer):
 
 class Executor(Step):
     @classmethod
-    def register(cls, config={}):
+    def register(cls, config=None):
         RunStatistic.create_table()
 

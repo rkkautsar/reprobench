@@ -1,11 +1,7 @@
-import msgpack
-import zmq.green as zmq
-from loguru import logger
-
 from reprobench.core.db import Run
 from reprobench.core.base import Observer
 from reprobench.core.events import RUN_FINISH, RUN_REGISTER, RUN_START
-from reprobench.utils import decode_message, encode_message, recv_event
+from reprobench.utils import encode_message
 
 
 class CoreObserver(Observer):
