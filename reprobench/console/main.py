@@ -5,13 +5,11 @@ import os
 import sys
 
 import click
-import strictyaml
 from loguru import logger
 
 from reprobench.core.bootstrap import cli as bootstrap_cli
 from reprobench.core.server import cli as server_cli
-from reprobench.core.schema import schema
-from reprobench.utils import import_class, read_config
+from reprobench.utils import import_class
 
 from reprobench.runners import cli as runner_cli
 
@@ -22,17 +20,9 @@ from reprobench.runners import cli as runner_cli
 def cli(verbosity):
     sys.path.append(os.getcwd())
     logger.remove()
-
-    if verbosity == 0:
-        logger.add(sys.stderr, level="ERROR")
-    elif verbosity == 1:
-        logger.add(sys.stderr, level="WARNING")
-    elif verbosity == 2:
-        logger.add(sys.stderr, level="INFO")
-    elif verbosity == 3:
-        logger.add(sys.stderr, level="DEBUG")
-    elif verbosity >= 4:
-        logger.add(sys.stderr, level="TRACE")
+    verbosity_levels = ["ERROR", "WARNING", "INFO", "DEBUG", "TRACE"]
+    verbosity = max(verbosity, 4)
+    logger.add(sys.stderr, level=verbosity_levels[verbosity])
 
 
 cli.add_command(bootstrap_cli)

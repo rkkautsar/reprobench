@@ -1,9 +1,7 @@
 import atexit
-import multiprocessing
 
 import click
 import gevent
-import strictyaml
 import zmq.green as zmq
 from loguru import logger
 from playhouse.apsw_ext import APSWDatabase
@@ -11,7 +9,6 @@ from playhouse.apsw_ext import APSWDatabase
 from reprobench.core.db import Run, db
 from reprobench.core.events import RUN_COMPLETE
 from reprobench.core.observers import CoreObserver
-from reprobench.core.schema import schema
 from reprobench.utils import clean_up, get_db_path, import_class, read_config
 
 BACKEND_ADDRESS = "inproc://backend"

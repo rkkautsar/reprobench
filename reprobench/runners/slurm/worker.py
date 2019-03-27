@@ -1,13 +1,9 @@
 import atexit
-import os
-import signal
-import time
 
 import click
 import zmq
 from loguru import logger
 
-from reprobench.core.schema import schema
 from reprobench.runners.local.worker import RUN_REGISTER
 from reprobench.utils import (
     clean_up,

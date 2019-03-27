@@ -1,6 +1,4 @@
 import atexit
-import os
-from signal import signal
 
 import zmq
 from loguru import logger
