@@ -17,7 +17,7 @@ class PsmonExecutor(Executor):
     @classmethod
     def execute(cls, context, config=None):
         tool = context["tool"]
-        limits = context["limits"]
+        limits = context["run"]["limits"]
         run_id = context["run"]["id"]
         tool.pre_run(context)
 
@@ -32,9 +32,9 @@ class PsmonExecutor(Executor):
         monitor = ProcessMonitor(
             cmd, cwd=cwd, stdout=out_file, stderr=err_file, freq=15
         )
-        monitor.subscribe("wall_time", WallTimeLimiter(limits["time"] + 15))
-        monitor.subscribe("cpu_time", CpuTimeLimiter(limits["time"]))
-        monitor.subscribe("max_memory", MaxMemoryLimiter(limits["memory"]))
+        monitor.subscribe("wall_time", WallTimeLimiter(float(limits["time"]) + 15))
+        monitor.subscribe("cpu_time", CpuTimeLimiter(float(limits["time"])))
+        monitor.subscribe("max_memory", MaxMemoryLimiter(float(limits["memory"])))
 
         send_event(context["socket"], RUN_START, run_id)
         stats = monitor.run()

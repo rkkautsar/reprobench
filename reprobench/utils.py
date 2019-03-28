@@ -87,7 +87,7 @@ def decode_message(msg):
     return msgpack.unpackb(msg, raw=False)
 
 
-def send_event(socket, event_type, payload):
+def send_event(socket, event_type, payload=None):
     """
     Used in the worker with a DEALER socket
     """

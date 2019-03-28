@@ -18,7 +18,7 @@ class RunsolverExecutor(Step):
 
     def run(self, context):
         tool = context["tool"]
-        limits = context["limits"]
+        limits = context["run"]["limits"]
         tool.pre_run(context)
 
         cwd = context["working_directory"]
