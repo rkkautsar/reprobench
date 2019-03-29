@@ -48,7 +48,9 @@ class LocalRunner(Runner):
             bootstrap(self.config, self.output_dir)
 
         if db_exist and not self.resume:
-            logger.warning("Previous run exists. Please use --resume")
+            logger.warning(
+                f"Previous run exists in {self.output_dir}. Please use --resume, or specify a different output directory"
+            )
             exit(1)
 
         server = BenchmarkServer(self.db_path, self.server_address)
@@ -80,9 +82,9 @@ class LocalRunner(Runner):
 @click.option("-h", "--host", default="127.0.0.1", show_default=True)
 @click.option("-p", "--port", default=31313, show_default=True)
 @click.argument("config", type=click.Path())
-def cli(config, output_dir, **kwargs):
+def cli(config, **kwargs):
     config = read_config(config)
-    runner = LocalRunner(config, output_dir=output_dir, **kwargs)
+    runner = LocalRunner(config, **kwargs)
     runner.run()
 
 

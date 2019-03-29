@@ -13,6 +13,7 @@ from reprobench.core.events import (
     WORKER_DONE,
     WORKER_LEAVE,
     RUN_STEP,
+    RUN_INTERRUPT,
 )
 from reprobench.utils import clean_up, decode_message, import_class, send_event
 
@@ -27,12 +28,15 @@ class BenchmarkWorker:
     def __init__(self, server_address):
         self.server_address = server_address
 
+    def killed(run_id):
+        send_event(self.socket, RUN_INTERRUPT, run_id)
+
     def loop(self):
 
         while True:
             send_event(self.socket, WORKER_REQUEST)
 
-            reply_count = self.socket.poll(timeout=3000)
+            reply_count = self.socket.poll(timeout=10000)
             if reply_count == 0:
                 # looks like the server is dead
                 break
@@ -42,6 +46,8 @@ class BenchmarkWorker:
             if run is None:
                 # there's no more work to do
                 break
+
+            atexit.register(self.killed, run["id"])
 
             tool = import_class(run["tool"])
             if not tool.is_ready():
@@ -62,9 +68,9 @@ class BenchmarkWorker:
                 step.execute(context, config)
             send_event(self.socket, WORKER_DONE, run["id"])
 
-    def run(self):
-        atexit.register(clean_up)
+            atexit.unregister(self.killed)
 
+    def run(self):
         context = zmq.Context()
         self.socket = context.socket(zmq.DEALER)
         self.socket.connect(self.server_address)

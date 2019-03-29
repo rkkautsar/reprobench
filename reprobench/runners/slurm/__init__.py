@@ -1,7 +1,8 @@
-import itertools
+import math
 import os
 import signal
 import subprocess
+import sys
 import time
 from multiprocessing.pool import Pool
 from pathlib import Path
@@ -14,6 +15,7 @@ from playhouse.apsw_ext import APSWDatabase
 from reprobench.core.base import Runner
 from reprobench.core.bootstrap import bootstrap
 from reprobench.core.db import Run, db
+from reprobench.runners.slurm.utils import get_nodelist
 from reprobench.utils import get_db_path, import_class, init_db, read_config
 
 from .utils import create_ranges
@@ -22,66 +24,79 @@ DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 class SlurmRunner(Runner):
-    def __init__(self, config_path, python_path, server_address, **kwargs):
-        self.config = read_config(config_path)
-        self.config_path = config_path
-        self.python_path = python_path
-        self.server_address = server_address
-        self.output_dir = kwargs.pop("output_dir", "./output")
+    def __init__(self, config, **kwargs):
+        self.config = config
+        self.output_dir = kwargs.pop("output_dir")
         self.resume = kwargs.pop("resume", False)
-        self.templates = {}
-        self.templates["server"] = kwargs.pop(
-            "server_template_file", os.path.join(DIR, "./slurm.server.job.tpl")
-        )
-        self.templates["run"] = kwargs.pop(
-            "run_template_file", os.path.join(DIR, "./slurm.run.job.tpl")
-        )
-        self.templates["compile"] = kwargs.pop(
-            "compile_template_file", os.path.join(DIR, "./slurm.compile.job.tpl")
-        )
-        self.queue = []
+        self.port = kwargs.pop("port")
+        self.num_workers = kwargs.pop("num_workers", None)
+        self.db_path = get_db_path(self.output_dir)
 
-    def populate_unfinished_runs(self):
-        query = Run.select(Run.id).where(Run.status < Run.DONE)
-        self.queue = [run.id for run in query]
+    def spawn_server(self, time_limit):
+        logger.info("Spawning server...")
+        server_cmd = f"{sys.exec_prefix}/bin/reprobench -vvv server --database={self.db_path} --port={self.port}"
+        server_submit_cmd = [
+            "sbatch",
+            "--parsable",
+            f"--time={time_limit}",
+            f"--job-name={self.config['title']}-benchmark-server",
+            f"--output={self.output_dir}/slurm-server.out",
+            "--wrap",
+            server_cmd,
+        ]
+        logger.debug(server_submit_cmd)
+        server_job = subprocess.check_output(server_submit_cmd).decode().strip()
+        logger.info("Waiting for the server to be assigned...")
+        server_host = get_nodelist(server_job)
+        logger.info(f"Server spawned at {server_host}, job id: {server_job}")
 
-    def generate_template(self, template_type):
-        template_file = self.templates[template_type]
-        with open(template_file) as tpl:
-            template = Template(tpl.read())
-            job_str = template.safe_substitute(
-                output_dir=self.output_dir,
-                mem=int(1 + self.config["limits"]["memory"] / 1024 / 1024),  # mb
-                time=int(1 + (self.config["limits"]["time"] + 15) / 60),  # minutes
-                run_ids=create_ranges(self.queue),
-                python_path=self.python_path,
-                config_path=self.config_path,
-                server_address=self.server_address,
-            )
+        return server_host
 
-        job_path = Path(self.output_dir) / f"slurm.{template_type}.job"
-        with open(job_path, "w") as job:
-            job.write(job_str)
+    def spawn_workers(self, server_host, time_limit, mem_limit):
+        logger.info("Spawning workers...")
+        worker_cmd = f"{sys.exec_prefix}/bin/reprobench -vvv worker --host={server_host} --port={self.port}"
+        worker_submit_cmd = [
+            "sbatch",
+            "--parsable",
+            f"--ntasks={self.num_workers}",
+            f"--time={time_limit}",
+            f"--mem={mem_limit}",
+            f"--job-name={self.config['title']}-benchmark-worker",
+            f"--output={self.output_dir}/slurm-worker.out",
+            "--wrap",
+            f"srun {worker_cmd}",
+        ]
+        logger.debug(worker_submit_cmd)
+        worker_job = subprocess.check_output(worker_submit_cmd).decode().strip()
+        logger.info(f"Workers job id: {worker_job}")
 
-        return str(job_path.resolve())
+        return worker_job
 
     def run(self):
-        init_db(get_db_path(self.output_dir))
-        self.populate_unfinished_runs()
-        db.close()
+        db_exist = Path(self.db_path).exists()
 
-        if len(self.queue) == 0:
-            logger.success("No tasks remaining to run")
-            exit(0)
+        if not db_exist:
+            bootstrap(self.config, self.output_dir)
 
-        logger.debug("Generating templates...")
-        templates = {t: self.generate_template(t) for t in ["run"]}
+        if db_exist and not self.resume:
+            logger.warning(
+                f"Previous run exists in {self.output_dir}. Please use --resume, or specify a different output directory"
+            )
+            exit(1)
 
-        logger.info("Submitting jobs to SLURM...")
+        init_db(self.db_path)
+        limits = self.config["limits"]
+        num_jobs = Run.select(Run.id).where(Run.status < Run.DONE).count()
+        jobs_per_worker = int(math.ceil(num_jobs / self.num_workers))
 
-        run_cmd = ["sbatch", "--parsable", templates["run"]]
-        run_job = subprocess.check_output(run_cmd).decode().strip()
-        logger.debug(f"Run job id: {run_job}")
+        # @TODO improve this
+        time_limit = 2 * limits["time"] * jobs_per_worker
+        mem_limit = 2 * limits["memory"]
+
+        server_host = self.spawn_server(time_limit)
+        logger.info("Sleeping for 3s...")
+        time.sleep(3)
+        self.spawn_workers(server_host, time_limit, mem_limit)
 
 
 @click.command("slurm")
@@ -90,19 +105,15 @@ class SlurmRunner(Runner):
     "--output-dir",
     type=click.Path(file_okay=False, writable=True, resolve_path=True),
     default="./output",
-    required=True,
     show_default=True,
 )
-@click.option("--run-template", type=click.Path(dir_okay=False, resolve_path=True))
-@click.option("--compile-template", type=click.Path(dir_okay=False, resolve_path=True))
-@click.option("-r", "--resume", is_flag=True)
-@click.option("-p", "--python-path", required=True, type=click.Path(resolve_path=True))
-@click.option("-s", "--server", required=True)
+@click.option("--resume", is_flag=True, default=False)
+@click.option("-w", "--num-workers", type=int, required=True)
+@click.option("-p", "--port", default=31313, show_default=True)
 @click.argument("config", type=click.Path())
-def cli(config, output_dir, python_path, server, **kwargs):
-    runner = SlurmRunner(
-        config_path=config, python_path=python_path, server_address=server, **kwargs
-    )
+def cli(config, **kwargs):
+    config = read_config(config)
+    runner = SlurmRunner(config, **kwargs)
     runner.run()
 
 

@@ -1,6 +1,14 @@
+from loguru import logger
+
 from reprobench.core.db import Run, Step, Limit
 from reprobench.core.base import Observer
-from reprobench.core.events import RUN_FINISH, RUN_START, RUN_STEP, WORKER_REQUEST
+from reprobench.core.events import (
+    RUN_FINISH,
+    RUN_START,
+    RUN_STEP,
+    RUN_INTERRUPT,
+    WORKER_REQUEST,
+)
 from reprobench.utils import encode_message
 
 
@@ -34,6 +42,8 @@ class CoreObserver(Observer):
                 limits=limits,
             )
             reply.send_multipart([address, encode_message(run_dict)])
+        elif event_type == RUN_INTERRUPT:
+            Run.update(status=Run.PENDING).where(Run.id == payload).execute()
         elif event_type == RUN_START:
             Run.update(status=Run.RUNNING).where(Run.id == payload).execute()
         elif event_type == RUN_STEP:

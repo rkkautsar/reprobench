@@ -34,7 +34,8 @@ class PsmonExecutor(Executor):
         )
         monitor.subscribe("wall_time", WallTimeLimiter(float(limits["time"]) + 15))
         monitor.subscribe("cpu_time", CpuTimeLimiter(float(limits["time"])))
-        monitor.subscribe("max_memory", MaxMemoryLimiter(float(limits["memory"])))
+        MB = 1024 * 1024
+        monitor.subscribe("max_memory", MaxMemoryLimiter(float(limits["memory"]) * MB))
 
         send_event(context["socket"], RUN_START, run_id)
         stats = monitor.run()

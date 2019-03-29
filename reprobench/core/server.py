@@ -1,4 +1,3 @@
-import atexit
 import platform
 from pathlib import Path
 
@@ -9,7 +8,7 @@ from loguru import logger
 from playhouse.apsw_ext import APSWDatabase
 
 from reprobench.core.db import Observer, Run, db
-from reprobench.core.events import WORKER_DONE
+from reprobench.core.events import WORKER_JOIN, WORKER_LEAVE, WORKER_DONE
 from reprobench.core.observers import CoreObserver
 from reprobench.utils import clean_up, get_db_path, import_class, read_config
 
@@ -27,17 +26,26 @@ class BenchmarkServer:
         ]
         self.serve_forever = kwargs.pop("forever", False)
         self.jobs_waited = 0
+        self.worker_count = 0
 
     def loop(self):
         while True:
-            if not self.serve_forever and self.jobs_waited == 0:
+            if (
+                not self.serve_forever
+                and self.jobs_waited == 0
+                and self.worker_count == 0
+            ):
                 break
 
             address, event_type, payload = self.frontend.recv_multipart()
             logger.trace((address, event_type, payload))
             self.backend.send_multipart([event_type, payload, address])
 
-            if event_type == WORKER_DONE:
+            if event_type == WORKER_JOIN:
+                self.worker_count += 1
+            elif event_type == WORKER_LEAVE:
+                self.worker_count -= 1
+            elif event_type == WORKER_DONE:
                 self.jobs_waited -= 1
 
     def run(self):
@@ -74,8 +82,6 @@ class BenchmarkServer:
 @click.option("-h", "--host", default="0.0.0.0", show_default=True)
 @click.option("-p", "--port", default=31313, show_default=True)
 def cli(database, host, port, **kwargs):
-    atexit.register(clean_up)
-
     db_path = str(Path(database).resolve())
     frontend_address = f"tcp://{host}:{port}"
     server = BenchmarkServer(db_path, frontend_address, **kwargs)
