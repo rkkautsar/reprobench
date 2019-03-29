@@ -32,7 +32,7 @@ class LocalRunner(BaseRunner):
             worker.join()
 
         logger.info(f"Total time elapsed: {time.perf_counter() - self.start_time}")
-    
+
     def prepare(self):
         atexit.register(self.exit)
         self.start_time = time.perf_counter()
@@ -48,7 +48,7 @@ class LocalRunner(BaseRunner):
             worker_proc = Process(target=worker.run)
             worker_proc.start()
             self.workers.append(worker_proc)
-        
+
     def wait(self):
         self.server_proc.join()
         for worker in self.workers:
