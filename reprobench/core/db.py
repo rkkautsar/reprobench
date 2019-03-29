@@ -22,7 +22,7 @@ class BaseModel(Model):
 
 
 class Limit(BaseModel):
-    type = CharField(max_length=32, primary_key=True)
+    key = CharField(max_length=32, primary_key=True)
     value = CharField()
 
 

@@ -13,35 +13,24 @@ from .events import STORE_RUNSTATS
 
 
 class PsmonExecutor(Executor):
-    @classmethod
-    def execute(cls, context, config=None):
-        tool = context["tool"]
+    def __init__(self, context, config):
+        self.socket = context["socket"]
+        self.run_id = context["run"]["id"]
+
+        if config is not None:
+            wall_grace = config.get("wall_grace")
+        else:
+            wall_grace = 15
+
         limits = context["run"]["limits"]
-        run_id = context["run"]["id"]
-        tool.pre_run(context)
-
-        cwd = context["run"]["directory"]
-        out_file = (Path(cwd) / "run.out").open("wb")
-        err_file = (Path(cwd) / "run.err").open("wb")
-
-        cmd = tool.cmdline(context)
-        logger.debug(f"Running {cwd}")
-        logger.trace(cmd)
-
-        monitor = ProcessMonitor(
-            cmd, cwd=cwd, stdout=out_file, stderr=err_file, freq=15
-        )
-        monitor.subscribe("wall_time", WallTimeLimiter(float(limits["time"]) + 15))
-        monitor.subscribe("cpu_time", CpuTimeLimiter(float(limits["time"])))
+        time_limit = float(limits["time"])
         MB = 1024 * 1024
-        monitor.subscribe("max_memory", MaxMemoryLimiter(float(limits["memory"]) * MB))
 
-        send_event(context["socket"], RUN_START, run_id)
-        stats = monitor.run()
-        send_event(context["socket"], RUN_FINISH, run_id)
+        self.wall_limit = time_limit + wall_grace
+        self.cpu_limit = time_limit
+        self.mem_limit = float(limits["memory"]) * MB
 
-        logger.debug(f"Finished {cwd}")
-
+    def compile_stats(self, stats):
         verdict = None
         if stats["error"] == TimeoutError:
             verdict = RunStatistic.TIMEOUT
@@ -54,7 +43,41 @@ class PsmonExecutor(Executor):
 
         del stats["error"]
 
-        payload = dict(run_id=run_id, verdict=verdict, **stats)
-        send_event(context["socket"], STORE_RUNSTATS, payload)
+        return dict(run_id=self.run_id, verdict=verdict, **stats)
 
-        tool.post_run(context)
+    def run(
+        self,
+        cmdline,
+        out_path=None,
+        err_path=None,
+        input=None,
+        directory=None,
+        **kwargs,
+    ):
+        out_file = open(out_path, "wb")
+        err_file = open(out_path, "wb")
+
+        monitor = ProcessMonitor(
+            cmdline,
+            cwd=directory,
+            stdout=out_file,
+            stderr=err_file,
+            input=input,
+            freq=15,
+        )
+        monitor.subscribe("wall_time", WallTimeLimiter(self.wall_limit))
+        monitor.subscribe("cpu_time", CpuTimeLimiter(self.cpu_limit))
+        monitor.subscribe("max_memory", MaxMemoryLimiter(self.mem_limit))
+
+        logger.debug(f"Running {directory}")
+        send_event(self.socket, RUN_START, self.run_id)
+        stats = monitor.run()
+        send_event(self.socket, RUN_FINISH, self.run_id)
+        logger.debug(f"Finished {directory}")
+
+        out_file.close()
+        err_file.close()
+
+        payload = self.compile_stats(stats)
+        send_event(self.socket, STORE_RUNSTATS, payload)
+

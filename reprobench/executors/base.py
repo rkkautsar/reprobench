@@ -14,7 +14,23 @@ class RunStatisticObserver(Observer):
 
 
 class Executor(Step):
+    def run(
+        self,
+        cmdline,
+        out_file=None,
+        err_file=None,
+        input=None,
+        directory=None,
+        **kwargs
+    ):
+        raise NotImplementedError
+
     @classmethod
     def register(cls, config=None):
         RunStatistic.create_table()
 
+    @classmethod
+    def execute(cls, context, config=None):
+        tool = context["tool"]
+        executor = cls(context, config)
+        tool(context).run(executor)

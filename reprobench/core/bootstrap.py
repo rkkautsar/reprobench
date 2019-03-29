@@ -1,5 +1,7 @@
+import atexit
 import itertools
 import json
+import shutil
 from pathlib import Path
 
 import click
@@ -39,7 +41,7 @@ def _bootstrap_db(config):
     db.create_tables(MODELS)
 
     Limit.insert_many(
-        [{"type": key, "value": value} for (key, value) in config["limits"].items()]
+        [{"key": key, "value": value} for (key, value) in config["limits"].items()]
     ).execute()
 
     Step.insert_many(
@@ -190,6 +192,7 @@ def _bootstrap_runs(config, output_dir):
 
 def bootstrap(config, output_dir):
     Path(output_dir).mkdir(parents=True, exist_ok=True)
+    atexit.register(shutil.rmtree, output_dir)
     db_path = get_db_path(output_dir)
     init_db(db_path)
     _bootstrap_db(config)
@@ -198,6 +201,7 @@ def bootstrap(config, output_dir):
     _bootstrap_tasks(config)
     _register_steps(config)
     _bootstrap_runs(config, output_dir)
+    atexit.unregister(shutil.rmtree)
 
 
 @click.command(name="bootstrap")
