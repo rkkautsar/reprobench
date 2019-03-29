@@ -11,4 +11,4 @@ class LocalSource(BaseTaskSource):
     def setup(self):
         spec = PathSpec.from_lines("gitwildmatch", self.patterns.splitlines())
         matches = spec.match_tree(self.path)
-        return map(lambda match: Path(self.path) / match, matches)
+        return map(lambda match: (Path(self.path) / match).resolve(), matches)

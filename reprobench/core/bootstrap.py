@@ -123,7 +123,11 @@ def _bootstrap_tools(config):
     ).execute()
 
     for tool in config["tools"].values():
-        import_class(tool["module"]).setup()
+        tool_module = import_class(tool["module"])
+
+        if not tool_module.is_ready():
+            tool_module.setup()
+
         for prefix in tool["parameters"]:
             for parameter_group in ParameterGroup.select().where(
                 ParameterGroup.name.startswith(prefix)

@@ -55,7 +55,7 @@ class PsmonExecutor(Executor):
         **kwargs,
     ):
         out_file = open(out_path, "wb")
-        err_file = open(out_path, "wb")
+        err_file = open(err_path, "wb")
 
         monitor = ProcessMonitor(
             cmdline,

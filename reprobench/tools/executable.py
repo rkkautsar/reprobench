@@ -32,6 +32,7 @@ class ExecutableTool(Tool):
         return self.get_err_path().read_bytes()
 
     def run(self, executor):
+        logger.debug([*self.get_cmdline(), self.task])
         executor.run(
             [*self.get_cmdline(), self.task],
             directory=self.cwd,
