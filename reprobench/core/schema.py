@@ -1,16 +1,4 @@
-from strictyaml import (
-    Map,
-    Regex,
-    Seq,
-    Str,
-    Int,
-    Optional,
-    Seq,
-    MapPattern,
-    Enum,
-    Bool,
-    Any,
-)
+from strictyaml import Any, Enum, Int, Map, MapPattern, Optional, Regex, Seq, Str
 
 limits_schema = Map(
     {

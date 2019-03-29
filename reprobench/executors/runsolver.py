@@ -3,13 +3,12 @@ TODO: Update to latest refactor
 """
 
 import subprocess
-import functools
 import operator
 from pathlib import Path
 
 from reprobench.core.base import Step
 from reprobench.core.db import Run, RunStatistic
-from reprobench.utils import find_executable, silent_run
+from reprobench.utils import find_executable
 
 
 class RunsolverExecutor(Step):

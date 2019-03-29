@@ -1,11 +1,9 @@
 from datetime import datetime
-from pathlib import Path
 
 from playhouse.apsw_ext import (
     Model,
     Proxy,
     BlobField,
-    BooleanField,
     CharField,
     CompositeKey,
     DateTimeField,

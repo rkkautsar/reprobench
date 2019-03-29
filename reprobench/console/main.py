@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import argparse
 import os
 import sys
 
@@ -10,8 +9,6 @@ from loguru import logger
 from reprobench.core.bootstrap import cli as bootstrap_cli
 from reprobench.core.server import cli as server_cli
 from reprobench.core.worker import cli as worker_cli
-from reprobench.utils import import_class
-
 from reprobench.runners import cli as runner_cli
 
 

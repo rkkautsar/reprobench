@@ -139,6 +139,8 @@ def _bootstrap_tasks(config):
         task_group = TaskGroup.create(name=group)
 
         source = None
+
+        # @TODO use chain of command
         if task["type"] == "local":
             source = LocalSource(**task)
         elif task["type"] == "url":

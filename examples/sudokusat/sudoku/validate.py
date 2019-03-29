@@ -3,10 +3,8 @@ import re
 from datetime import datetime
 from math import sqrt
 from pathlib import Path
-from typing import List
 
 import numpy as np
-from loguru import logger
 from playhouse.apsw_ext import BooleanField, DateTimeField, ForeignKeyField
 
 from reprobench.core.base import Step, Observer
@@ -50,7 +48,7 @@ class SudokuValidator(Step):
     @classmethod
     def _check_consistency(cls, task, output):
         # Check if output is consistent with input
-        for i in range(len(task)):
+        for i, _ in enumerate(task):
             for j, char in enumerate(task[i]):
                 if char != "_" and output[i][j] != char:
                     return False
