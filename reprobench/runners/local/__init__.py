@@ -1,71 +1,58 @@
 import atexit
-import itertools
-import os
-import shutil
-import signal
 import time
-from datetime import datetime
-from multiprocessing import Process
-from multiprocessing.pool import Pool
+from multiprocessing import Process, cpu_count
 from pathlib import Path
 
 import click
 from loguru import logger
-from playhouse.apsw_ext import APSWDatabase
-from tqdm import tqdm
 
-from reprobench.core.base import Runner
-from reprobench.core.bootstrap import bootstrap
-from reprobench.core.db import Run, db
 from reprobench.core.server import BenchmarkServer
-from reprobench.task_sources.local import LocalSource
-from reprobench.utils import get_db_path, import_class, init_db, read_config
+from reprobench.core.worker import BenchmarkWorker
+from reprobench.runners.base import BaseRunner
+from reprobench.utils import read_config
 
-from .worker import execute
 
-
-class LocalRunner(Runner):
+class LocalRunner(BaseRunner):
     def __init__(self, config, **kwargs):
-        self.config = config
-        self.output_dir = kwargs.pop("output_dir", "./output")
-        self.resume = kwargs.pop("resume", False)
-        self.server_address = kwargs.pop("server", "tcp://127.0.0.1:31313")
-        self.observers = []
-        self.queue = []
+        super().__init__(config, **kwargs)
+        self.num_workers = kwargs.pop("num_workers") or cpu_count()
+        self.start_time = None
+        self.workers = []
+        port = kwargs.pop("port")
+        host = kwargs.pop("host")
+        self.server_address = f"tcp://{host}:{port}"
 
     def exit(self):
-        if len(self.queue) > 0 and hasattr(self, "pool"):
-            self.pool.terminate()
-            self.pool.join()
+        if hasattr(self, "server_proc"):
+            self.server_proc.terminate()
+            self.server_proc.join()
 
-        if not self.resume and not self.setup_finished:
-            shutil.rmtree(self.output_dir)
+        for worker in self.workers:
+            worker.terminate()
+            worker.join()
 
-    def populate_unfinished_runs(self):
-        query = Run.select(Run.id).where(Run.status < Run.DONE)
-        self.queue = [(run.id, self.config, self.server_address) for run in query]
+        logger.info(f"Total time elapsed: {time.perf_counter() - self.start_time}")
 
-    def run(self):
-        init_db(get_db_path(self.output_dir))
-        self.populate_unfinished_runs()
-        db.close()
+    def prepare(self):
+        atexit.register(self.exit)
+        self.start_time = time.perf_counter()
 
-        if len(self.queue) == 0:
-            logger.success("No tasks remaining to run")
-            exit(0)
+    def spawn_server(self):
+        server = BenchmarkServer(self.db_path, self.server_address)
+        self.server_proc = Process(target=server.run)
+        self.server_proc.start()
 
-        logger.debug("Executing runs...")
+    def spawn_workers(self):
+        worker = BenchmarkWorker(self.server_address)
+        for _ in range(self.num_workers):
+            worker_proc = Process(target=worker.run)
+            worker_proc.start()
+            self.workers.append(worker_proc)
 
-        with Pool() as pool:
-            it = pool.imap_unordered(execute, self.queue)
-            progress_bar = tqdm(desc="Executing runs", total=len(self.queue))
-            for _ in it:
-                progress_bar.update()
-            progress_bar.close()
-
-        logger.debug("Running teardown on all tools...")
-        for tool in self.config["tools"].values():
-            import_class(tool["module"]).teardown()
+    def wait(self):
+        self.server_proc.join()
+        for worker in self.workers:
+            worker.join()
 
 
 @click.command("local")
@@ -76,12 +63,14 @@ class LocalRunner(Runner):
     default="./output",
     show_default=True,
 )
-@click.option("-r", "--resume", is_flag=True)
-@click.option("-s", "--server", default="tcp://127.0.0.1:31313")
+@click.option("--resume", is_flag=True, default=False)
+@click.option("-w", "--num-workers", type=int)
+@click.option("-h", "--host", default="127.0.0.1", show_default=True)
+@click.option("-p", "--port", default=31313, show_default=True)
 @click.argument("config", type=click.Path())
-def cli(config, output_dir, **kwargs):
+def cli(config, **kwargs):
     config = read_config(config)
-    runner = LocalRunner(config, output_dir=output_dir, **kwargs)
+    runner = LocalRunner(config, **kwargs)
     runner.run()
 
 

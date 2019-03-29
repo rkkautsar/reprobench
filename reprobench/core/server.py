@@ -1,4 +1,4 @@
-import atexit
+from pathlib import Path
 
 import click
 import gevent
@@ -6,39 +6,56 @@ import zmq.green as zmq
 from loguru import logger
 from playhouse.apsw_ext import APSWDatabase
 
-from reprobench.core.db import Run, db
-from reprobench.core.events import RUN_COMPLETE
+from reprobench.core.db import Observer, Run, db
+from reprobench.core.events import WORKER_JOIN, WORKER_LEAVE, WORKER_DONE
 from reprobench.core.observers import CoreObserver
-from reprobench.utils import clean_up, get_db_path, import_class, read_config
-
-BACKEND_ADDRESS = "inproc://backend"
+from reprobench.utils import import_class
 
 
 class BenchmarkServer:
-    def __init__(self, observers, db_path, address, **kwargs):
+    BACKEND_ADDRESS = "inproc://backend"
+
+    def __init__(self, db_path, frontend_address, **kwargs):
         super().__init__()
         db.initialize(APSWDatabase(db_path))
-        self.frontend_address = address
+        self.frontend_address = frontend_address
+        self.observers = [CoreObserver]
+        self.observers += [
+            import_class(o.module) for o in Observer.select(Observer.module)
+        ]
         self.serve_forever = kwargs.pop("forever", False)
-        self.observers = observers + [CoreObserver]
-        self.jobs_waited = Run.select().where(Run.status < Run.DONE).count()
+        self.jobs_waited = 0
+        self.worker_count = 0
 
     def loop(self):
         while True:
-            address, event_type, payload = self.frontend.recv_multipart()
-            logger.debug((address, event_type, payload))
-            self.backend.send_multipart([event_type, payload, address])
-            if event_type == RUN_COMPLETE:
-                self.jobs_waited -= 1
-            if not self.serve_forever and self.jobs_waited == 0:
+            if (
+                not self.serve_forever
+                and self.jobs_waited == 0
+                and self.worker_count == 0
+            ):
                 break
+
+            address, event_type, payload = self.frontend.recv_multipart()
+            logger.trace((address, event_type, payload))
+            self.backend.send_multipart([event_type, payload, address])
+
+            if event_type == WORKER_JOIN:
+                self.worker_count += 1
+            elif event_type == WORKER_LEAVE:
+                self.worker_count -= 1
+            elif event_type == WORKER_DONE:
+                self.jobs_waited -= 1
 
     def run(self):
         self.context = zmq.Context()
         self.frontend = self.context.socket(zmq.ROUTER)
         self.frontend.bind(self.frontend_address)
         self.backend = self.context.socket(zmq.PUB)
-        self.backend.bind(BACKEND_ADDRESS)
+        self.backend.bind(self.BACKEND_ADDRESS)
+
+        Run.update(status=Run.PENDING).where(Run.status < Run.DONE).execute()
+        self.jobs_waited = Run.select().where(Run.status == Run.PENDING).count()
 
         logger.info(f"Listening on {self.frontend_address}")
 
@@ -47,8 +64,8 @@ class BenchmarkServer:
             greenlet = gevent.spawn(
                 observer.observe,
                 self.context,
-                backend_address=BACKEND_ADDRESS,
-                frontend=self.frontend,
+                backend_address=self.BACKEND_ADDRESS,
+                reply=self.frontend,
             )
             observer_greenlets.append(greenlet)
 
@@ -59,28 +76,14 @@ class BenchmarkServer:
 
 
 @click.command(name="server")
-@click.option("-c", "--config", required=True, type=click.Path())
 @click.option("-f", "--forever", help="Serve forever", is_flag=True)
-@click.option(
-    "-o",
-    "--output-dir",
-    type=click.Path(file_okay=False, writable=True, resolve_path=True),
-    default="./output",
-    required=True,
-    show_default=True,
-)
-@click.argument("server_address", default="tcp://0.0.0.0:31313")
-def cli(config, output_dir, server_address, **kwargs):
-    atexit.register(clean_up)
-
-    config = read_config(config)
-    database = get_db_path(output_dir)
-
-    observers = []
-    for observer in config["observers"]:
-        observers.append(import_class(observer["module"]))
-
-    server = BenchmarkServer(observers, database, server_address, **kwargs)
+@click.option("-d", "--database", default="./output/benchmark.db", show_default=True)
+@click.option("-h", "--host", default="0.0.0.0", show_default=True)
+@click.option("-p", "--port", default=31313, show_default=True)
+def cli(database, host, port, **kwargs):
+    db_path = str(Path(database).resolve())
+    frontend_address = f"tcp://{host}:{port}"
+    server = BenchmarkServer(db_path, frontend_address, **kwargs)
     server.run()
 
 

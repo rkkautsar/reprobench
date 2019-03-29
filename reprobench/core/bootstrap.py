@@ -1,4 +1,5 @@
 import itertools
+import json
 from pathlib import Path
 
 import click
@@ -8,9 +9,11 @@ from tqdm import tqdm
 from reprobench.core.db import (
     MODELS,
     Limit,
+    Observer,
     Parameter,
     ParameterGroup,
     Run,
+    Step,
     Task,
     TaskGroup,
     Tool,
@@ -37,6 +40,28 @@ def _bootstrap_db(config):
 
     Limit.insert_many(
         [{"type": key, "value": value} for (key, value) in config["limits"].items()]
+    ).execute()
+
+    Step.insert_many(
+        [
+            {
+                "category": key,
+                "module": step["module"],
+                "config": json.dumps(step.get("config", None)),
+            }
+            for key, steps in config["steps"].items()
+            for step in steps
+        ]
+    ).execute()
+
+    Observer.insert_many(
+        [
+            {
+                "module": observer["module"],
+                "config": json.dumps(observer.get("config", None)),
+            }
+            for observer in config["observers"]
+        ]
     ).execute()
 
 
@@ -114,6 +139,8 @@ def _bootstrap_tasks(config):
         task_group = TaskGroup.create(name=group)
 
         source = None
+
+        # @TODO use chain of command
         if task["type"] == "local":
             source = LocalSource(**task)
         elif task["type"] == "url":

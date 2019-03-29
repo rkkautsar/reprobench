@@ -1,3 +1,4 @@
+import subprocess
 from itertools import tee, zip_longest
 
 # https://stackoverflow.com/a/3430312/9314778
@@ -30,3 +31,14 @@ def get_range(it):
 def create_ranges(zones):
     it = pairwise_longest(zones)
     return ",".join(iter(lambda: get_range(it), None))
+
+
+def get_nodelist(job_step):
+    """
+    Blocks until job step is assigned a node
+    """
+    while True:
+        cmd = ["sacct", "-n", "--parsable2", "-j", job_step, "-o", "NodeList"]
+        output = subprocess.check_output(cmd)
+        if len(output) > 0 or output == b"None assigned\n":
+            return output.decode().strip()

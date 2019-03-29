@@ -9,7 +9,7 @@ from .local import LocalSource
 class UrlSource(LocalSource):
     def __init__(
         self,
-        urls=[],
+        urls=None,
         path=None,
         patterns="",
         skip_existing=True,
@@ -17,15 +17,15 @@ class UrlSource(LocalSource):
         **kwargs,
     ):
         super().__init__(path, patterns=patterns)
-        self.urls = urls
+        self.urls = urls or []
         self.extract_archives = extract_archives
         self.skip_existing = skip_existing
 
     def extract_zip(self, path):
         extract_path = Path(path) / ".." / path.stem
         if not extract_path.is_dir():
-            with ZipFile(path) as zip:
-                zip.extractall(extract_path)
+            with ZipFile(path) as zf:
+                zf.extractall(extract_path)
 
     def setup(self):
         root = Path(self.path)

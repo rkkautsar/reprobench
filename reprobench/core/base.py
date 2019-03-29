@@ -15,7 +15,7 @@ class Observer:
     SUBSCRIBED_EVENTS = []
 
     @classmethod
-    def observe(cls, context, backend_address, frontend):
+    def observe(cls, context, backend_address, reply):
         socket = context.socket(zmq.SUB)
         socket.connect(backend_address)
 
@@ -24,7 +24,7 @@ class Observer:
 
         while True:
             event_type, payload, address = recv_event(socket)
-            cls.handle_event(event_type, payload, frontend=frontend, address=address)
+            cls.handle_event(event_type, payload, reply=reply, address=address)
 
     @classmethod
     def handle_event(cls, event_type, payload, **kwargs):
@@ -52,6 +52,10 @@ class Tool:
     @classmethod
     def version(cls):
         return "1.0.0"
+
+    @classmethod
+    def is_ready(cls):
+        pass
 
     @classmethod
     def pre_run(cls, context):

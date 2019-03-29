@@ -1,14 +1,16 @@
-from pathlib import Path
 from datetime import datetime
-from peewee import Proxy, Model
+
 from playhouse.apsw_ext import (
-    DateTimeField,
+    Model,
+    Proxy,
+    BlobField,
     CharField,
+    CompositeKey,
+    DateTimeField,
+    FloatField,
     ForeignKeyField,
     IntegerField,
-    BooleanField,
-    CompositeKey,
-    FloatField,
+    AutoField,
 )
 
 db = Proxy()
@@ -60,6 +62,24 @@ class ToolParameterGroup(BaseModel):
         primary_key = CompositeKey("tool", "parameter_group")
 
 
+class BasePlugin(BaseModel):
+    module = CharField(index=True)
+    config = BlobField()
+
+
+class Step(BasePlugin):
+    RUN = "run"
+    AGGREGATE = "aggregate"
+
+    CATEGORY_CHOICES = ((RUN, "Single run step"), (AGGREGATE, "Aggregation step"))
+
+    category = CharField(choices=CATEGORY_CHOICES, index=True)
+
+
+class Observer(BasePlugin):
+    pass
+
+
 class Run(BaseModel):
     FAILED = -2
     CANCELED = -1
@@ -83,6 +103,7 @@ class Run(BaseModel):
     task = ForeignKeyField(Task, backref="runs")
     status = IntegerField(choices=STATUS_CHOICES, default=PENDING)
     directory = CharField(null=True)
+    current_step = ForeignKeyField(Step, null=True)
 
     class Meta:
         only_save_dirty = True
@@ -97,4 +118,6 @@ MODELS = (
     Parameter,
     Run,
     ToolParameterGroup,
+    Step,
+    Observer,
 )
