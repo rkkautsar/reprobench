@@ -1,4 +1,3 @@
-import platform
 from pathlib import Path
 
 import click
@@ -10,7 +9,7 @@ from playhouse.apsw_ext import APSWDatabase
 from reprobench.core.db import Observer, Run, db
 from reprobench.core.events import WORKER_JOIN, WORKER_LEAVE, WORKER_DONE
 from reprobench.core.observers import CoreObserver
-from reprobench.utils import clean_up, get_db_path, import_class, read_config
+from reprobench.utils import import_class
 
 
 class BenchmarkServer:

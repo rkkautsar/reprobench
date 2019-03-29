@@ -1,5 +1,3 @@
-from loguru import logger
-
 from reprobench.core.db import Run, Step, Limit
 from reprobench.core.base import Observer
 from reprobench.core.events import (

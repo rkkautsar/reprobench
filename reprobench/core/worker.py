@@ -1,9 +1,7 @@
 import atexit
 import json
-import multiprocessing
 
 import click
-import tqdm
 import zmq
 from loguru import logger
 
@@ -15,7 +13,7 @@ from reprobench.core.events import (
     RUN_STEP,
     RUN_INTERRUPT,
 )
-from reprobench.utils import clean_up, decode_message, import_class, send_event
+from reprobench.utils import decode_message, import_class, send_event
 
 
 class BenchmarkWorker:

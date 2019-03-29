@@ -24,7 +24,6 @@ from reprobench.task_sources.doi import DOISource
 from reprobench.task_sources.local import LocalSource
 from reprobench.task_sources.url import UrlSource
 from reprobench.utils import (
-    encode_message,
     get_db_path,
     import_class,
     init_db,
