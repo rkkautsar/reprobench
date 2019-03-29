@@ -95,12 +95,9 @@ class SudokuValidator(Step):
 
     @classmethod
     def execute(cls, context, config=None):
-        task = cls._filter_empty_lines(
-            Path(context["run"]["task"]).read_text().split("\n")
-        )
-        output = cls._filter_empty_lines(
-            (Path(context["run"]["directory"]) / "run.out").read_text().split("\n")
-        )
+        tool = context["tool"](context)
+        task = cls._filter_empty_lines(Path(tool.task).read_text().split("\n"))
+        output = cls._filter_empty_lines(tool.get_output().decode().split("\n"))
 
         is_valid = True
 

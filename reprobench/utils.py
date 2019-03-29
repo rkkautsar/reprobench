@@ -11,6 +11,7 @@ from shutil import which
 import msgpack
 import requests
 import strictyaml
+from loguru import logger
 from playhouse.apsw_ext import APSWDatabase
 from tqdm import tqdm
 
@@ -52,7 +53,7 @@ def download_file(url, dest):
     r = requests.get(url, stream=True)
 
     with tqdm(
-        total=int(r.headers["content-length"]),
+        total=int(r.headers.get("content-length", 0)),
         unit="B",
         unit_scale=True,
         unit_divisor=1024,

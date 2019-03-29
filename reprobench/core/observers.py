@@ -24,14 +24,15 @@ class CoreObserver(Observer):
         run.save()
 
         runsteps = Step.select().where(Step.category == Step.RUN)
-        limits = {l.type: l.value for l in Limit.select()}
+        limits = {l.key: l.value for l in Limit.select()}
+        parameters = {p.key: p.value for p in run.parameter_group.parameters}
 
         run_dict = dict(
             id=run.id,
             task=run.task_id,
             tool=run.tool_id,
             directory=run.directory,
-            parameters=list(run.parameter_group.parameters.dicts()),
+            parameters=parameters,
             steps=list(runsteps.dicts()),
             limits=limits,
         )

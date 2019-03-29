@@ -43,7 +43,20 @@ class Step:
 
 class Tool:
     name = "Base Tool"
-    REQUIRED_PATHS = []
+
+    def __init__(self, context):
+        self.cwd = context["run"]["directory"]
+        self.parameters = context["run"]["parameters"]
+        self.task = context["run"]["task"]
+
+    def run(self, executor):
+        raise NotImplementedError
+
+    def get_output(self):
+        raise NotImplementedError
+
+    def get_error(self):
+        raise NotImplementedError
 
     @classmethod
     def setup(cls):
@@ -55,18 +68,6 @@ class Tool:
 
     @classmethod
     def is_ready(cls):
-        pass
-
-    @classmethod
-    def pre_run(cls, context):
-        pass
-
-    @classmethod
-    def cmdline(cls, context):
-        pass
-
-    @classmethod
-    def post_run(cls, context):
         pass
 
     @classmethod

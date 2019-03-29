@@ -1,23 +1,33 @@
 import os
 import subprocess
-from reprobench.tools.executable import ExecutableTool
+from pathlib import Path
+
 from reprobench.core.db import Parameter
-from reprobench.utils import silent_run
+from reprobench.tools.executable import ExecutableTool
+from reprobench.utils import download_file, silent_run
+
+
+DIR = os.path.dirname(__file__)
 
 
 class Team1SudokuSolver(ExecutableTool):
     name = "Team 1 Sudoku Solver"
-    path = os.path.join(os.path.dirname(__file__), "sudoku_team1")
+    base_path = Path(DIR) / "_downloaded"
+    path = base_path / "sudoku-solver-master" / "solver"
+    url = "https://github.com/rkkautsar/sudoku-solver/archive/master.zip"
 
     @classmethod
-    def cmdline(cls, context):
-        task = os.path.abspath(context["run"]["task"])
-        parameters = context["run"]["parameters"]
-        solver_parameter = [p for p in parameters if p["key"] == "solver"]
+    def setup(cls):
+        cls.base_path.mkdir(parents=True, exist_ok=True)
+        zip_path = str(cls.base_path / "sudoku-solver.zip")
+        download_file(cls.url, zip_path)
+        subprocess.run(["unzip", zip_path], cwd=cls.base_path)
+        subprocess.run(["nim", "c", str(cls.path)])
 
-        if len(solver_parameter) == 0:
-            solver = "glucose"
-        else:
-            solver = solver_parameter[0]["value"]
+    def get_arguments(self):
+        solver = self.parameters.get("solver", "glucose")
+        return [f"-s={solver}"]
 
-        return [cls.path, f"-s={solver}", task]
+    @classmethod
+    def is_ready(cls):
+        return Path(cls.path).is_file()
