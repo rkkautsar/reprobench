@@ -11,7 +11,6 @@ from shutil import which
 import msgpack
 import requests
 import strictyaml
-from loguru import logger
 from playhouse.apsw_ext import APSWDatabase
 from tqdm import tqdm
 

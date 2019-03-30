@@ -17,9 +17,9 @@ class Executor(Step):
     def run(
         self,
         cmdline,
-        out_file=None,
-        err_file=None,
-        input=None,
+        out_path=None,
+        err_path=None,
+        input_str=None,
         directory=None,
         **kwargs
     ):

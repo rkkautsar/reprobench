@@ -2,9 +2,8 @@ import os
 import subprocess
 from pathlib import Path
 
-from reprobench.core.db import Parameter
 from reprobench.tools.executable import ExecutableTool
-from reprobench.utils import download_file, silent_run
+from reprobench.utils import download_file
 
 
 DIR = os.path.dirname(__file__)
