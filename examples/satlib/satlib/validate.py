@@ -1,10 +1,6 @@
-import itertools
-import re
 from datetime import datetime
-from math import sqrt
 from pathlib import Path
 
-import numpy as np
 from playhouse.apsw_ext import BooleanField, DateTimeField, ForeignKeyField
 
 from reprobench.core.base import Step, Observer

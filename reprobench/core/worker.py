@@ -26,7 +26,7 @@ class BenchmarkWorker:
     def __init__(self, server_address):
         self.server_address = server_address
 
-    def killed(run_id):
+    def killed(self, run_id):
         send_event(self.socket, RUN_INTERRUPT, run_id)
 
     def loop(self):

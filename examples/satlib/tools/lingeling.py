@@ -17,7 +17,6 @@ class Lingeling(ExecutableTool):
     url = "https://github.com/arminbiere/lingeling/archive/master.zip"
     prefix = "-"
 
-    @classmethod
     def get_arguments(self):
         return itertools.chain.from_iterable(
             (f"-{key}", value) for key, value in self.parameters.items()
