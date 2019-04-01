@@ -1,5 +1,5 @@
-title: satlib
-description: Benchmark based on SATLIB
+title: sat
+description: SAT Benchmarking
 
 limits:
   time: 30 # s
@@ -10,28 +10,28 @@ steps:
   run:
     - module: reprobench.core.sysinfo.CollectSystemInfo
     - module: reprobench.executors.PsmonExecutor
-    - module: satlib.validate.SATValidator
+    - module: sat.validate.SATValidator
 
 observers:
   - module: reprobench.core.sysinfo.SystemInfoObserver
   - module: reprobench.executors.RunStatisticObserver
-  - module: satlib.validate.SATObserver
+  - module: sat.validate.SATObserver
 
 tasks:
-  aim:
+  circuit_fuzz:
     type: url
     urls:
-      - https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/DIMACS/AIM/aim.tar.gz
-    path: ./tasks/aim
+      - http://aclib.net/cssc2014/instances/circuit_fuzz.tar.gz
+    path: ./tasks/circuit_fuzz
     extract_archives: true
     patterns: |
       **/*.cnf
       !**/*.tar.gz
-  dubois:
+  k3:
     type: url
     urls:
-      - https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/DIMACS/DUBOIS/dubois.tar.gz
-    path: ./tasks/dubois
+      - http://aclib.net/cssc2014/instances/K3.tar.gz
+    path: ./tasks/k3
     extract_archives: true
     patterns: |
       **/*.cnf
