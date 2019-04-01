@@ -27,6 +27,7 @@ class SlurmRunner(BaseRunner):
         num_jobs = Run.select(Run.id).where(Run.status < Run.DONE).count()
         jobs_per_worker = int(math.ceil(num_jobs / self.num_workers))
 
+        self.cpu_count = limits.get("cores", 1)
         # @TODO improve this
         self.time_limit = 2 * limits["time"] * jobs_per_worker
         self.mem_limit = 2 * limits["memory"]
@@ -58,6 +59,7 @@ class SlurmRunner(BaseRunner):
             f"--ntasks={self.num_workers}",
             f"--time={self.time_limit}",
             f"--mem={self.mem_limit}",
+            f"--cpus-per-task={self.cpu_count}",
             f"--job-name={self.config['title']}-benchmark-worker",
             f"--output={self.output_dir}/slurm-worker.out",
             "--wrap",

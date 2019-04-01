@@ -5,7 +5,7 @@ limits_schema = Map(
         "time": Int(),
         Optional("memory", default=8192): Int(),
         Optional("output"): Int(),
-        Optional("cores"): Str(),
+        Optional("cores"): Int(),
     }
 )
 

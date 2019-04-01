@@ -1,3 +1,4 @@
+import itertools
 import os
 import subprocess
 from pathlib import Path
@@ -15,6 +16,12 @@ class Lingeling(ExecutableTool):
     path = base_path / "lingeling-master" / "plingeling"
     url = "https://github.com/arminbiere/lingeling/archive/master.zip"
     prefix = "-"
+
+    @classmethod
+    def get_arguments(self):
+        return itertools.chain.from_iterable(
+            (f"-{key}", value) for key, value in self.parameters.items()
+        )
 
     @classmethod
     def version(cls):

@@ -4,7 +4,7 @@ description: Benchmark based on SATLIB
 limits:
   time: 30 # s
   memory: 2048 # mb
-  # num_cores: 2
+  cores: 2
 
 steps:
   run:
