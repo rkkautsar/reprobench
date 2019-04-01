@@ -1,11 +1,13 @@
 import time
 from pathlib import Path
 
+import zmq
 from loguru import logger
 
 from reprobench.core.base import Runner
 from reprobench.core.bootstrap import bootstrap
-from reprobench.utils import get_db_path
+from reprobench.core.events import SERVER_PING
+from reprobench.utils import get_db_path, send_event
 
 
 class BaseRunner(Runner):
@@ -15,6 +17,7 @@ class BaseRunner(Runner):
         self.resume = kwargs.pop("resume", False)
         self.num_workers = kwargs.pop("num_workers", None)
         self.db_path = get_db_path(self.output_dir)
+        self.server_address = None
 
     def prepare(self):
         pass
@@ -24,6 +27,16 @@ class BaseRunner(Runner):
 
     def spawn_workers(self):
         raise NotImplementedError
+
+    def server_ping(self):
+        context = zmq.Context()
+        socket = context.socket(zmq.DEALER)
+        socket.connect(self.server_address)
+
+        # should be blocking if not ready: http://api.zeromq.org/2-1:zmq-socket
+        send_event(socket, SERVER_PING)
+        message = socket.recv()
+        assert message == b"pong"
 
     def wait(self):
         pass
@@ -42,7 +55,7 @@ class BaseRunner(Runner):
 
         self.prepare()
         self.spawn_server()
-        logger.info("Sleeping for 3s, making sure the server has started...")
-        time.sleep(3)
+        logger.info("Making sure the server has started...")
+        self.server_ping()
         self.spawn_workers()
         self.wait()

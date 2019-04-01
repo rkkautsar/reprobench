@@ -49,6 +49,7 @@ class SlurmRunner(BaseRunner):
         logger.info("Waiting for the server to be assigned...")
         self.server_host = get_nodelist(self.server_job)
         logger.info(f"Server spawned at {self.server_host}, job id: {self.server_job}")
+        self.server_address = f"tcp://{self.server_host}:{self.port}"
 
     def spawn_workers(self):
         logger.info("Spawning workers...")

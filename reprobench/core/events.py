@@ -1,4 +1,6 @@
-WORKER_JOIN = b"worker:register"
+SERVER_PING = b"server:ping"
+
+WORKER_JOIN = b"worker:join"
 WORKER_REQUEST = b"worker:request"
 WORKER_DONE = b"worker:done"
 WORKER_LEAVE = b"worker:leave"

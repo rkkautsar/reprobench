@@ -7,7 +7,7 @@ from loguru import logger
 from playhouse.apsw_ext import APSWDatabase
 
 from reprobench.core.db import Observer, Run, db
-from reprobench.core.events import WORKER_JOIN, WORKER_LEAVE, WORKER_DONE
+from reprobench.core.events import WORKER_JOIN, WORKER_LEAVE, WORKER_DONE, SERVER_PING
 from reprobench.core.observers import CoreObserver
 from reprobench.utils import import_class
 
@@ -40,7 +40,9 @@ class BenchmarkServer:
             logger.trace((address, event_type, payload))
             self.backend.send_multipart([event_type, payload, address])
 
-            if event_type == WORKER_JOIN:
+            if event_type == SERVER_PING:
+                self.frontend.send_multipart([address, b"pong"])
+            elif event_type == WORKER_JOIN:
                 self.worker_count += 1
             elif event_type == WORKER_LEAVE:
                 self.worker_count -= 1
