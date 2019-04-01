@@ -34,7 +34,7 @@ class PsmonExecutor(Executor):
             verdict = RunStatistic.TIMEOUT
         elif stats["error"] == MemoryError:
             verdict = RunStatistic.MEMOUT
-        elif stats["error"] or stats["return_code"] != 0:
+        elif stats["error"]:
             verdict = RunStatistic.RUNTIME_ERR
         else:
             verdict = RunStatistic.SUCCESS

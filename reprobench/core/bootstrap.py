@@ -19,7 +19,6 @@ from reprobench.core.db import (
     Task,
     TaskGroup,
     Tool,
-    ToolParameterGroup,
     db,
 )
 from reprobench.task_sources.doi import DOISource
@@ -67,76 +66,64 @@ def _bootstrap_db(config):
     ).execute()
 
 
-def _bootstrap_parameters(config):
-    for (group, parameters) in config["parameters"].items():
-        ranged_enum_parameters = {
-            key: value
-            for key, value in parameters.items()
-            if isinstance(parameters[key], list)
-        }
+def _create_parameter_group(tool, group, parameters):
+    ranged_enum_parameters = {
+        key: value
+        for key, value in parameters.items()
+        if isinstance(parameters[key], list)
+    }
 
-        ranged_numbers_parameters = {
-            key: str_to_range(value)
-            for key, value in parameters.items()
-            if isinstance(value, str) and is_range_str(value)
-        }
+    ranged_numbers_parameters = {
+        key: str_to_range(value)
+        for key, value in parameters.items()
+        if isinstance(value, str) and is_range_str(value)
+    }
 
-        ranged_parameters = {**ranged_enum_parameters, **ranged_numbers_parameters}
+    ranged_parameters = {**ranged_enum_parameters, **ranged_numbers_parameters}
 
-        if len(ranged_parameters) == 0:
-            parameter_group = ParameterGroup.create(name=group)
-            for (key, value) in parameters.items():
-                Parameter.create(group=parameter_group, key=key, value=value)
-            return
+    if len(ranged_parameters) == 0:
+        parameter_group = ParameterGroup.create(name=group, tool=tool)
+        for (key, value) in parameters.items():
+            Parameter.create(group=parameter_group, key=key, value=value)
+        return
 
-        constant_parameters = {
-            key: value
-            for key, value in parameters.items()
-            if key not in ranged_parameters
-        }
+    constant_parameters = {
+        key: value for key, value in parameters.items() if key not in ranged_parameters
+    }
 
-        tuples = [
-            [(key, value) for value in values]
-            for key, values in ranged_parameters.items()
-        ]
+    tuples = [
+        [(key, value) for value in values] for key, values in ranged_parameters.items()
+    ]
 
-        for combination in itertools.product(*tuples):
-            combination_str = ",".join(f"{key}={value}" for key, value in combination)
-            parameter_group = ParameterGroup.create(name=f"{group}[{combination_str}]")
-            parameters = {**dict(combination), **constant_parameters}
-            for (key, value) in parameters.items():
-                Parameter.create(group=parameter_group, key=key, value=value)
+    for combination in itertools.product(*tuples):
+        combination_str = ",".join(f"{key}={value}" for key, value in combination)
+        parameter_group = ParameterGroup.create(
+            name=f"{group}[{combination_str}]", tool=tool
+        )
+        parameters = {**dict(combination), **constant_parameters}
+        for (key, value) in parameters.items():
+            Parameter.create(group=parameter_group, key=key, value=value)
 
 
 def _bootstrap_tools(config):
     logger.info("Bootstrapping and running setups on tools...")
 
-    Tool.insert_many(
-        [
-            {
-                "name": name,
-                "module": tool["module"],
-                "version": import_class(tool["module"]).version(),
-            }
-            for (name, tool) in config["tools"].items()
-        ]
-    ).execute()
-
-    for tool in config["tools"].values():
+    for tool_name, tool in config["tools"].items():
         tool_module = import_class(tool["module"])
 
         if not tool_module.is_ready():
             tool_module.setup()
 
-        for prefix in tool["parameters"]:
-            for parameter_group in ParameterGroup.select().where(
-                ParameterGroup.name.startswith(prefix)
-            ):
-                if parameter_group.name != prefix and parameter_group.name[-1] != "]":
-                    continue
-                ToolParameterGroup.create(
-                    tool=tool["module"], parameter_group=parameter_group
-                )
+        version = import_class(tool["module"]).version()
+
+        Tool.create(name=tool_name, module=tool["module"], version=version)
+
+        if "parameters" not in tool:
+            _create_parameter_group(tool["module"], "default", {})
+            continue
+
+        for group, parameters in tool["parameters"].items():
+            _create_parameter_group(tool["module"], group, parameters)
 
 
 def _bootstrap_tasks(config):
@@ -170,27 +157,27 @@ def _register_steps(config):
 
 
 def _bootstrap_runs(config, output_dir):
-    tools_parameter_groups = ToolParameterGroup.select().iterator()
+    parameter_groups = ParameterGroup.select().iterator()
     tasks = Task.select().iterator()
 
-    for (tool_parameter_group, task) in tqdm(
-        itertools.product(tools_parameter_groups, tasks), desc="Bootstrapping runs"
+    for (parameter_group, task) in tqdm(
+        itertools.product(parameter_groups, tasks), desc="Bootstrapping runs"
     ):
         directory = (
             Path(output_dir)
-            / tool_parameter_group.tool_id
-            / tool_parameter_group.parameter_group_id
+            / parameter_group.tool_id
+            / parameter_group.name
             / task.group_id
             / Path(task.path).name
         )
         directory.mkdir(parents=True, exist_ok=True)
 
         Run.create(
-            tool=tool_parameter_group.tool_id,
+            tool=parameter_group.tool_id,
             task=task,
-            parameter_group=tool_parameter_group.parameter_group_id,
+            parameter_group=parameter_group,
             directory=directory,
-            status=Run.SUBMITTED,
+            status=Run.PENDING,
         )
 
 
@@ -200,7 +187,6 @@ def bootstrap(config, output_dir):
     db_path = get_db_path(output_dir)
     init_db(db_path)
     _bootstrap_db(config)
-    _bootstrap_parameters(config)
     _bootstrap_tools(config)
     _bootstrap_tasks(config)
     _register_steps(config)

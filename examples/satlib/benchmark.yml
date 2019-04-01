@@ -4,6 +4,7 @@ description: Benchmark based on SATLIB
 limits:
   time: 30 # s
   memory: 2048 # mb
+  # num_cores: 2
 
 steps:
   run:
@@ -17,19 +18,33 @@ observers:
   - module: satlib.validate.SATObserver
 
 tasks:
-  sudoku:
+  aim:
     type: url
     urls:
-      - https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/RND3SAT/uf100-430.tar.gz
-      - https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/RND3SAT/uuf100-430.tar.gz
-    path: ./tasks
+      - https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/DIMACS/AIM/aim.tar.gz
+    path: ./tasks/aim
     extract_archives: true
     patterns: |
-      **/*.cnf.gz
-      !**/*.zip
+      **/*.cnf
+      !**/*.tar.gz
+  dubois:
+    type: url
+    urls:
+      - https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/DIMACS/DUBOIS/dubois.tar.gz
+    path: ./tasks/dubois
+    extract_archives: true
+    patterns: |
+      **/*.cnf
+      !**/*.tar.gz
 
 tools:
   glucose:
-    module: tools.glucose.Glucose
-  cryptominisat:
-    module: tools.glucose.CryptoMiniSat
+    module: tools.Glucose
+    parameters:
+      default:
+        nthreads: 1..2
+  lingeling:
+    module: tools.Lingeling
+    parameters:
+      default:
+        t: 1..2

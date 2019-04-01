@@ -28,14 +28,11 @@ tasks:
       sudoku/*.txt
       !**/*.zip
 
-parameters:
-  default:
-    solver:
-      - riss
-      - glucose
-
 tools:
   team1:
     module: tools.Team1SudokuSolver
     parameters:
-      - default
+      default:
+        solver:
+          - riss
+          - glucose

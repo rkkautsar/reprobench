@@ -25,7 +25,9 @@ class RunStatistic(BaseModel):
     )
 
     created_at = DateTimeField(default=datetime.now)
-    run = ForeignKeyField(Run, backref="statistics", on_delete="cascade")
+    run = ForeignKeyField(
+        Run, backref="statistics", on_delete="cascade", primary_key=True
+    )
     cpu_time = FloatField(help_text="CPU Time (s)", null=True)
     wall_time = FloatField(help_text="Wall Clock Time (s)", null=True)
     max_memory = FloatField(help_text="Max Memory Usage (KiB)", null=True)
