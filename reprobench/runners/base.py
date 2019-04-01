@@ -35,8 +35,7 @@ class BaseRunner(Runner):
 
         # should be blocking if not ready: http://api.zeromq.org/2-1:zmq-socket
         send_event(socket, SERVER_PING)
-        message = socket.recv()
-        assert message == b"pong"
+        socket.recv()
 
     def wait(self):
         pass
