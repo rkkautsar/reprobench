@@ -27,11 +27,11 @@ tasks:
     patterns: |
       **/*.cnf
       !**/*.tar.gz
-  k3:
+  5sat500:
     type: url
     urls:
-      - http://aclib.net/cssc2014/instances/K3.tar.gz
-    path: ./tasks/k3
+      - http://aclib.net/cssc2014/instances/5sat500.tar.gz
+    path: ./tasks/5sat500
     extract_archives: true
     patterns: |
       **/*.cnf
