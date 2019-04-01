@@ -11,6 +11,8 @@ from reprobench.core.server import cli as server_cli
 from reprobench.core.worker import cli as worker_cli
 from reprobench.runners import cli as runner_cli
 
+from .status import benchmark_status
+
 
 @click.group()
 @click.version_option()
@@ -30,6 +32,7 @@ cli.add_command(bootstrap_cli)
 cli.add_command(server_cli)
 cli.add_command(runner_cli)
 cli.add_command(worker_cli)
+cli.add_command(benchmark_status)
 
 
 if __name__ == "__main__":

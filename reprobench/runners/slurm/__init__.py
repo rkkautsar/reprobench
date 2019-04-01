@@ -25,11 +25,12 @@ class SlurmRunner(BaseRunner):
         init_db(self.db_path)
         limits = self.config["limits"]
         num_jobs = Run.select(Run.id).where(Run.status < Run.DONE).count()
-        jobs_per_worker = int(math.ceil(num_jobs / self.num_workers))
+        jobs_per_worker = int(math.ceil(1.0 * num_jobs / self.num_workers))
+        time_limit_minutes = int(math.ceil(limits["time"] / 60.0))
 
         self.cpu_count = limits.get("cores", 1)
         # @TODO improve this
-        self.time_limit = 2 * limits["time"] * jobs_per_worker
+        self.time_limit = 2 * time_limit_minutes * jobs_per_worker
         self.mem_limit = 2 * limits["memory"]
 
     def spawn_server(self):
