@@ -5,7 +5,7 @@ limits_schema = Map(
         "time": Int(),
         Optional("memory", default=8192): Int(),
         Optional("output"): Int(),
-        Optional("cores"): Str(),
+        Optional("cores"): Int(),
     }
 )
 
@@ -28,8 +28,13 @@ schema = Map(
         "observers": Seq(plugin_schema),
         "tasks": MapPattern(Str(), MapPattern(Str(), Any())),
         "tools": MapPattern(
-            Str(), Map({"module": module_schema, "parameters": Seq(Str())})
+            Str(),
+            Map(
+                {
+                    "module": module_schema,
+                    Optional("parameters"): MapPattern(Str(), MapPattern(Str(), Any())),
+                }
+            ),
         ),
-        "parameters": MapPattern(Str(), MapPattern(Str(), Any())),
     }
 )

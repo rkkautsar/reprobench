@@ -2,9 +2,8 @@ import os
 import subprocess
 from pathlib import Path
 
-from reprobench.core.db import Parameter
 from reprobench.tools.executable import ExecutableTool
-from reprobench.utils import download_file, silent_run
+from reprobench.utils import download_file
 
 
 DIR = os.path.dirname(__file__)
@@ -19,9 +18,9 @@ class Team1SudokuSolver(ExecutableTool):
     @classmethod
     def setup(cls):
         cls.base_path.mkdir(parents=True, exist_ok=True)
-        zip_path = str(cls.base_path / "sudoku-solver.zip")
+        zip_path = cls.base_path / "sudoku-solver.zip"
         download_file(cls.url, zip_path)
-        subprocess.run(["unzip", zip_path], cwd=cls.base_path)
+        subprocess.run(["unzip", str(zip_path)], cwd=cls.base_path)
         subprocess.run(["nim", "c", str(cls.path)])
 
     def get_arguments(self):

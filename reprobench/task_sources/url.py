@@ -1,7 +1,7 @@
 from pathlib import Path
 from zipfile import ZipFile
 from loguru import logger
-from reprobench.utils import download_file
+from reprobench.utils import download_file, extract_archives
 
 from .local import LocalSource
 
@@ -21,12 +21,6 @@ class UrlSource(LocalSource):
         self.extract_archives = extract_archives
         self.skip_existing = skip_existing
 
-    def extract_zip(self, path):
-        extract_path = Path(path) / ".." / path.stem
-        if not extract_path.is_dir():
-            with ZipFile(path) as zf:
-                zf.extractall(extract_path)
-
     def setup(self):
         root = Path(self.path)
         root.mkdir(parents=True, exist_ok=True)
@@ -41,7 +35,7 @@ class UrlSource(LocalSource):
             else:
                 logger.debug(f"Skipping already downloaded file {path}")
 
-            if self.extract_archives and path.suffix == ".zip":
-                self.extract_zip(path)
+            if self.extract_archives:
+                extract_archives(path)
 
         return super().setup()

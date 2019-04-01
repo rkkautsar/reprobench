@@ -16,6 +16,9 @@ from reprobench.core.events import (
 from reprobench.utils import decode_message, import_class, send_event
 
 
+REQUEST_TIMEOUT = 15000
+
+
 class BenchmarkWorker:
     """
     Request for a work from server,
@@ -26,23 +29,26 @@ class BenchmarkWorker:
     def __init__(self, server_address):
         self.server_address = server_address
 
-    def killed(run_id):
+    def killed(self, run_id):
         send_event(self.socket, RUN_INTERRUPT, run_id)
+        send_event(self.socket, WORKER_LEAVE)
 
     def loop(self):
 
         while True:
             send_event(self.socket, WORKER_REQUEST)
 
-            reply_count = self.socket.poll(timeout=10000)
+            reply_count = self.socket.poll(timeout=REQUEST_TIMEOUT)
             if reply_count == 0:
                 # looks like the server is dead
+                logger.warning("Exiting because there's no reply from server.")
                 break
 
             run = decode_message(self.socket.recv())
 
             if run is None:
                 # there's no more work to do
+                logger.success("Exiting because there's no more work to do.")
                 break
 
             atexit.register(self.killed, run["id"])

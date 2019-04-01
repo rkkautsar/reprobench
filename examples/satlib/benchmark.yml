@@ -1,0 +1,50 @@
+title: satlib
+description: Benchmark based on SATLIB
+
+limits:
+  time: 30 # s
+  memory: 2048 # mb
+  cores: 2
+
+steps:
+  run:
+    - module: reprobench.core.sysinfo.CollectSystemInfo
+    - module: reprobench.executors.PsmonExecutor
+    - module: satlib.validate.SATValidator
+
+observers:
+  - module: reprobench.core.sysinfo.SystemInfoObserver
+  - module: reprobench.executors.RunStatisticObserver
+  - module: satlib.validate.SATObserver
+
+tasks:
+  aim:
+    type: url
+    urls:
+      - https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/DIMACS/AIM/aim.tar.gz
+    path: ./tasks/aim
+    extract_archives: true
+    patterns: |
+      **/*.cnf
+      !**/*.tar.gz
+  dubois:
+    type: url
+    urls:
+      - https://www.cs.ubc.ca/~hoos/SATLIB/Benchmarks/SAT/DIMACS/DUBOIS/dubois.tar.gz
+    path: ./tasks/dubois
+    extract_archives: true
+    patterns: |
+      **/*.cnf
+      !**/*.tar.gz
+
+tools:
+  glucose:
+    module: tools.Glucose
+    parameters:
+      default:
+        nthreads: 1..2
+  lingeling:
+    module: tools.Lingeling
+    parameters:
+      default:
+        t: 1..2

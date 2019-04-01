@@ -40,5 +40,5 @@ def get_nodelist(job_step):
     while True:
         cmd = ["sacct", "-n", "--parsable2", "-j", job_step, "-o", "NodeList"]
         output = subprocess.check_output(cmd)
-        if len(output) > 0 or output == b"None assigned\n":
+        if len(output) > 0 and output != b"None assigned\n":
             return output.decode().strip()

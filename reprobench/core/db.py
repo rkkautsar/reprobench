@@ -42,7 +42,11 @@ class Tool(BaseModel):
 
 
 class ParameterGroup(BaseModel):
-    name = CharField(primary_key=True)
+    name = CharField()
+    tool = ForeignKeyField(Tool, backref="parameter_groups")
+
+    class Meta:
+        indexes = ((("name", "tool"), True),)
 
 
 class Parameter(BaseModel):
@@ -52,14 +56,6 @@ class Parameter(BaseModel):
 
     class Meta:
         primary_key = CompositeKey("group", "key")
-
-
-class ToolParameterGroup(BaseModel):
-    tool = ForeignKeyField(Tool)
-    parameter_group = ForeignKeyField(ParameterGroup)
-
-    class Meta:
-        primary_key = CompositeKey("tool", "parameter_group")
 
 
 class BasePlugin(BaseModel):
@@ -109,15 +105,4 @@ class Run(BaseModel):
         only_save_dirty = True
 
 
-MODELS = (
-    Limit,
-    TaskGroup,
-    Task,
-    Tool,
-    ParameterGroup,
-    Parameter,
-    Run,
-    ToolParameterGroup,
-    Step,
-    Observer,
-)
+MODELS = (Limit, TaskGroup, Task, Tool, ParameterGroup, Parameter, Run, Step, Observer)

@@ -4,14 +4,15 @@ import os
 import re
 import signal
 import subprocess
+import tarfile
 import time
+import zipfile
 from pathlib import Path
 from shutil import which
 
 import msgpack
 import requests
 import strictyaml
-from loguru import logger
 from playhouse.apsw_ext import APSWDatabase
 from tqdm import tqdm
 
@@ -58,7 +59,7 @@ def download_file(url, dest):
         unit_scale=True,
         unit_divisor=1024,
     ) as progress_bar:
-        progress_bar.set_postfix(file=dest, refresh=False)
+        progress_bar.set_postfix(file=Path(dest).name, refresh=False)
         with open(dest, "wb") as f:
             copyfileobj(r.raw, f, progress_bar.update)
 
@@ -126,3 +127,24 @@ def read_config(config_path):
         config = strictyaml.load(config_text, schema=schema).data
 
     return config
+
+
+def extract_zip(path, dest):
+    if not dest.is_dir():
+        with zipfile.ZipFile(path, "r") as f:
+            f.extractall(dest)
+
+
+def extract_tar(path, dest):
+    if not dest.is_dir():
+        with tarfile.TarFile.open(path) as f:
+            f.extractall(dest)
+
+
+def extract_archives(path):
+    extract_path = Path(path).with_name(path.stem)
+
+    if zipfile.is_zipfile(path):
+        extract_zip(path, extract_path)
+    elif tarfile.is_tarfile(path):
+        extract_tar(path, extract_path)

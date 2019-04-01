@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from loguru import logger
 from psmon import ProcessMonitor
 from psmon.limiters import CpuTimeLimiter, MaxMemoryLimiter, WallTimeLimiter
@@ -36,7 +34,7 @@ class PsmonExecutor(Executor):
             verdict = RunStatistic.TIMEOUT
         elif stats["error"] == MemoryError:
             verdict = RunStatistic.MEMOUT
-        elif stats["error"] or stats["return_code"] != 0:
+        elif stats["error"]:
             verdict = RunStatistic.RUNTIME_ERR
         else:
             verdict = RunStatistic.SUCCESS
@@ -50,7 +48,7 @@ class PsmonExecutor(Executor):
         cmdline,
         out_path=None,
         err_path=None,
-        input=None,
+        input_str=None,
         directory=None,
         **kwargs,
     ):
@@ -62,7 +60,7 @@ class PsmonExecutor(Executor):
             cwd=directory,
             stdout=out_file,
             stderr=err_file,
-            input=input,
+            input=input_str,
             freq=15,
         )
         monitor.subscribe("wall_time", WallTimeLimiter(self.wall_limit))
