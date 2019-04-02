@@ -136,7 +136,7 @@ def _create_parameter_group(tool, group, parameters):
     PCS_KEY = "__pcs"
     pcs_parameters = {}
     use_pcs = PCS_KEY in parameters
-    
+
     if use_pcs:
         path = parameters.pop(PCS_KEY)
         lines = Path(path).read_text().split("\n")
@@ -177,7 +177,7 @@ def _create_parameter_group(tool, group, parameters):
 
     for combination in itertools.product(*tuples):
         parameters = {**dict(combination), **constant_parameters}
-        
+
         if use_pcs:
             _check_valid_config_space(config_space, parameters)
 
