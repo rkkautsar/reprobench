@@ -1,5 +1,4 @@
 from pathlib import Path
-from zipfile import ZipFile
 from loguru import logger
 from reprobench.utils import download_file, extract_archives
 

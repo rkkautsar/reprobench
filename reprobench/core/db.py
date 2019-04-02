@@ -7,10 +7,8 @@ from playhouse.apsw_ext import (
     CharField,
     CompositeKey,
     DateTimeField,
-    FloatField,
     ForeignKeyField,
     IntegerField,
-    AutoField,
 )
 
 db = Proxy()
