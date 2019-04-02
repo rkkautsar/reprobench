@@ -1,10 +1,15 @@
 import atexit
 import itertools
 import json
+import re
 import shutil
+from ast import literal_eval
 from pathlib import Path
 
 import click
+import numpy
+from ConfigSpace import ConfigurationSpace
+from ConfigSpace.read_and_write import pcs
 from loguru import logger
 from tqdm import tqdm
 
@@ -21,6 +26,7 @@ from reprobench.core.db import (
     Tool,
     db,
 )
+from reprobench.core.exceptions import NotSupportedError
 from reprobench.task_sources.doi import DOISource
 from reprobench.task_sources.local import LocalSource
 from reprobench.task_sources.url import UrlSource
@@ -66,7 +72,77 @@ def _bootstrap_db(config):
     ).execute()
 
 
+def _is_pcs_parameter_range(line):
+    if "{" not in line and "[" not in line:
+        return False
+
+    if "#" not in line:
+        return False
+
+    if "-->" not in line:
+        return False
+
+    return True
+
+
+def _parse_pcs_parameter_range(line):
+    functions = dict(
+        range=range,
+        arange=numpy.arange,
+        linspace=numpy.linspace,
+        logspace=numpy.logspace,
+        geomspace=numpy.geomspace,
+    )
+
+    function_re = re.compile(r"(?P<function>[A-Za-z_]+)\((?P<arguments>.*)\)")
+
+    parameter_key = line[: line.find(" ")]
+
+    parameter_range_indicator = "-->"
+    comment_pos = line.find("#")
+    pos = line.find(parameter_range_indicator, comment_pos)
+    parameter_str = line[pos + len(parameter_range_indicator) :].strip()
+    parameter_range = None
+
+    match = function_re.match(parameter_str)
+    if match:
+        function = match.group("function")
+        if function not in functions:
+            raise NotSupportedError(f"Declaring range with {function} is not supported")
+        args = literal_eval(match.group("arguments"))
+        parameter_range = functions[function](*args)
+    else:
+        parameter_range = literal_eval(parameter_str)
+
+    return parameter_key, parameter_range
+
+
+def _parse_pcs_parameters(lines):
+    return dict(
+        _parse_pcs_parameter_range(line)
+        for line in lines
+        if _is_pcs_parameter_range(line)
+    )
+
+
+def _check_valid_config_space(config_space: ConfigurationSpace, parameters):
+    base = config_space.get_default_configuration()
+    for key, value in parameters.items():
+        if key in base:
+            base[key] = value  # ValueError if invalid value
+
+
 def _create_parameter_group(tool, group, parameters):
+    PCS_KEY = "__pcs"
+    pcs_parameters = {}
+    use_pcs = PCS_KEY in parameters
+
+    if use_pcs:
+        path = parameters.pop(PCS_KEY)
+        lines = Path(path).read_text().split("\n")
+        config_space = pcs.read(lines)
+        pcs_parameters = _parse_pcs_parameters(lines)
+
     ranged_enum_parameters = {
         key: value
         for key, value in parameters.items()
@@ -79,7 +155,11 @@ def _create_parameter_group(tool, group, parameters):
         if isinstance(value, str) and is_range_str(value)
     }
 
-    ranged_parameters = {**ranged_enum_parameters, **ranged_numbers_parameters}
+    ranged_parameters = {
+        **pcs_parameters,
+        **ranged_enum_parameters,
+        **ranged_numbers_parameters,
+    }
 
     if len(ranged_parameters) == 0:
         parameter_group = ParameterGroup.create(name=group, tool=tool)
@@ -96,11 +176,16 @@ def _create_parameter_group(tool, group, parameters):
     ]
 
     for combination in itertools.product(*tuples):
+        parameters = {**dict(combination), **constant_parameters}
+
+        if use_pcs:
+            _check_valid_config_space(config_space, parameters)
+
         combination_str = ",".join(f"{key}={value}" for key, value in combination)
         parameter_group = ParameterGroup.create(
             name=f"{group}[{combination_str}]", tool=tool
         )
-        parameters = {**dict(combination), **constant_parameters}
+
         for (key, value) in parameters.items():
             Parameter.create(group=parameter_group, key=key, value=value)
 
@@ -159,9 +244,12 @@ def _register_steps(config):
 def _bootstrap_runs(config, output_dir):
     parameter_groups = ParameterGroup.select().iterator()
     tasks = Task.select().iterator()
+    total = ParameterGroup.select().count() * Task.select().count()
 
     for (parameter_group, task) in tqdm(
-        itertools.product(parameter_groups, tasks), desc="Bootstrapping runs"
+        itertools.product(parameter_groups, tasks),
+        desc="Bootstrapping runs",
+        total=total,
     ):
         directory = (
             Path(output_dir)
