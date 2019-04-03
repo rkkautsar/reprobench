@@ -34,6 +34,7 @@ from reprobench.utils import (
     get_db_path,
     import_class,
     init_db,
+    is_pcs_parameter_range,
     is_range_str,
     read_config,
     str_to_range,
@@ -72,19 +73,6 @@ def _bootstrap_db(config):
     ).execute()
 
 
-def _is_pcs_parameter_range(line):
-    if "{" not in line and "[" not in line:
-        return False
-
-    if "#" not in line:
-        return False
-
-    if "-->" not in line:
-        return False
-
-    return True
-
-
 def _parse_pcs_parameter_range(line):
     functions = dict(
         range=range,
@@ -121,11 +109,11 @@ def _parse_pcs_parameters(lines):
     return dict(
         _parse_pcs_parameter_range(line)
         for line in lines
-        if _is_pcs_parameter_range(line)
+        if is_pcs_parameter_range(line)
     )
 
 
-def _check_valid_config_space(config_space: ConfigurationSpace, parameters):
+def _check_valid_config_space(config_space, parameters):
     base = config_space.get_default_configuration()
     for key, value in parameters.items():
         if key in base:

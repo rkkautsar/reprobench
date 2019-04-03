@@ -7,7 +7,7 @@ from loguru import logger
 from playhouse.apsw_ext import APSWDatabase
 
 from reprobench.core.db import Observer, Run, db
-from reprobench.core.events import WORKER_JOIN, WORKER_LEAVE, WORKER_DONE, SERVER_PING
+from reprobench.core.events import WORKER_JOIN, WORKER_LEAVE, RUN_FINISH, SERVER_PING
 from reprobench.core.observers import CoreObserver
 from reprobench.utils import import_class
 
@@ -46,7 +46,7 @@ class BenchmarkServer:
                 self.worker_count += 1
             elif event_type == WORKER_LEAVE:
                 self.worker_count -= 1
-            elif event_type == WORKER_DONE:
+            elif event_type == RUN_FINISH:
                 self.jobs_waited -= 1
 
     def run(self):

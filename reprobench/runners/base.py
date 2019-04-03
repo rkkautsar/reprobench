@@ -13,7 +13,6 @@ class BaseRunner(Runner):
     def __init__(self, config, **kwargs):
         self.config = config
         self.output_dir = kwargs.pop("output_dir")
-        self.resume = kwargs.pop("resume", False)
         self.num_workers = kwargs.pop("num_workers", None)
         self.db_path = get_db_path(self.output_dir)
         self.server_address = None
@@ -39,18 +38,28 @@ class BaseRunner(Runner):
     def wait(self):
         pass
 
-    def run(self):
+    def start(self):
         db_exist = Path(self.db_path).exists()
 
-        if not db_exist:
-            bootstrap(self.config, self.output_dir)
-
-        if db_exist and not self.resume:
-            logger.warning(
-                f"Previous run exists in {self.output_dir}. Please use --resume, or specify a different output directory"
+        if db_exist:
+            logger.error(
+                f"""
+                Previous run exists in {self.output_dir}. Please use resume instead,
+                or specify a different output directory.
+                """
             )
             exit(1)
 
+        bootstrap(self.config, self.output_dir)
+        self.run()
+
+    def stop(self):
+        pass
+
+    def resume(self):
+        self.run()
+
+    def run(self):
         self.prepare()
         self.spawn_server()
         logger.info("Making sure the server has started...")

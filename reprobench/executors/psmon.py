@@ -2,7 +2,6 @@ from loguru import logger
 from psmon import ProcessMonitor
 from psmon.limiters import CpuTimeLimiter, MaxMemoryLimiter, WallTimeLimiter
 
-from reprobench.core.events import RUN_FINISH, RUN_START
 from reprobench.utils import send_event
 
 from .base import Executor
@@ -68,9 +67,7 @@ class PsmonExecutor(Executor):
         monitor.subscribe("max_memory", MaxMemoryLimiter(self.mem_limit))
 
         logger.debug(f"Running {directory}")
-        send_event(self.socket, RUN_START, self.run_id)
         stats = monitor.run()
-        send_event(self.socket, RUN_FINISH, self.run_id)
         logger.debug(f"Finished {directory}")
 
         out_file.close()

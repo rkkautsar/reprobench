@@ -51,7 +51,8 @@ class CoreObserver(Observer):
         elif event_type == RUN_INTERRUPT:
             Run.update(status=Run.PENDING).where(Run.id == payload).execute()
         elif event_type == RUN_START:
-            Run.update(status=Run.RUNNING).where(Run.id == payload).execute()
+            run_id = payload.pop("run_id")
+            Run.update(status=Run.RUNNING, **payload).where(Run.id == run_id).execute()
         elif event_type == RUN_STEP:
             step = Step.get(module=payload["step"])
             Run.update(current_step=step).where(Run.id == payload["run_id"]).execute()

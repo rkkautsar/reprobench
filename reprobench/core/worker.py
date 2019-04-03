@@ -8,9 +8,10 @@ from loguru import logger
 from reprobench.core.events import (
     WORKER_JOIN,
     WORKER_REQUEST,
-    WORKER_DONE,
     WORKER_LEAVE,
+    RUN_START,
     RUN_STEP,
+    RUN_FINISH,
     RUN_INTERRUPT,
 )
 from reprobench.utils import decode_message, import_class, send_event
@@ -60,14 +61,23 @@ class BenchmarkWorker:
             context["run"] = run
             logger.info(f"Processing task: {run['directory']}")
 
+            run_id = run["id"]
+
+            send_event(
+                self.socket,
+                RUN_START,
+                {"tool_version": tool.version(), "run_id": run_id},
+            )
+
             for runstep in run["steps"]:
-                payload = {"run_id": run["id"], "step": runstep["module"]}
+                payload = {"run_id": run_id, "step": runstep["module"]}
                 send_event(self.socket, RUN_STEP, payload)
                 logger.debug(f"Running step {runstep['module']}")
                 step = import_class(runstep["module"])
                 config = json.loads(runstep["config"])
                 step.execute(context, config)
-            send_event(self.socket, WORKER_DONE, run["id"])
+
+            send_event(self.socket, RUN_FINISH, run_id)
 
             atexit.unregister(self.killed)
 
