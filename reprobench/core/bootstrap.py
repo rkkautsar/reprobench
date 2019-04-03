@@ -229,7 +229,7 @@ def _register_steps(config):
         import_class(step["module"]).register(step.get("config", {}))
 
 
-def _bootstrap_runs(config, output_dir):
+def _bootstrap_runs(config, output_dir, repeat=1):
     parameter_groups = ParameterGroup.select().iterator()
     tasks = Task.select().iterator()
     total = ParameterGroup.select().count() * Task.select().count()
@@ -248,16 +248,18 @@ def _bootstrap_runs(config, output_dir):
         )
         directory.mkdir(parents=True, exist_ok=True)
 
-        Run.create(
-            tool=parameter_group.tool_id,
-            task=task,
-            parameter_group=parameter_group,
-            directory=directory,
-            status=Run.PENDING,
-        )
+        with db.atomic():
+            for _ in range(repeat):
+                Run.create(
+                    tool=parameter_group.tool_id,
+                    task=task,
+                    parameter_group=parameter_group,
+                    directory=directory,
+                    status=Run.PENDING,
+                )
 
 
-def bootstrap(config, output_dir):
+def bootstrap(config, output_dir, repeat=1):
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     atexit.register(shutil.rmtree, output_dir)
     db_path = get_db_path(output_dir)
@@ -266,7 +268,7 @@ def bootstrap(config, output_dir):
     _bootstrap_tools(config)
     _bootstrap_tasks(config)
     _register_steps(config)
-    _bootstrap_runs(config, output_dir)
+    _bootstrap_runs(config, output_dir, repeat)
     atexit.unregister(shutil.rmtree)
 
 
@@ -279,10 +281,11 @@ def bootstrap(config, output_dir):
     required=True,
     show_default=True,
 )
-@click.argument("config", type=click.Path())
-def cli(config, output_dir):
+@click.option("-r", "--repeat", type=int, default=1)
+@click.argument("config", type=click.Path(), default="./benchmark.yml")
+def cli(config, output_dir, **kwargs):
     config = read_config(config)
-    bootstrap(config, output_dir)
+    bootstrap(config, output_dir, **kwargs)
 
 
 if __name__ == "__main__":

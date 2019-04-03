@@ -4,9 +4,9 @@ import click
 import gevent
 import zmq.green as zmq
 from loguru import logger
-from playhouse.apsw_ext import APSWDatabase
+from playhouse.apsw_ext import APSWDatabase, fn
 
-from reprobench.core.db import Observer, Run, db
+from reprobench.core.db import Observer, Run, Step, db
 from reprobench.core.events import WORKER_JOIN, WORKER_LEAVE, RUN_FINISH, SERVER_PING
 from reprobench.core.observers import CoreObserver
 from reprobench.utils import import_class
@@ -26,6 +26,7 @@ class BenchmarkServer:
         self.serve_forever = kwargs.pop("forever", False)
         self.jobs_waited = 0
         self.worker_count = 0
+        self.pinged = False
 
     def loop(self):
         while True:
@@ -33,7 +34,9 @@ class BenchmarkServer:
                 not self.serve_forever
                 and self.jobs_waited == 0
                 and self.worker_count == 0
+                and self.pinged
             ):
+                logger.success("No more work for the workers.")
                 break
 
             address, event_type, payload = self.frontend.recv_multipart()
@@ -42,6 +45,7 @@ class BenchmarkServer:
 
             if event_type == SERVER_PING:
                 self.frontend.send_multipart([address, b"pong"])
+                self.pinged = True
             elif event_type == WORKER_JOIN:
                 self.worker_count += 1
             elif event_type == WORKER_LEAVE:
@@ -56,7 +60,10 @@ class BenchmarkServer:
         self.backend = self.context.socket(zmq.PUB)
         self.backend.bind(self.BACKEND_ADDRESS)
 
-        Run.update(status=Run.PENDING).where(Run.status < Run.DONE).execute()
+        last_step = Step.select(fn.MAX(Step.id)).scalar()
+        Run.update(status=Run.PENDING).where(
+            (Run.status < Run.DONE) | (Run.last_step_id != last_step)
+        ).execute()
         self.jobs_waited = Run.select().where(Run.status == Run.PENDING).count()
 
         logger.info(f"Listening on {self.frontend_address}")

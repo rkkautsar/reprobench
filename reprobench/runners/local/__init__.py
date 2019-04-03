@@ -1,3 +1,5 @@
+from multiprocessing import cpu_count
+
 import click
 from loguru import logger
 
@@ -14,11 +16,12 @@ from .runner import LocalRunner
     default="./output",
     show_default=True,
 )
-@click.option("-w", "--num-workers", type=int)
+@click.option("-w", "--num-workers", type=int, default=cpu_count(), show_default=True)
 @click.option("-h", "--host", default="127.0.0.1", show_default=True)
 @click.option("-p", "--port", default=31313, show_default=True)
+@click.option("-r", "--repeat", type=int, default=1)
 @click.argument("command", type=click.Choice(("start", "resume")))
-@click.argument("config", type=click.Path())
+@click.argument("config", type=click.Path(), default="./benchmark.yml")
 def cli(command, config, **kwargs):
     config = read_config(config)
     runner = LocalRunner(config, **kwargs)

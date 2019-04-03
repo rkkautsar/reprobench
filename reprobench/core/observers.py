@@ -23,7 +23,11 @@ class CoreObserver(Observer):
         run.status = Run.SUBMITTED
         run.save()
 
-        runsteps = Step.select().where(Step.category == Step.RUN)
+        last_step = run.last_step_id or 0
+
+        runsteps = Step.select().where(
+            (Step.category == Step.RUN) & (Step.id > last_step)
+        )
         limits = {l.key: l.value for l in Limit.select()}
         parameters = {p.key: p.value for p in run.parameter_group.parameters}
 
@@ -46,8 +50,7 @@ class CoreObserver(Observer):
 
         if event_type == WORKER_REQUEST:
             run = cls.get_next_pending_run()
-            if run is not None:
-                reply.send_multipart([address, encode_message(run)])
+            reply.send_multipart([address, encode_message(run)])
         elif event_type == RUN_INTERRUPT:
             Run.update(status=Run.PENDING).where(Run.id == payload).execute()
         elif event_type == RUN_START:
@@ -55,6 +58,6 @@ class CoreObserver(Observer):
             Run.update(status=Run.RUNNING, **payload).where(Run.id == run_id).execute()
         elif event_type == RUN_STEP:
             step = Step.get(module=payload["step"])
-            Run.update(current_step=step).where(Run.id == payload["run_id"]).execute()
+            Run.update(last_step=step).where(Run.id == payload["run_id"]).execute()
         elif event_type == RUN_FINISH:
             Run.update(status=Run.DONE).where(Run.id == payload).execute()

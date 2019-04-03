@@ -35,7 +35,6 @@ class BenchmarkWorker:
         send_event(self.socket, WORKER_LEAVE)
 
     def loop(self):
-
         while True:
             send_event(self.socket, WORKER_REQUEST)
 
@@ -70,12 +69,12 @@ class BenchmarkWorker:
             )
 
             for runstep in run["steps"]:
-                payload = {"run_id": run_id, "step": runstep["module"]}
-                send_event(self.socket, RUN_STEP, payload)
                 logger.debug(f"Running step {runstep['module']}")
                 step = import_class(runstep["module"])
                 config = json.loads(runstep["config"])
                 step.execute(context, config)
+                payload = {"run_id": run_id, "step": runstep["module"]}
+                send_event(self.socket, RUN_STEP, payload)
 
             send_event(self.socket, RUN_FINISH, run_id)
 

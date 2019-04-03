@@ -98,7 +98,7 @@ class Run(BaseModel):
     task = ForeignKeyField(Task, backref="runs")
     status = IntegerField(choices=STATUS_CHOICES, default=PENDING)
     directory = CharField(null=True)
-    current_step = ForeignKeyField(Step, null=True)
+    last_step = ForeignKeyField(Step, null=True)
 
 
 MODELS = (Limit, TaskGroup, Task, Tool, ParameterGroup, Parameter, Run, Step, Observer)

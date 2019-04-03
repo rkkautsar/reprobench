@@ -13,11 +13,11 @@ from .runner import SlurmRunner
     default="./output",
     show_default=True,
 )
-@click.option("--resume", is_flag=True, default=False)
-@click.option("-w", "--num-workers", type=int, default=4)
+@click.option("-w", "--num-workers", type=int, default=4, show_default=True)
 @click.option("-p", "--port", default=31313, show_default=True)
+@click.option("-r", "--repeat", type=int, default=1)
 @click.argument("command", type=click.Choice(("start", "stop", "resume")))
-@click.argument("config", type=click.Path())
+@click.argument("config", type=click.Path(), default="./benchmark.yml")
 def cli(command, config, **kwargs):
     config = read_config(config)
     runner = SlurmRunner(config, **kwargs)

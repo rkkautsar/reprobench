@@ -1,6 +1,6 @@
 import atexit
 import time
-from multiprocessing import Process, cpu_count
+from multiprocessing import Process
 from pathlib import Path
 
 from loguru import logger
@@ -13,7 +13,7 @@ from reprobench.runners.base import BaseRunner
 class LocalRunner(BaseRunner):
     def __init__(self, config, **kwargs):
         super().__init__(config, **kwargs)
-        self.num_workers = kwargs.pop("num_workers") or cpu_count()
+        self.num_workers = kwargs.pop("num_workers")
         self.start_time = None
         self.workers = []
         port = kwargs.pop("port")
@@ -50,4 +50,5 @@ class LocalRunner(BaseRunner):
     def wait(self):
         self.server_proc.join()
         for worker in self.workers:
+            worker.terminate()
             worker.join()
