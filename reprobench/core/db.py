@@ -93,14 +93,12 @@ class Run(BaseModel):
 
     created_at = DateTimeField(default=datetime.now)
     tool = ForeignKeyField(Tool, backref="runs")
+    tool_version = CharField(null=True)
     parameter_group = ForeignKeyField(ParameterGroup, backref="runs")
     task = ForeignKeyField(Task, backref="runs")
     status = IntegerField(choices=STATUS_CHOICES, default=PENDING)
     directory = CharField(null=True)
-    current_step = ForeignKeyField(Step, null=True)
-
-    class Meta:
-        only_save_dirty = True
+    last_step = ForeignKeyField(Step, null=True)
 
 
 MODELS = (Limit, TaskGroup, Task, Tool, ParameterGroup, Parameter, Run, Step, Observer)

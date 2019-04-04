@@ -34,6 +34,7 @@ from reprobench.utils import (
     get_db_path,
     import_class,
     init_db,
+    is_pcs_parameter_range,
     is_range_str,
     read_config,
     str_to_range,
@@ -72,19 +73,6 @@ def _bootstrap_db(config):
     ).execute()
 
 
-def _is_pcs_parameter_range(line):
-    if "{" not in line and "[" not in line:
-        return False
-
-    if "#" not in line:
-        return False
-
-    if "-->" not in line:
-        return False
-
-    return True
-
-
 def _parse_pcs_parameter_range(line):
     functions = dict(
         range=range,
@@ -121,11 +109,11 @@ def _parse_pcs_parameters(lines):
     return dict(
         _parse_pcs_parameter_range(line)
         for line in lines
-        if _is_pcs_parameter_range(line)
+        if is_pcs_parameter_range(line)
     )
 
 
-def _check_valid_config_space(config_space: ConfigurationSpace, parameters):
+def _check_valid_config_space(config_space, parameters):
     base = config_space.get_default_configuration()
     for key, value in parameters.items():
         if key in base:
@@ -241,7 +229,7 @@ def _register_steps(config):
         import_class(step["module"]).register(step.get("config", {}))
 
 
-def _bootstrap_runs(config, output_dir):
+def _bootstrap_runs(config, output_dir, repeat=1):
     parameter_groups = ParameterGroup.select().iterator()
     tasks = Task.select().iterator()
     total = ParameterGroup.select().count() * Task.select().count()
@@ -260,16 +248,18 @@ def _bootstrap_runs(config, output_dir):
         )
         directory.mkdir(parents=True, exist_ok=True)
 
-        Run.create(
-            tool=parameter_group.tool_id,
-            task=task,
-            parameter_group=parameter_group,
-            directory=directory,
-            status=Run.PENDING,
-        )
+        with db.atomic():
+            for _ in range(repeat):
+                Run.create(
+                    tool=parameter_group.tool_id,
+                    task=task,
+                    parameter_group=parameter_group,
+                    directory=directory,
+                    status=Run.PENDING,
+                )
 
 
-def bootstrap(config, output_dir):
+def bootstrap(config, output_dir, repeat=1):
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     atexit.register(shutil.rmtree, output_dir)
     db_path = get_db_path(output_dir)
@@ -278,7 +268,7 @@ def bootstrap(config, output_dir):
     _bootstrap_tools(config)
     _bootstrap_tasks(config)
     _register_steps(config)
-    _bootstrap_runs(config, output_dir)
+    _bootstrap_runs(config, output_dir, repeat)
     atexit.unregister(shutil.rmtree)
 
 
@@ -291,10 +281,11 @@ def bootstrap(config, output_dir):
     required=True,
     show_default=True,
 )
-@click.argument("config", type=click.Path())
-def cli(config, output_dir):
+@click.option("-r", "--repeat", type=int, default=1)
+@click.argument("config", type=click.Path(), default="./benchmark.yml")
+def cli(config, output_dir, **kwargs):
     config = read_config(config)
-    bootstrap(config, output_dir)
+    bootstrap(config, output_dir, **kwargs)
 
 
 if __name__ == "__main__":

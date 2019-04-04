@@ -148,3 +148,16 @@ def extract_archives(path):
         extract_zip(path, extract_path)
     elif tarfile.is_tarfile(path):
         extract_tar(path, extract_path)
+
+
+def is_pcs_parameter_range(line):
+    if "{" not in line and "[" not in line:
+        return False
+
+    if "#" not in line:
+        return False
+
+    if "-->" not in line:
+        return False
+
+    return True
