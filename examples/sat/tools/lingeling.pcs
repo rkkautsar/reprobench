@@ -75,7 +75,8 @@ probe {0,1}[1] # enable probing
 profile {0,1,2,3,4}[1] # profile level
 profilelong {0,1}[0] # print long profile information
 promote {0,1}[1] # keep clauses with reduced glue longer
-prune {0,1}[0] # pruning through satisfication --> {'0','1'}
+prune {0,1}[0] # pruning through satisfication
+# --> {0, 1}
 prunepure {0,1}[1] # find and treat pure literals explicitly
 prunered {0,1}[1] # learned pruning clauses as redundant clauses
 prunevsids {0,1}[0] # pruning decisions using default heuristic
@@ -107,7 +108,8 @@ simpcintincdiv {0,1,2,3}[1] # cintinc reduction: 0=no,1=div1,2=div2,3=heur
 simpintsizepen {0,1}[0] # penalize interval (positively) by size
 simpjleveldecdelay {0,1}[1] # delay simp if jlevel decreases
 simpitintdecdelay {0,1}[1] # delay simp if iteration interval decreases
-simplify {0,1,2}[2] # enable simplification --> {'0','1','2'}
+simplify {0,1,2}[2] # enable simplification
+# --> {0,1,2}
 smallve {0,1}[1] # enable small number variables elimination
 smallvewait {0,1}[0] # wait with small variable elimination
 sortlits {0,1}[0] # sort lits of cls during garbage collection

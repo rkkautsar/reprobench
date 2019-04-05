@@ -4,6 +4,7 @@ import json
 import re
 import shutil
 from ast import literal_eval
+from collections.abc import Iterable
 from pathlib import Path
 
 import click
@@ -76,7 +77,7 @@ def _bootstrap_db(config):
     ).execute()
 
 
-def _parse_pcs_parameter_range(line):
+def _get_pcs_parameter_range(parameter_str, is_categorical):
     functions = dict(
         range=range,
         arange=numpy.arange,
@@ -87,15 +88,9 @@ def _parse_pcs_parameter_range(line):
 
     function_re = re.compile(r"(?P<function>[A-Za-z_]+)\((?P<arguments>.*)\)")
 
-    parameter_key = line[: line.find(" ")]
-
-    parameter_range_indicator = "-->"
-    comment_pos = line.find("#")
-    pos = line.find(parameter_range_indicator, comment_pos)
-    parameter_str = line[pos + len(parameter_range_indicator) :].strip()
-    parameter_range = None
-
     match = function_re.match(parameter_str)
+
+    parameter_range = None
     if match:
         function = match.group("function")
         if function not in functions:
@@ -104,16 +99,40 @@ def _parse_pcs_parameter_range(line):
         parameter_range = functions[function](*args)
     else:
         parameter_range = literal_eval(parameter_str)
+        if not isinstance(parameter_range, Iterable) or isinstance(
+            parameter_range, str
+        ):
+            parameter_range = (parameter_range,)
+        if is_categorical:
+            parameter_range = map(str, parameter_range)
 
-    return parameter_key, parameter_range
+    return parameter_range
 
 
 def _parse_pcs_parameters(lines):
-    return dict(
-        _parse_pcs_parameter_range(line)
-        for line in lines
-        if is_pcs_parameter_range(line)
-    )
+    parameter_range_indicator = "-->"
+
+    parameters = {}
+    parameter_key = None
+    is_categorical = False
+
+    for line in lines:
+        if ("{" in line or "[" in line) and not line.startswith("#"):
+            parameter_key = line[: line.find(" ")]
+            is_categorical = "{" in line
+
+        if "#" not in line or parameter_range_indicator not in line:
+            continue
+
+        comment_pos = line.find("#")
+        pos = line.find(parameter_range_indicator, comment_pos)
+        parameter_str = line[pos + len(parameter_range_indicator) :].strip()
+
+        parameter_range = _get_pcs_parameter_range(parameter_str, is_categorical)
+
+        parameters[parameter_key] = parameter_range
+
+    return parameters
 
 
 def _check_valid_config_space(config_space, parameters):
