@@ -34,7 +34,7 @@ STORE_SYSINFO = b"sysinfo:store"
 
 
 class SystemInfoObserver(Observer):
-    SUBSCRIBED_EVENTS = [STORE_SYSINFO]
+    SUBSCRIBED_EVENTS = (STORE_SYSINFO,)
 
     @classmethod
     def handle_event(cls, event_type, payload, **kwargs):

@@ -3,14 +3,6 @@ import zmq.green as zmq
 from reprobench.utils import recv_event
 
 
-class Runner:
-    def __init__(self, config):
-        pass
-
-    def run(self):
-        pass
-
-
 class Observer:
     SUBSCRIBED_EVENTS = []
 

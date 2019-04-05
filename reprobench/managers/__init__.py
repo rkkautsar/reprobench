@@ -1,12 +1,12 @@
 import click
 
-from .local import LocalRunner
+from .local import LocalManager
 from .local import cli as local_cli
-from .slurm import SlurmRunner
+from .slurm import SlurmManager
 from .slurm import cli as slurm_cli
 
 
-@click.group("run")
+@click.group("manage")
 def cli():
     pass
 

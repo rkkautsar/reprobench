@@ -1,7 +1,7 @@
-SERVER_PING = b"server:ping"
+BOOTSTRAP = b"core:bootstrap"
+REQUEST_PENDING = b"server:request_pending"
 
 WORKER_JOIN = b"worker:join"
-WORKER_REQUEST = b"worker:request"
 WORKER_LEAVE = b"worker:leave"
 
 RUN_START = b"run:start"

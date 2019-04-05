@@ -17,7 +17,7 @@ class SATVerdict(BaseModel):
 
 
 class SATObserver(Observer):
-    SUBSCRIBED_EVENTS = [STORE_SAT_VERDICT]
+    SUBSCRIBED_EVENTS = (STORE_SAT_VERDICT,)
 
     @classmethod
     def handle_event(cls, event_type, payload, **kwargs):

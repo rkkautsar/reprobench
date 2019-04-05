@@ -7,6 +7,7 @@ import subprocess
 import tarfile
 import time
 import zipfile
+from collections.abc import Iterable
 from pathlib import Path
 from shutil import which
 
@@ -121,10 +122,28 @@ def init_db(db_path):
     db.initialize(database)
 
 
-def read_config(config_path):
+def resolve_files_uri(root):
+    protocol = "file://"
+    iterator = None
+    if isinstance(root, dict):
+        iterator = root
+    elif isinstance(root, list) or isinstance(root, tuple):
+        iterator = range(len(root))
+
+    for k in iterator:
+        if isinstance(root[k], str) and root[k].startswith(protocol):
+            root[k] = Path(root[k][len(protocol) :]).read_text()
+        elif isinstance(root[k], Iterable) and not isinstance(root[k], str):
+            resolve_files_uri(root[k])
+
+
+def read_config(config_path, resolve_files=False):
     with open(config_path, "r") as f:
         config_text = f.read()
         config = strictyaml.load(config_text, schema=schema).data
+
+    if resolve_files:
+        resolve_files_uri(config)
 
     return config
 
