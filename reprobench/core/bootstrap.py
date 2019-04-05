@@ -8,11 +8,12 @@ from pathlib import Path
 
 import click
 import numpy
-from ConfigSpace import ConfigurationSpace
+import zmq
 from ConfigSpace.read_and_write import pcs
 from loguru import logger
 from tqdm import tqdm
 
+from reprobench.console.decorators import common, server_info
 from reprobench.core.db import (
     MODELS,
     Limit,
@@ -26,6 +27,7 @@ from reprobench.core.db import (
     Tool,
     db,
 )
+from reprobench.core.events import BOOTSTRAP
 from reprobench.core.exceptions import NotSupportedError
 from reprobench.task_sources.doi import DOISource
 from reprobench.task_sources.local import LocalSource
@@ -37,6 +39,7 @@ from reprobench.utils import (
     is_pcs_parameter_range,
     is_range_str,
     read_config,
+    send_event,
     str_to_range,
 )
 
@@ -126,8 +129,8 @@ def _create_parameter_group(tool, group, parameters):
     use_pcs = PCS_KEY in parameters
 
     if use_pcs:
-        path = parameters.pop(PCS_KEY)
-        lines = Path(path).read_text().split("\n")
+        pcs_text = parameters.pop(PCS_KEY)
+        lines = pcs_text.split("\n")
         config_space = pcs.read(lines)
         pcs_parameters = _parse_pcs_parameters(lines)
 
@@ -246,7 +249,6 @@ def _bootstrap_runs(config, output_dir, repeat=1):
             / task.group_id
             / Path(task.path).name
         )
-        directory.mkdir(parents=True, exist_ok=True)
 
         with db.atomic():
             for _ in range(repeat):
@@ -259,7 +261,7 @@ def _bootstrap_runs(config, output_dir, repeat=1):
                 )
 
 
-def bootstrap(config, output_dir, repeat=1):
+def bootstrap(config=None, output_dir=None, repeat=1):
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     atexit.register(shutil.rmtree, output_dir)
     db_path = get_db_path(output_dir)
@@ -273,19 +275,25 @@ def bootstrap(config, output_dir, repeat=1):
 
 
 @click.command(name="bootstrap")
+@click.option("-r", "--repeat", type=int, default=1)
 @click.option(
-    "-o",
+    "-d",
     "--output-dir",
-    type=click.Path(file_okay=False, writable=True, resolve_path=True),
+    type=click.Path(),
     default="./output",
     required=True,
     show_default=True,
 )
-@click.option("-r", "--repeat", type=int, default=1)
 @click.argument("config", type=click.Path(), default="./benchmark.yml")
-def cli(config, output_dir, **kwargs):
-    config = read_config(config)
-    bootstrap(config, output_dir, **kwargs)
+@server_info
+@common
+def cli(server_address, config, output_dir, **kwargs):
+    config = read_config(config, resolve_files=True)
+    context = zmq.Context()
+    socket = context.socket(zmq.DEALER)
+    socket.connect(server_address)
+    payload = dict(config=config, output_dir=output_dir, **kwargs)
+    send_event(socket, BOOTSTRAP, payload)
 
 
 if __name__ == "__main__":

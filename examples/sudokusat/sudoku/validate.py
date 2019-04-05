@@ -21,7 +21,7 @@ class SudokuVerdict(BaseModel):
 
 
 class SudokuObserver(Observer):
-    SUBSCRIBED_EVENTS = [STORE_SUDOKU_VERDICT]
+    SUBSCRIBED_EVENTS = (STORE_SUDOKU_VERDICT,)
 
     @classmethod
     def handle_event(cls, event_type, payload, **kwargs):

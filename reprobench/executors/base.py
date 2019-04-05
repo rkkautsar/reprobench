@@ -5,7 +5,7 @@ from .db import RunStatistic
 
 
 class RunStatisticObserver(Observer):
-    SUBSCRIBED_EVENTS = [STORE_RUNSTATS]
+    SUBSCRIBED_EVENTS = (STORE_RUNSTATS,)
 
     @classmethod
     def handle_event(cls, event_type, payload, **kwargs):

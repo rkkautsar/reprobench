@@ -1,21 +1,31 @@
-from reprobench.core.db import Run, Step, Limit
+from functools import lru_cache
+
+from peewee import fn
+
 from reprobench.core.base import Observer
+from reprobench.core.db import Limit, Run, Step
 from reprobench.core.events import (
+    REQUEST_PENDING,
     RUN_FINISH,
+    RUN_INTERRUPT,
     RUN_START,
     RUN_STEP,
-    RUN_INTERRUPT,
-    WORKER_REQUEST,
+    WORKER_JOIN,
 )
 from reprobench.utils import encode_message
 
 
 class CoreObserver(Observer):
-    SUBSCRIBED_EVENTS = [WORKER_REQUEST, RUN_START, RUN_STEP, RUN_FINISH]
+    SUBSCRIBED_EVENTS = (WORKER_JOIN, RUN_START, RUN_STEP, RUN_FINISH, REQUEST_PENDING)
 
     @classmethod
-    def get_next_pending_run(cls):
-        run = Run.get_or_none(Run.status == Run.PENDING)
+    @lru_cache(maxsize=1)
+    def get_limits(cls):
+        return {l.key: l.value for l in Limit.select()}
+
+    @classmethod
+    def get_run(cls, run_id):
+        run = Run.get_by_id(run_id)
 
         if run is None:
             return None
@@ -28,7 +38,7 @@ class CoreObserver(Observer):
         runsteps = Step.select().where(
             (Step.category == Step.RUN) & (Step.id > last_step)
         )
-        limits = {l.key: l.value for l in Limit.select()}
+        limits = cls.get_limits()
         parameters = {p.key: p.value for p in run.parameter_group.parameters}
 
         run_dict = dict(
@@ -44,12 +54,26 @@ class CoreObserver(Observer):
         return run_dict
 
     @classmethod
+    def get_pending_run_ids(cls):
+        last_step = (
+            Step.select(fn.MAX(Step.id)).where(Step.category == Step.RUN).scalar()
+        )
+        Run.update(status=Run.PENDING).where(
+            (Run.status < Run.DONE) | (Run.last_step_id != last_step)
+        ).execute()
+        pending_runs = Run.select(Run.id).where(Run.status == Run.PENDING)
+        return [r.id for r in pending_runs]
+
+    @classmethod
     def handle_event(cls, event_type, payload, **kwargs):
         reply = kwargs.pop("reply")
         address = kwargs.pop("address")
 
-        if event_type == WORKER_REQUEST:
-            run = cls.get_next_pending_run()
+        if event_type == REQUEST_PENDING:
+            run_ids = cls.get_pending_run_ids()
+            reply.send_multipart([address, encode_message(run_ids)])
+        elif event_type == WORKER_JOIN:
+            run = cls.get_run(payload)
             reply.send_multipart([address, encode_message(run)])
         elif event_type == RUN_INTERRUPT:
             Run.update(status=Run.PENDING).where(Run.id == payload).execute()
