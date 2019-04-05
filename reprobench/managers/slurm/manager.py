@@ -30,7 +30,7 @@ class SlurmManager(BaseManager):
 
     def spawn_workers(self):
         logger.info("Spawning workers...")
-        worker_cmd = f"{sys.exec_prefix}/bin/reprobench -vvv worker --address={self.server_address}"
+        worker_cmd = f"{sys.exec_prefix}/bin/reprobench worker --address={self.server_address} -vv"
         worker_submit_cmd = [
             "sbatch",
             "--parsable",
