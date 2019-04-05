@@ -1,6 +1,11 @@
 from loguru import logger
-from psmon import ProcessMonitor
-from psmon.limiters import CpuTimeLimiter, MaxMemoryLimiter, WallTimeLimiter
+
+try:
+    from psmon import ProcessMonitor
+    from psmon.limiters import CpuTimeLimiter, MaxMemoryLimiter, WallTimeLimiter
+except ImportError:
+    logger.warning("You may need to install the `psmon` extra to run with this executor.")
+    pass
 
 from reprobench.utils import send_event
 

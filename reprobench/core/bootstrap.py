@@ -10,7 +10,6 @@ from pathlib import Path
 import click
 import numpy
 import zmq
-from ConfigSpace.read_and_write import pcs
 from loguru import logger
 from tqdm import tqdm
 
@@ -37,12 +36,16 @@ from reprobench.utils import (
     get_db_path,
     import_class,
     init_db,
-    is_pcs_parameter_range,
     is_range_str,
     read_config,
     send_event,
     str_to_range,
 )
+
+try:
+    from ConfigSpace.read_and_write import pcs
+except ImportError:
+    pcs = None
 
 
 def _bootstrap_db(config):

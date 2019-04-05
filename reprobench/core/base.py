@@ -1,6 +1,9 @@
-import zmq.green as zmq
-
 from reprobench.utils import recv_event
+
+try:
+    import zmq.green as zmq
+except ImportError:
+    pass
 
 
 class Observer:

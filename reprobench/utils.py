@@ -11,17 +11,19 @@ from collections.abc import Iterable
 from pathlib import Path
 from shutil import which
 
-import msgpack
 import requests
 import strictyaml
-from playhouse.apsw_ext import APSWDatabase
 from tqdm import tqdm
 
 from reprobench.core.db import db
-from reprobench.core.schema import schema
 from reprobench.core.exceptions import ExecutableNotFoundError
+from reprobench.core.schema import schema
 
-log = logging.getLogger(__name__)
+try:
+    import msgpack
+    from playhouse.apsw_ext import APSWDatabase
+except ImportError:
+    pass
 
 
 def find_executable(executable):
@@ -29,11 +31,6 @@ def find_executable(executable):
     if path is None:
         raise ExecutableNotFoundError
     return path
-
-
-def silent_run(command):
-    log.debug(f"Running: {command}")
-    return subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 def import_class(path):
@@ -167,16 +164,3 @@ def extract_archives(path):
         extract_zip(path, extract_path)
     elif tarfile.is_tarfile(path):
         extract_tar(path, extract_path)
-
-
-def is_pcs_parameter_range(line):
-    if "{" not in line and "[" not in line:
-        return False
-
-    if "#" not in line:
-        return False
-
-    if "-->" not in line:
-        return False
-
-    return True
