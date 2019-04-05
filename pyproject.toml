@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "reprobench"
-version = "0.8.3"
+version = "0.8.4"
 readme = "README.md"
 description = "Reproducible Benchmark for Everyone"
 authors = ["Rakha Kanz Kautsar <rkkautsar@gmail.com>"]
@@ -32,6 +32,7 @@ psmon = ["psmon"]
 client = ["pyzmq", "msgpack-python"]
 pcs = ["configspace"]
 analytics = ["peewee", "apsw"]
+all = ["psmon", "psutil", "py-cpuinfo", "mspack-python", "pyzmq", "gevent", "peewee", "apsw", "configspace"]
 
 [tool.poetry.dev-dependencies]
 black = "=19.3b0"
