@@ -1,9 +1,7 @@
 import importlib
-import logging
 import os
 import re
 import signal
-import subprocess
 import tarfile
 import time
 import zipfile
@@ -101,13 +99,6 @@ def recv_event(socket):
     event_type, payload, address = socket.recv_multipart()
 
     return event_type, decode_message(payload), address
-
-
-def clean_up():
-    signal.signal(signal.SIGTERM, signal.SIG_IGN)
-    os.killpg(os.getpgid(0), signal.SIGTERM)
-    time.sleep(1)
-    os.killpg(os.getpgid(0), signal.SIGKILL)
 
 
 def get_db_path(output_dir):
