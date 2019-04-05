@@ -1,6 +1,6 @@
 import atexit
 import time
-from multiprocessing import Process, Pool
+from multiprocessing import Pool
 
 from loguru import logger
 from tqdm import tqdm

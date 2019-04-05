@@ -3,10 +3,8 @@ from functools import lru_cache
 from peewee import fn
 
 from reprobench.core.base import Observer
-from reprobench.core.bootstrap import bootstrap
 from reprobench.core.db import Limit, Run, Step
 from reprobench.core.events import (
-    BOOTSTRAP,
     REQUEST_PENDING,
     RUN_FINISH,
     RUN_INTERRUPT,
@@ -18,14 +16,7 @@ from reprobench.utils import encode_message
 
 
 class CoreObserver(Observer):
-    SUBSCRIBED_EVENTS = (
-        BOOTSTRAP,
-        WORKER_JOIN,
-        RUN_START,
-        RUN_STEP,
-        RUN_FINISH,
-        REQUEST_PENDING,
-    )
+    SUBSCRIBED_EVENTS = (WORKER_JOIN, RUN_START, RUN_STEP, RUN_FINISH, REQUEST_PENDING)
 
     @classmethod
     @lru_cache(maxsize=1)
@@ -33,8 +24,8 @@ class CoreObserver(Observer):
         return {l.key: l.value for l in Limit.select()}
 
     @classmethod
-    def get_run(cls, id):
-        run = Run.get_by_id(id)
+    def get_run(cls, run_id):
+        run = Run.get_by_id(run_id)
 
         if run is None:
             return None
