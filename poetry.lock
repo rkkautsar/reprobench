@@ -9,10 +9,6 @@ version = "1.4.0"
 [package.dependencies]
 colorama = "*"
 
-[package.extras]
-devel = ["bumpversion (>=0.5.2)", "check-manifest (>=0.35)", "readme-renderer (>=16.0)", "flake8", "pep8-naming"]
-tests = ["tox (>=2.6.0)", "pytest (>=3.0.3)", "pytest-cov (>=2.3.1)"]
-
 [[package]]
 category = "dev"
 description = "A small Python module for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
@@ -25,7 +21,7 @@ version = "1.4.3"
 category = "main"
 description = "Another Python SQLite Wrapper"
 name = "apsw"
-optional = true
+optional = false
 python-versions = "*"
 version = "3.9.2-r1"
 
@@ -36,11 +32,6 @@ name = "attrs"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 version = "19.1.0"
-
-[package.extras]
-dev = ["coverage", "hypothesis", "pympler", "pytest", "six", "zope.interface", "sphinx", "pre-commit"]
-docs = ["sphinx", "zope.interface"]
-tests = ["coverage", "hypothesis", "pympler", "pytest", "six", "zope.interface"]
 
 [[package]]
 category = "main"
@@ -69,9 +60,6 @@ attrs = ">=18.1.0"
 click = ">=6.5"
 toml = ">=0.9.4"
 
-[package.extras]
-d = ["aiohttp (>=3.3.2)", "aiohttp-cors"]
-
 [[package]]
 category = "main"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -85,7 +73,7 @@ category = "main"
 description = "Foreign Function Interface for Python calling C code."
 marker = "sys_platform == \"win32\" and platform_python_implementation == \"CPython\""
 name = "cffi"
-optional = true
+optional = false
 python-versions = "*"
 version = "1.12.2"
 
@@ -120,7 +108,7 @@ version = "0.4.1"
 category = "main"
 description = "Creation and manipulation of parameter configuration spaces for automated algorithm configuration and hyperparameter tuning."
 name = "configspace"
-optional = true
+optional = false
 python-versions = ">=3.4.*"
 version = "0.4.10"
 
@@ -134,7 +122,7 @@ typing = "*"
 category = "main"
 description = "The Cython compiler for writing C extensions for the Python language."
 name = "cython"
-optional = true
+optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 version = "0.29.6"
 
@@ -142,7 +130,7 @@ version = "0.29.6"
 category = "main"
 description = "Coroutine-based network library"
 name = "gevent"
-optional = true
+optional = false
 python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*"
 version = "1.4.0"
 
@@ -150,18 +138,12 @@ version = "1.4.0"
 cffi = ">=1.11.5"
 greenlet = ">=0.4.14"
 
-[package.extras]
-dnspython = ["dnspython", "idna"]
-doc = ["repoze.sphinx.autointerface"]
-events = ["zope.event", "zope.interface"]
-test = ["zope.interface", "zope.event", "requests", "objgraph", "psutil", "futures", "mock", "coverage (>=5.0a3)", "coveralls (>=1.0)"]
-
 [[package]]
 category = "main"
 description = "Lightweight in-process concurrent programming"
 marker = "platform_python_implementation == \"CPython\""
 name = "greenlet"
-optional = true
+optional = false
 python-versions = "*"
 version = "0.4.15"
 
@@ -186,14 +168,11 @@ ansimarkup = ">=1.4.0"
 better-exceptions-fork = ">=0.2.1.post6"
 colorama = ">=0.3.4"
 
-[package.extras]
-dev = ["codecov (>=2.0.15)", "isort (>=4.3.4)", "pytest (>=3.9.0)", "pytest-cov (>=2.5.1)", "Sphinx (>=1.7.4)", "sphinx-autobuild (>=0.7)", "sphinx-rtd-theme (>=0.3)"]
-
 [[package]]
 category = "main"
 description = "MessagePack (de)serializer."
 name = "msgpack-python"
-optional = true
+optional = false
 python-versions = "*"
 version = "0.5.6"
 
@@ -217,7 +196,7 @@ version = "0.5.9"
 category = "main"
 description = "a little orm"
 name = "peewee"
-optional = true
+optional = false
 python-versions = "*"
 version = "3.9.3"
 
@@ -225,7 +204,7 @@ version = "3.9.3"
 category = "main"
 description = "Process monitoring"
 name = "psmon"
-optional = true
+optional = false
 python-versions = ">=3.6"
 version = "1.1.1"
 
@@ -237,18 +216,15 @@ psutil = ">=5.5,<6.0"
 category = "main"
 description = "Cross-platform lib for process and system monitoring in Python."
 name = "psutil"
-optional = true
+optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 version = "5.6.1"
-
-[package.extras]
-enum = ["enum34"]
 
 [[package]]
 category = "main"
 description = "Get CPU info with pure Python 2 & 3"
 name = "py-cpuinfo"
-optional = true
+optional = false
 python-versions = "*"
 version = "5.0.0"
 
@@ -257,7 +233,7 @@ category = "main"
 description = "C parser in Python"
 marker = "sys_platform == \"win32\" and platform_python_implementation == \"CPython\""
 name = "pycparser"
-optional = true
+optional = false
 python-versions = "*"
 version = "2.19"
 
@@ -273,7 +249,7 @@ version = "2.3.1"
 category = "main"
 description = "Python parsing module"
 name = "pyparsing"
-optional = true
+optional = false
 python-versions = "*"
 version = "2.3.1"
 
@@ -292,7 +268,7 @@ six = ">=1.5"
 category = "main"
 description = "Python bindings for 0MQ"
 name = "pyzmq"
-optional = true
+optional = false
 python-versions = ">=2.7,!=3.0*,!=3.1*,!=3.2*"
 version = "18.0.1"
 
@@ -310,10 +286,6 @@ chardet = ">=3.0.2,<3.1.0"
 idna = ">=2.5,<2.9"
 urllib3 = ">=1.21.1,<1.25"
 
-[package.extras]
-security = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)"]
-socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7)", "win-inet-pton"]
-
 [[package]]
 category = "main"
 description = "ruamel.yaml is a YAML parser/emitter that supports roundtrip preservation of comments, seq/map flow style, and map key order"
@@ -321,10 +293,6 @@ name = "ruamel.yaml"
 optional = false
 python-versions = "*"
 version = "0.15.89"
-
-[package.extras]
-docs = ["ryd"]
-jinja2 = ["ruamel.yaml.jinja2 (>=0.2)"]
 
 [[package]]
 category = "main"
@@ -340,7 +308,7 @@ description = "Strict, typed YAML parser"
 name = "strictyaml"
 optional = false
 python-versions = "*"
-version = "1.0.0"
+version = "1.0.1"
 
 [package.dependencies]
 python-dateutil = ">=2.6.0"
@@ -362,14 +330,11 @@ optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*"
 version = "4.31.1"
 
-[package.extras]
-dev = ["py-make (>=0.1.0)", "twine", "argopt", "pydoc-markdown"]
-
 [[package]]
 category = "main"
 description = "Type Hints for Python"
 name = "typing"
-optional = true
+optional = false
 python-versions = "*"
 version = "3.6.6"
 
@@ -381,20 +346,17 @@ optional = false
 python-versions = "*"
 version = "1.22"
 
-[package.extras]
-secure = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "certifi", "ipaddress"]
-socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7,<2.0)"]
-
 [extras]
+all = ["psmon", "psutil", "py-cpuinfo", "pyzmq", "gevent", "peewee", "apsw", "configspace"]
 analytics = ["peewee", "apsw"]
+client = ["pyzmq", "msgpack-python"]
 pcs = ["configspace"]
 psmon = ["psmon"]
 server = ["pyzmq", "gevent", "peewee", "apsw", "msgpack-python"]
 sysinfo = ["psutil"]
-worker = ["pyzmq", "msgpack-python"]
 
 [metadata]
-content-hash = "efca16f09f4fe8cb430d910c27642d8b91fdaecfe58de03493c357129c718a9f"
+content-hash = "250534b711596833efbd6be7d45db46eb0f297dd6226ce05fd030739c09da7e8"
 python-versions = ">=3.6"
 
 [metadata.hashes]
@@ -430,7 +392,7 @@ pyzmq = ["1651e52ed91f0736afd6d94ef9f3259b5534ce8beddb054f3d5ca989c4ef7c4f", "5c
 requests = ["502a824f31acdacb3a35b6690b5fbf0bc41d63a24a45c4004352b0242707598e", "7bf2a778576d825600030a110f3c0e3e8edc51dfaafe1c146e39a2027784957b"]
 "ruamel.yaml" = ["0ae64b150ec39667ce2815227271207d27a6218bc501b73e70a7403f2cf987ee", "0e6aa488ec65fcaf7cca609d83a2b0e13d429a6080dd6ef3fd89dcbf67f13c1d", "1085219e373381c8a4ac911be2f167d2c67485af82199db0abee11cfe06283d5", "181aeecf6d037e34c325c191b0a14188921964dd02c34a4d01bf7881060c22d0", "1bafe5773c559ef8e06d53f35bfcaad0510ef069db8b3fb50bf9816b3c531633", "20bc4549b86f7e5a558c06e51c97821d8b7658d4b01d3e21713a53db6f45779a", "325b5b1df1b29ecaaa3dab6745ee0a35d51e58aa19b90cab8ba11c498d438cb7", "3e89d657a11fee61120d304efcab92409ea4a21c9629626cbb7aabbac7b713d9", "551142c578813ee25e4952dda820701f0201d0292e8807e8fb5490d19bab8181", "6d8bf658b64ebeccb67bccccd01833cdbe5369c1436365d41052d23e5cbf716f", "76aadb21b3186599057c8874104c8467270307e12faed124dc5ee1cfcd4e240f", "86d034aa9e2ab3eacc5f75f5cd6a469a2af533b6d9e60ea92edbba540d21b9b7", "aa4bfa597c58f2efcae98add337ada85ded45288936a15ddc2d29ff3f5ce3ddf", "b76a4cf08e9392765cf6a25eae63a12fb27c6cc4a8ee5416a49cd54627151f46", "bd9976f13d14f6cb6da1748c7678198b6f9346cbbe0ad18eb74c024a7a2c0d08", "c3c1af293b9e6a84b5da3954f4ae81b30d07a626717cfb6f099ffe0901ff1eac", "c64ae6da2da174fce281a088d7634c6e545db5fb989a3cecec2aa9cef2634a92", "ca742877ea6948cb80c70aaf5d76011694eb072d98264a704b04ffc2d4c0d440", "cfefc391d5a3a7e8b1c6195f364d2f11f898f07eef277ef8e93a4e3ccafbd7c2", "f004249eb8b873c4f48361dc814450e47dab53b5312334cff0a9d381a4589f03", "fc6a2b2f4453944ab8bbe4d6d2eba0c864c098baa8487b08e4340a93a1f811c7", "fffc4dd4097451c0ae1c6cb89bbff1a8248fda6366adb08d1c7bbc4ea2e6a637"]
 six = ["3350809f0555b11f552448330d0b52d5f24c91a322ea4a15ef22629740f3761c", "d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73"]
-strictyaml = ["998f0bc8b3f912800171adb292893b13cc463c7133ea1d87997d944d8718360c"]
+strictyaml = ["06d7100587695a0edfabd772a6c6fb69071fc38c413df599e22dfd40e52f5fad"]
 toml = ["229f81c57791a41d65e399fc06bf0848bab550a9dfd5ed66df18ce5f05e73d5c", "235682dd292d5899d361a811df37e04a8828a5b1da3115886b73cf81ebc9100e", "f1db651f9657708513243e61e6cc67d101a39bad662eaa9b5546f789338e07a3"]
 tqdm = ["d385c95361699e5cf7622485d9b9eae2d4864b21cd5a2374a9c381ffed701021", "e22977e3ebe961f72362f6ddfb9197cc531c9737aaf5f607ef09740c849ecd05"]
 typing = ["4027c5f6127a6267a435201981ba156de91ad0d1d98e9ddc2aa173453453492d", "57dcf675a99b74d64dacf6fba08fb17cf7e3d5fdff53d4a30ea2a5e7e52543d4", "a4c8473ce11a65999c8f59cb093e70686b6c84c98df58c1dae9b3b196089858a"]
