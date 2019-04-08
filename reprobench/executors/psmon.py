@@ -4,7 +4,9 @@ try:
     from psmon import ProcessMonitor
     from psmon.limiters import CpuTimeLimiter, MaxMemoryLimiter, WallTimeLimiter
 except ImportError:
-    logger.warning("You may need to install the `psmon` extra to run with this executor.")
+    logger.warning(
+        "You may need to install the `psmon` extra to run with this executor."
+    )
 
 from reprobench.utils import send_event
 
@@ -18,10 +20,11 @@ class PsmonExecutor(Executor):
         self.socket = context["socket"]
         self.run_id = context["run"]["id"]
 
-        if config is not None:
-            wall_grace = config.get("wall_grace")
-        else:
-            wall_grace = 15
+        if config is None:
+            config = {}
+
+        wall_grace = config.get("wall_grace", 15)
+        self.nonzero_as_rte = config.get("nonzero_rte", True)
 
         limits = context["run"]["limits"]
         time_limit = float(limits["time"])
@@ -37,7 +40,7 @@ class PsmonExecutor(Executor):
             verdict = RunStatistic.TIMEOUT
         elif stats["error"] == MemoryError:
             verdict = RunStatistic.MEMOUT
-        elif stats["error"]:
+        elif stats["error"] or (self.nonzero_as_rte and stats["return_code"] != 0):
             verdict = RunStatistic.RUNTIME_ERR
         else:
             verdict = RunStatistic.SUCCESS

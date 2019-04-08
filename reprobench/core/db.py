@@ -3,12 +3,12 @@ from datetime import datetime
 from playhouse.apsw_ext import (
     Model,
     Proxy,
-    BlobField,
     CharField,
     CompositeKey,
     DateTimeField,
     ForeignKeyField,
     IntegerField,
+    TextField,
 )
 
 db = Proxy()
@@ -58,14 +58,14 @@ class Parameter(BaseModel):
 
 class BasePlugin(BaseModel):
     module = CharField(index=True)
-    config = BlobField()
+    config = TextField()
 
 
 class Step(BasePlugin):
     RUN = "run"
-    AGGREGATE = "aggregate"
+    ANALYSIS = "analysis"
 
-    CATEGORY_CHOICES = ((RUN, "Single run step"), (AGGREGATE, "Aggregation step"))
+    CATEGORY_CHOICES = ((RUN, "Single run step"), (ANALYSIS, "Analysis step"))
 
     category = CharField(choices=CATEGORY_CHOICES, index=True)
 

@@ -23,7 +23,7 @@ schema = Map(
         Optional("description"): Str(),
         "limits": limits_schema,
         "steps": Map(
-            {"run": Seq(plugin_schema), Optional("compile"): Seq(plugin_schema)}
+            {"run": Seq(plugin_schema), Optional("analysis"): Seq(plugin_schema)}
         ),
         "observers": Seq(plugin_schema),
         "tasks": MapPattern(Str(), MapPattern(Str(), Any())),

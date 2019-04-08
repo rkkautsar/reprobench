@@ -5,6 +5,7 @@ from multiprocessing import Pool
 from loguru import logger
 from tqdm import tqdm
 
+from reprobench.core.analyzer import BenchmarkAnalyzer
 from reprobench.core.worker import BenchmarkWorker
 from reprobench.managers.base import BaseManager
 

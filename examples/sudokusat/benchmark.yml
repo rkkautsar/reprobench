@@ -12,6 +12,22 @@ steps:
     - module: sudoku.validate.SudokuValidator
       config:
         check_consistency: true
+  analysis:
+    - module: reprobench.statistics.exports.CSVExport
+      config:
+        joins:
+          - reprobench.executors.db.RunStatistic
+          - reprobench.core.sysinfo.RunNode
+        output: statistics/sudoku.csv
+    - module: reprobench.statistics.exports.JSONExport
+      config:
+        joins:
+          - reprobench.executors.db.RunStatistic
+        output: statistics/sudoku.json
+    - module: reprobench.statistics.plots.CactusPlot
+      config:
+        measure: wall_time
+        output: statistics/cactus.ipynb
 
 observers:
   - module: reprobench.core.sysinfo.SystemInfoObserver
