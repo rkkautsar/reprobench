@@ -7,6 +7,7 @@ from reprobench.core.base import Step
 
 class NotebookExecutor(Step):
     INPUT_NOTEBOOK = None
+    DEFAULT_OUTPUT = None
 
     @classmethod
     def execute(cls, context, config=None):

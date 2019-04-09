@@ -14,6 +14,9 @@ class RunStatisticObserver(Observer):
 
 
 class Executor(Step):
+    def __init__(self, *args, **kwargs):
+        pass
+
     def run(
         self,
         cmdline,

@@ -149,6 +149,7 @@ def _create_parameter_group(tool, group, parameters):
     PCS_KEY = "__pcs"
     pcs_parameters = {}
     use_pcs = PCS_KEY in parameters
+    config_space = None
 
     if use_pcs:
         pcs_text = parameters.pop(PCS_KEY)

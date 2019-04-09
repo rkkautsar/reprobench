@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from loguru import logger
 
 from reprobench.core.base import Tool
@@ -39,4 +40,3 @@ class ExecutableTool(Tool):
             out_path=self.get_out_path(),
             err_path=self.get_err_path(),
         )
-

@@ -13,17 +13,15 @@ steps:
       config:
         check_consistency: true
   analysis:
-    - module: reprobench.statistics.exports.CSVExport
+    - module: reprobench.statistics.tables.RunTable
       config:
         joins:
           - reprobench.executors.db.RunStatistic
           - reprobench.core.sysinfo.RunNode
-        output: statistics/sudoku.csv
-    - module: reprobench.statistics.exports.JSONExport
+        output: statistics/raw.csv
+    - module: reprobench.statistics.tables.RunSummaryTable
       config:
-        joins:
-          - reprobench.executors.db.RunStatistic
-        output: statistics/sudoku.json
+        output: statistics/summary.csv
     - module: reprobench.statistics.plots.CactusPlot
       config:
         measure: wall_time
