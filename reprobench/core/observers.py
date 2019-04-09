@@ -3,8 +3,10 @@ from functools import lru_cache
 from peewee import fn
 
 from reprobench.core.base import Observer
+from reprobench.core.update import update
 from reprobench.core.db import Limit, Run, Step
 from reprobench.core.events import (
+    BOOTSTRAP,
     REQUEST_PENDING,
     RUN_FINISH,
     RUN_INTERRUPT,
@@ -16,7 +18,14 @@ from reprobench.utils import encode_message
 
 
 class CoreObserver(Observer):
-    SUBSCRIBED_EVENTS = (WORKER_JOIN, RUN_START, RUN_STEP, RUN_FINISH, REQUEST_PENDING)
+    SUBSCRIBED_EVENTS = (
+        BOOTSTRAP,
+        WORKER_JOIN,
+        RUN_START,
+        RUN_STEP,
+        RUN_FINISH,
+        REQUEST_PENDING,
+    )
 
     @classmethod
     @lru_cache(maxsize=1)
@@ -69,7 +78,9 @@ class CoreObserver(Observer):
         reply = kwargs.pop("reply")
         address = kwargs.pop("address")
 
-        if event_type == REQUEST_PENDING:
+        if event_type == BOOTSTRAP:
+            update(**payload)
+        elif event_type == REQUEST_PENDING:
             run_ids = cls.get_pending_run_ids()
             reply.send_multipart([address, encode_message(run_ids)])
         elif event_type == WORKER_JOIN:

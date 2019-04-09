@@ -11,14 +11,14 @@ from reprobench.core.bootstrap import bootstrap
 from reprobench.core.db import db, Observer
 from reprobench.core.events import BOOTSTRAP
 from reprobench.core.observers import CoreObserver
-from reprobench.utils import import_class, decode_message
+from reprobench.utils import import_class, decode_message, get_db_path
 
 
-class BenchmarkServer:
+class BenchmarkServer(object):
     BACKEND_ADDRESS = "inproc://backend"
 
-    def __init__(self, db_path, frontend_address, **kwargs):
-        super().__init__()
+    def __init__(self, output_dir, frontend_address, **kwargs):
+        db_path = get_db_path(output_dir)
         db.initialize(APSWDatabase(db_path))
         self.bootstrapped = Path(db_path).exists()
         self.frontend_address = frontend_address
@@ -77,13 +77,13 @@ class BenchmarkServer:
 
 
 @click.command(name="server")
-@click.option("-f", "--forever", help="Serve forever", is_flag=True)
-@click.option("-d", "--database", default="./output/benchmark.db", show_default=True)
+@click.option(
+    "-d", "--output-dir", type=click.Path(), default="./output", show_default=True
+)
 @server_info
 @common
-def cli(server_address, database, **kwargs):
-    db_path = str(Path(database).resolve())
-    server = BenchmarkServer(db_path, server_address, **kwargs)
+def cli(server_address, output_dir, **kwargs):
+    server = BenchmarkServer(output_dir, server_address, **kwargs)
     server.run()
 
 
