@@ -1,8 +1,11 @@
 from pathlib import Path
 
-import papermill as pm
-
 from reprobench.core.base import Step
+
+try:
+    import papermill as pm
+except ImportError:
+    pass
 
 
 class NotebookExecutor(Step):

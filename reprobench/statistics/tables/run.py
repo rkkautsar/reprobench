@@ -1,10 +1,13 @@
-import pandas as pd
-
 from reprobench.core.db import ParameterGroup, Run, db
 from reprobench.executors.db import RunStatistic
 from reprobench.utils import import_class
 
 from .base import PandasExporter
+
+try:
+    import pandas as pd
+except ImportError:
+    pass
 
 
 class RunTable(PandasExporter):
@@ -26,6 +29,7 @@ class RunTable(PandasExporter):
 
 class RunSummaryTable(PandasExporter):
     DEFAULT_COLUMNS = ("cpu_time", "wall_time", "max_memory")
+
     @classmethod
     def get_dataframe(cls, config):
         columns = config.get("columns", cls.DEFAULT_COLUMNS)
