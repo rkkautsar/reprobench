@@ -463,7 +463,7 @@ version = "0.5.9"
 category = "main"
 description = "a little orm"
 name = "peewee"
-optional = true
+optional = false
 python-versions = "*"
 version = "3.9.5"
 
