@@ -21,12 +21,6 @@ REQUEST_TIMEOUT = 15000
 
 
 class BenchmarkWorker:
-    """
-    Request for a work from server,
-    if there's no more work, terminate.
-    else, do the work and request for more.
-    """
-
     def __init__(self, server_address, run_id):
         self.server_address = server_address
         self.run_id = run_id

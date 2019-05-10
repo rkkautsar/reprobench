@@ -6,13 +6,13 @@ from collections.abc import Iterable
 from pathlib import Path
 from shutil import which
 
+import numpy
 import requests
 import strictyaml
-from tqdm import tqdm
-
 from reprobench.core.db import db
-from reprobench.core.exceptions import ExecutableNotFoundError
+from reprobench.core.exceptions import ExecutableNotFoundError, NotSupportedError
 from reprobench.core.schema import schema
+from tqdm import tqdm
 
 try:
     import msgpack
@@ -152,3 +152,69 @@ def extract_archives(path):
         extract_zip(path, extract_path)
     elif tarfile.is_tarfile(path):
         extract_tar(path, extract_path)
+
+
+
+def get_pcs_parameter_range(parameter_str, is_categorical):
+    functions = dict(
+        range=range,
+        arange=numpy.arange,
+        linspace=numpy.linspace,
+        logspace=numpy.logspace,
+        geomspace=numpy.geomspace,
+    )
+
+    function_re = re.compile(r"(?P<function>[A-Za-z_]+)\((?P<arguments>.*)\)")
+
+    match = function_re.match(parameter_str)
+
+    parameter_range = None
+    if match:
+        function = match.group("function")
+        if function not in functions:
+            raise NotSupportedError(f"Declaring range with {function} is not supported")
+        args = literal_eval(match.group("arguments"))
+        parameter_range = functions[function](*args)
+    else:
+        parameter_range = literal_eval(parameter_str)
+        if not isinstance(parameter_range, Iterable) or isinstance(
+            parameter_range, str
+        ):
+            parameter_range = (parameter_range,)
+        if is_categorical:
+            parameter_range = map(str, parameter_range)
+
+    return parameter_range
+
+
+def parse_pcs_parameters(lines):
+    parameter_range_indicator = "-->"
+
+    parameters = {}
+    parameter_key = None
+    is_categorical = False
+
+    for line in lines:
+        if ("{" in line or "[" in line) and not line.startswith("#"):
+            parameter_key = line[: line.find(" ")]
+            is_categorical = "{" in line
+
+        if "#" not in line or parameter_range_indicator not in line:
+            continue
+
+        comment_pos = line.find("#")
+        pos = line.find(parameter_range_indicator, comment_pos)
+        parameter_str = line[pos + len(parameter_range_indicator) :].strip()
+
+        parameter_range = _get_pcs_parameter_range(parameter_str, is_categorical)
+
+        parameters[parameter_key] = parameter_range
+
+    return parameters
+
+
+def check_valid_config_space(config_space, parameters):
+    base = config_space.get_default_configuration()
+    for key, value in parameters.items():
+        if key in base:
+            base[key] = value  # ValueError if invalid value

@@ -6,6 +6,8 @@ from .local import LocalSource
 
 
 class UrlSource(LocalSource):
+    TYPE = "url"
+
     def __init__(
         self,
         urls=None,
