@@ -1,14 +1,26 @@
 import atexit
 import itertools
+import json
 import shutil
 from pathlib import Path
 
 from loguru import logger
-from reprobench.core.db import (MODELS, Limit, Observer, Parameter,
-                                ParameterGroup, Step, Task, TaskGroup, Tool,
-                                db)
-from reprobench.utils import (get_db_path, import_class, init_db,
-                              parse_pcs_parameters)
+from tqdm import tqdm
+
+from reprobench.core.db import (
+    MODELS,
+    Limit,
+    Observer,
+    Parameter,
+    ParameterGroup,
+    Run,
+    Step,
+    Task,
+    TaskGroup,
+    Tool,
+    db,
+)
+from reprobench.utils import get_db_path, import_class, init_db, parse_pcs_parameters
 
 try:
     from ConfigSpace.read_and_write import pcs
@@ -140,7 +152,7 @@ def bootstrap_tools(config):
             create_parameter_group(tool["module"], group, parameters)
 
 
-def _bootstrap_runs(config, output_dir, repeat=1):
+def bootstrap_runs(config, output_dir, repeat=1):
     parameter_groups = ParameterGroup.select().iterator()
     tasks = Task.select().iterator()
     total = ParameterGroup.select().count() * Task.select().count()

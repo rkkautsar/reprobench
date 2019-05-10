@@ -1,11 +1,11 @@
 import click
 import zmq
-
+from loguru import logger
+from reprobench.console.decorators import common, server_info
+from reprobench.core.events import BOOTSTRAP
 from reprobench.utils import read_config, send_event
-from reprobench.console.decorators import server_info, common
 
 from .client import bootstrap as bootstrap_client
-
 
 
 @click.command(name="bootstrap")
@@ -31,6 +31,8 @@ def cli(server_address, config, output_dir, **kwargs):
     socket = context.socket(zmq.DEALER)
     socket.connect(server_address)
     payload = dict(config=bootstrapped_config, output_dir=output_dir, **kwargs)
+
+    logger.info("Sending bootstrap event to server")
     send_event(socket, BOOTSTRAP, payload)
 
 
