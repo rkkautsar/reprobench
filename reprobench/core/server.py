@@ -7,7 +7,7 @@ from loguru import logger
 from playhouse.apsw_ext import APSWDatabase
 
 from reprobench.console.decorators import common, server_info
-from reprobench.core.bootstrap import bootstrap
+from reprobench.core.bootstrap.server import bootstrap
 from reprobench.core.db import db, Observer
 from reprobench.core.events import BOOTSTRAP
 from reprobench.core.observers import CoreObserver
