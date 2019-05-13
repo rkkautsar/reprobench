@@ -2,6 +2,7 @@ import importlib
 import re
 import tarfile
 import zipfile
+from ast import literal_eval
 from collections.abc import Iterable
 from pathlib import Path
 from shutil import which
@@ -12,6 +13,7 @@ import strictyaml
 from reprobench.core.db import db
 from reprobench.core.exceptions import ExecutableNotFoundError, NotSupportedError
 from reprobench.core.schema import schema
+from retrying import retry
 from tqdm import tqdm
 
 try:
@@ -67,7 +69,7 @@ def is_range_str(range_str):
 def str_to_range(range_str):
     matches = ranged_numbers_re.match(range_str).groupdict()
     start = int(matches["start"])
-    end = int(matches["end"])
+    end = int(matches["end"]) + 1
 
     if matches["step"]:
         return range(start, end, int(matches["step"]))
@@ -82,6 +84,7 @@ def decode_message(msg):
     return msgpack.unpackb(msg, raw=False)
 
 
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=30000)
 def send_event(socket, event_type, payload=None):
     """
     Used in the worker with a DEALER socket
@@ -154,7 +157,6 @@ def extract_archives(path):
         extract_tar(path, extract_path)
 
 
-
 def get_pcs_parameter_range(parameter_str, is_categorical):
     functions = dict(
         range=range,
@@ -206,7 +208,7 @@ def parse_pcs_parameters(lines):
         pos = line.find(parameter_range_indicator, comment_pos)
         parameter_str = line[pos + len(parameter_range_indicator) :].strip()
 
-        parameter_range = _get_pcs_parameter_range(parameter_str, is_categorical)
+        parameter_range = get_pcs_parameter_range(parameter_str, is_categorical)
 
         parameters[parameter_key] = parameter_range
 

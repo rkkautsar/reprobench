@@ -5,8 +5,7 @@ import shutil
 from pathlib import Path
 
 from loguru import logger
-from tqdm import tqdm
-
+from peewee import chunked
 from reprobench.core.db import (
     MODELS,
     Limit,
@@ -20,7 +19,16 @@ from reprobench.core.db import (
     Tool,
     db,
 )
-from reprobench.utils import get_db_path, import_class, init_db, parse_pcs_parameters
+from reprobench.utils import (
+    check_valid_config_space,
+    get_db_path,
+    import_class,
+    init_db,
+    is_range_str,
+    parse_pcs_parameters,
+    str_to_range,
+)
+from tqdm import tqdm
 
 try:
     from ConfigSpace.read_and_write import pcs
@@ -76,7 +84,11 @@ def register_steps(config):
 def bootstrap_tasks(config):
     for (name, tasks) in config["tasks"].items():
         task_group = TaskGroup.create(name=name)
-        Task.insert_many([{"path": task, "group": name} for task in tasks]).execute()
+        with db.atomic():
+            for batch in chunked(tasks, 100):
+                Task.insert_many(
+                    [{"path": task, "group": name} for task in batch]
+                ).execute()
 
 
 def create_parameter_group(tool, group, parameters):
@@ -127,7 +139,7 @@ def create_parameter_group(tool, group, parameters):
         parameters = {**dict(combination), **constant_parameters}
 
         if use_pcs:
-            _check_valid_config_space(config_space, parameters)
+            check_valid_config_space(config_space, parameters)
 
         combination_str = ",".join(f"{key}={value}" for key, value in combination)
         parameter_group = ParameterGroup.create(
@@ -157,20 +169,19 @@ def bootstrap_runs(config, output_dir, repeat=1):
     tasks = Task.select().iterator()
     total = ParameterGroup.select().count() * Task.select().count()
 
-    for (parameter_group, task) in tqdm(
-        itertools.product(parameter_groups, tasks),
-        desc="Bootstrapping runs",
-        total=total,
-    ):
-        directory = (
-            Path(output_dir)
-            / parameter_group.tool_id
-            / parameter_group.name
-            / task.group_id
-            / Path(task.path).name
-        )
-
-        with db.atomic():
+    with db.atomic():
+        for (parameter_group, task) in tqdm(
+            itertools.product(parameter_groups, tasks),
+            desc="Bootstrapping runs",
+            total=total,
+        ):
+            directory = (
+                Path(output_dir)
+                / parameter_group.tool_id
+                / parameter_group.name
+                / task.group_id
+                / Path(task.path).name
+            )
             for _ in range(repeat):
                 Run.create(
                     tool=parameter_group.tool_id,

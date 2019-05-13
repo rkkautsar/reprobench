@@ -4,14 +4,12 @@ import click
 import gevent
 import zmq.green as zmq
 from loguru import logger
-from playhouse.apsw_ext import APSWDatabase
-
 from reprobench.console.decorators import common, server_info
 from reprobench.core.bootstrap.server import bootstrap
-from reprobench.core.db import db, Observer
+from reprobench.core.db import Observer
 from reprobench.core.events import BOOTSTRAP
 from reprobench.core.observers import CoreObserver
-from reprobench.utils import import_class, decode_message, get_db_path
+from reprobench.utils import decode_message, get_db_path, import_class, init_db
 
 
 class BenchmarkServer(object):
@@ -19,7 +17,7 @@ class BenchmarkServer(object):
 
     def __init__(self, output_dir, frontend_address, **kwargs):
         db_path = get_db_path(output_dir)
-        db.initialize(APSWDatabase(db_path))
+        init_db(db_path)
         self.bootstrapped = Path(db_path).exists()
         self.frontend_address = frontend_address
         self.observers = [CoreObserver]
@@ -33,12 +31,14 @@ class BenchmarkServer(object):
 
         payload = decode_message(payload)
         bootstrap(**payload)
+        logger.debug((event_type, len(payload)))
         self.bootstrapped = True
         self.frontend.send_multipart([address, b"done"])
 
     def loop(self):
         while True:
             address, event_type, payload = self.frontend.recv_multipart()
+            logger.debug((event_type, len(payload)))
             logger.trace((address, event_type, payload))
             self.backend.send_multipart([event_type, payload, address])
 

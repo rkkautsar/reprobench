@@ -11,6 +11,8 @@ from .utils import to_comma_range
 
 
 class SlurmManager(BaseManager):
+    BATCH = 256  # maximum number of task to execute at one time
+
     def __init__(self, config, output_dir, **kwargs):
         super().__init__(**kwargs)
         self.config = read_config(config)
@@ -34,7 +36,7 @@ class SlurmManager(BaseManager):
         worker_submit_cmd = [
             "sbatch",
             "--parsable",
-            f"--array={to_comma_range(self.queue)}",
+            f"--array={to_comma_range(self.queue)}%{self.BATCH}",
             f"--time={self.time_limit}",
             f"--mem={self.mem_limit}",
             f"--cpus-per-task={self.cpu_count}",

@@ -1,12 +1,17 @@
 import platform
 
-import psutil
-from cpuinfo import get_cpu_info
 from playhouse.apsw_ext import CharField, FloatField, ForeignKeyField, IntegerField
 
 from reprobench.core.base import Step, Observer
 from reprobench.core.db import BaseModel, Run, db
 from reprobench.utils import send_event
+
+try:
+    import psutil
+    from cpuinfo import get_cpu_info
+except ImportError:
+    psutil = None
+    get_cpu_info = None
 
 
 class Node(BaseModel):

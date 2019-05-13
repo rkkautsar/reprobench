@@ -10,7 +10,7 @@ class RunStatisticObserver(Observer):
     @classmethod
     def handle_event(cls, event_type, payload, **kwargs):
         if event_type == STORE_RUNSTATS:
-            RunStatistic.create(**payload)
+            RunStatistic.insert(**payload).on_conflict("replace").execute()
 
 
 class Executor(Step):
