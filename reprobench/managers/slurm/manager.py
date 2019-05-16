@@ -1,6 +1,7 @@
 import math
 import subprocess
 import sys
+from pathlib import Path
 
 from loguru import logger
 
@@ -11,14 +12,13 @@ from .utils import to_comma_range
 
 
 class SlurmManager(BaseManager):
-    BATCH = 256  # maximum number of task to execute at one time
-
     def __init__(self, config, output_dir, **kwargs):
         super().__init__(**kwargs)
         self.config = read_config(config)
         self.output_dir = output_dir
 
     def prepare(self):
+        Path(self.output_dir).mkdir(parents=True, exist_ok=True)
         limits = self.config["limits"]
         time_limit_minutes = int(math.ceil(limits["time"] / 60.0))
 
@@ -36,7 +36,7 @@ class SlurmManager(BaseManager):
         worker_submit_cmd = [
             "sbatch",
             "--parsable",
-            f"--array={to_comma_range(self.queue)}%{self.BATCH}",
+            f"--array={to_comma_range(self.queue)}",
             f"--time={self.time_limit}",
             f"--mem={self.mem_limit}",
             f"--cpus-per-task={self.cpu_count}",

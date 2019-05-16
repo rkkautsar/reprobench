@@ -84,12 +84,18 @@ def decode_message(msg):
     return msgpack.unpackb(msg, raw=False)
 
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=30000)
-def send_event(socket, event_type, payload=None):
+@retry(wait_exponential_multiplier=500)
+def send_event(socket, event_type, payload=None, enable_logging=True):
     """
     Used in the worker with a DEALER socket
     """
-    socket.send_multipart([event_type, encode_message(payload)])
+    event = [event_type, encode_message(payload)]
+    socket.send_multipart(event)
+
+    EVENT_SEPARATOR = b"\x00" * 4
+    if enable_logging:
+        with open("./reprobench_events.log", "ab") as f:
+            f.write(encode_message(event) + EVENT_SEPARATOR)
 
 
 def recv_event(socket):
@@ -106,7 +112,7 @@ def get_db_path(output_dir):
 
 
 def init_db(db_path):
-    database = APSWDatabase(db_path)
+    database = APSWDatabase(db_path, pragmas=(('journal_mode', 'wal'),))
     db.initialize(database)
 
 

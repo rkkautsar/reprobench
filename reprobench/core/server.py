@@ -31,14 +31,12 @@ class BenchmarkServer(object):
 
         payload = decode_message(payload)
         bootstrap(**payload)
-        logger.debug((event_type, len(payload)))
         self.bootstrapped = True
         self.frontend.send_multipart([address, b"done"])
 
     def loop(self):
         while True:
             address, event_type, payload = self.frontend.recv_multipart()
-            logger.debug((event_type, len(payload)))
             logger.trace((address, event_type, payload))
             self.backend.send_multipart([event_type, payload, address])
 
