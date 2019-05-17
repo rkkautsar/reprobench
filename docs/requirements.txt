@@ -15,7 +15,7 @@ certifi==2019.3.9
 chardet==3.0.4
 Click==7.0
 colorama==0.4.1
-ConfigSpace==0.4.10
+# ConfigSpace==0.4.10
 Cython==0.29.6
 decorator==4.4.0
 defusedxml==0.5.0
