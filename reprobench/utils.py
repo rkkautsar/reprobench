@@ -238,7 +238,6 @@ def resolve_files_uri(root):
         root (dict): Root dictionary of the configuration
 
     Examples:
-        >>> resolve_files_uri(dict(test="file://./test.txt"))
         >>> d = dict(test="file://./test.txt")
         >>> resolve_files_uri(d)
         >>> d
