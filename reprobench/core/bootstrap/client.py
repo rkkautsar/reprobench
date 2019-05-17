@@ -1,6 +1,5 @@
 from loguru import logger
 
-from reprobench.core.exceptions import NotSupportedError
 from reprobench.task_sources.doi import DOISource
 from reprobench.task_sources.local import LocalSource
 from reprobench.task_sources.url import UrlSource

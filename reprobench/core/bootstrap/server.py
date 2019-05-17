@@ -83,7 +83,7 @@ def register_steps(config):
 
 def bootstrap_tasks(config):
     for (name, tasks) in config["tasks"].items():
-        task_group = TaskGroup.create(name=name)
+        TaskGroup.create(name=name)
         with db.atomic():
             for batch in chunked(tasks, 100):
                 Task.insert_many(
