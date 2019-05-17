@@ -1,3 +1,5 @@
+"""Various utilities"""
+
 import importlib
 import re
 import tarfile
@@ -24,6 +26,22 @@ except ImportError:
 
 
 def find_executable(executable):
+    """Find an executable path from its name
+
+    Similar to `/usr/bin/which`, this function find the path
+    of an executable by its name, for example by finding it in
+    the PATH environment variable.
+
+    Args:
+        executable (str): The executable name
+
+    Returns:
+        str: Path of the executable
+
+    Raises:
+        ExecutableNotFoundError: If no path for `executable`
+            is found.
+    """
     path = which(executable)
     if path is None:
         raise ExecutableNotFoundError
@@ -31,21 +49,40 @@ def find_executable(executable):
 
 
 def import_class(path):
+    """Import a class by its path
+
+    Args:
+        path (str): the path to the class, in similar notation as modules
+
+    Returns:
+        class: the specified class
+
+    Examples:
+        >>> import_class("reprobench.core.server.BenchmarkServer")
+        <class 'reprobench.core.server.BenchmarkServer'>
+    """
     module_path, tail = ".".join(path.split(".")[:-1]), path.split(".")[-1]
     module = importlib.import_module(module_path)
     return getattr(module, tail)
 
 
-def copyfileobj(fsrc, fdst, callback, length=16 * 1024):
+def _copy_file_obj(source, destination, callback, length=16 * 1024):
+    """Modified version of shutil.copyfileobj with callback"""
     while True:
-        buf = fsrc.read(length)
+        buf = source.read(length)
         if not buf:
             break
-        fdst.write(buf)
+        destination.write(buf)
         callback(len(buf))
 
 
 def download_file(url, dest):
+    """Download a file by the specified URL
+
+    Args:
+        url (str): URL for the file to download
+        dest (str): Destination path for saving the file
+    """
     r = requests.get(url, stream=True)
 
     with tqdm(
@@ -56,17 +93,49 @@ def download_file(url, dest):
     ) as progress_bar:
         progress_bar.set_postfix(file=Path(dest).name, refresh=False)
         with open(dest, "wb") as f:
-            copyfileobj(r.raw, f, progress_bar.update)
+            _copy_file_obj(r.raw, f, progress_bar.update)
 
 
 ranged_numbers_re = re.compile(r"(?P<start>\d+)\.\.(?P<end>\d+)(\.\.(?P<step>\d+))?")
 
 
 def is_range_str(range_str):
-    return ranged_numbers_re.match(range_str)
+    """Check if a string is in range notation
+
+    Args:
+        range_str (str): The string to check
+
+    Returns:
+        bool: if the string is in range notation
+
+    Examples:
+        >>> is_range_str("1..2")
+        True
+        >>> is_range_str("1..5..2")
+        True
+        >>> is_range_str("1")
+        False
+    """
+    return ranged_numbers_re.match(range_str) is not None
 
 
 def str_to_range(range_str):
+    """Generate range from a string with range notation
+
+    Args:
+        range_str (str): The string with range notation
+
+    Returns:
+        range: The generated range
+
+    Examples:
+        >>> str_to_range("1..3")
+        range(1, 4)
+        >>> str_to_range("1..5..2")
+        range(1, 6, 2)
+        >>> [*str_to_range("1..3")]
+        [1, 2, 3]
+    """
     matches = ranged_numbers_re.match(range_str).groupdict()
     start = int(matches["start"])
     end = int(matches["end"]) + 1
@@ -77,17 +146,45 @@ def str_to_range(range_str):
 
 
 def encode_message(obj):
+    """Encode an object for transport
+
+    This method serialize the object with msgpack for
+    network transportation.
+
+    Args:
+        obj: serializable object
+
+    Returns:
+        bin: binary string of the encoded object
+    """
     return msgpack.packb(obj, use_bin_type=True)
 
 
 def decode_message(msg):
+    """Decode an encoded object
+
+    This method deserialize the encoded object from
+    `encode_message(obj)`.
+
+    Args:
+        bin: binary string of the encoded object
+
+    Returns:
+        obj: decoded object
+    """
     return msgpack.unpackb(msg, raw=False)
 
 
 @retry(wait_exponential_multiplier=500)
 def send_event(socket, event_type, payload=None, enable_logging=True):
-    """
-    Used in the worker with a DEALER socket
+    """Used in the worker with a DEALER socket to send events to the server.
+
+    Args:
+        socket (zmq.Socket): the socket for sending the event
+        event_type (str): event type agreed between the parties
+        payload (any, optional): the payload for the event
+        enable_logging(bool, optional): enable logging to
+            `./reprobench_events.log`. Defaults to True.
     """
     event = [event_type, encode_message(payload)]
     socket.send_multipart(event)
@@ -99,8 +196,13 @@ def send_event(socket, event_type, payload=None, enable_logging=True):
 
 
 def recv_event(socket):
-    """
-    Used in the SUB handler
+    """Receive published event for the observers
+
+    Args:
+        socket (zmq.Socket): SUB socket for receiving the event
+
+    Returns:
+        (event_type, payload, address): Tuple for received events
     """
     event_type, payload, address = socket.recv_multipart()
 
@@ -108,15 +210,40 @@ def recv_event(socket):
 
 
 def get_db_path(output_dir):
+    """Get the database path from the given output directory
+
+    Args:
+        output_dir (str): path to the output directory
+
+    Returns:
+        str: database path
+    """
     return str((Path(output_dir) / f"benchmark.db").resolve())
 
 
 def init_db(db_path):
-    database = APSWDatabase(db_path, pragmas=(('journal_mode', 'wal'),))
+    """Initialize the given database
+
+    Args:
+        db_path (str): path to the database
+    """
+    database = APSWDatabase(db_path, pragmas=(("journal_mode", "wal"),))
     db.initialize(database)
 
 
 def resolve_files_uri(root):
+    """Resolve all `file://` URIs in a dictionary to its content
+
+    Args:
+        root (dict): Root dictionary of the configuration
+
+    Examples:
+        >>> resolve_files_uri(dict(test="file://./test.txt"))
+        >>> d = dict(test="file://./test.txt")
+        >>> resolve_files_uri(d)
+        >>> d
+        {'a': 'this is the content of test.txt\\n'}
+    """
     protocol = "file://"
     iterator = None
     if isinstance(root, dict):
@@ -132,6 +259,15 @@ def resolve_files_uri(root):
 
 
 def read_config(config_path, resolve_files=False):
+    """Read a YAML configuration from a path
+
+    Args:
+        config_path (str): Configuration file path (YAML)
+        resolve_files (bool, optional): Should files be resolved to its content? Defaults to False.
+
+    Returns:
+        dict: Configuration
+    """
     with open(config_path, "r") as f:
         config_text = f.read()
         config = strictyaml.load(config_text, schema=schema).data
@@ -143,18 +279,35 @@ def read_config(config_path, resolve_files=False):
 
 
 def extract_zip(path, dest):
+    """Extract a ZIP file
+
+    Args:
+        path (str): Path to ZIP file
+        dest (str): Destination for extraction
+    """
     if not dest.is_dir():
         with zipfile.ZipFile(path, "r") as f:
             f.extractall(dest)
 
 
 def extract_tar(path, dest):
+    """Extract a TAR file
+
+    Args:
+        path (str): Path to TAR file
+        dest (str): Destination for extraction
+    """
     if not dest.is_dir():
         with tarfile.TarFile.open(path) as f:
             f.extractall(dest)
 
 
 def extract_archives(path):
+    """Extract archives based on its extension
+
+    Args:
+        path (str): Path to the archive file
+    """
     extract_path = Path(path).with_name(path.stem)
 
     if zipfile.is_zipfile(path):
@@ -164,6 +317,18 @@ def extract_archives(path):
 
 
 def get_pcs_parameter_range(parameter_str, is_categorical):
+    """Generate a range from specified pcs range notation
+
+    Args:
+        parameter_str (str): specified pcs parameter
+        is_categorical (bool): is the range categorical
+
+    Raises:
+        NotSupportedError: If there is no function for resolving the range
+
+    Returns:
+        range: Generated range
+    """
     functions = dict(
         range=range,
         arange=numpy.arange,
@@ -196,6 +361,14 @@ def get_pcs_parameter_range(parameter_str, is_categorical):
 
 
 def parse_pcs_parameters(lines):
+    """Parse parameters from a pcs file content
+
+    Args:
+        lines ([str]): pcs file content
+
+    Returns:
+        dict: generated parameters
+    """
     parameter_range_indicator = "-->"
 
     parameters = {}
@@ -222,7 +395,17 @@ def parse_pcs_parameters(lines):
 
 
 def check_valid_config_space(config_space, parameters):
+    """Check if the parameters is valid based on a configuration space
+
+    Args:
+        config_space (ConfigSpace): configuration space
+        parameters (dict): parameters dictionary
+
+    Raises:
+        ValueError: If there is invalid values
+    """
     base = config_space.get_default_configuration()
     for key, value in parameters.items():
         if key in base:
-            base[key] = value  # ValueError if invalid value
+            base[key] = value
+
