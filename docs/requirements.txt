@@ -1,3 +1,4 @@
+numpy==1.16.3
 alabaster==0.7.12
 ansimarkup==1.4.0
 ansiwrap==0.8.4
@@ -38,7 +39,6 @@ mistune==0.8.4
 msgpack-python==0.5.6
 nbconvert==5.4.1
 nbformat==4.4.0
-numpy==1.16.3
 packaging==19.0
 pandas==0.24.2
 pandocfilters==1.4.2
