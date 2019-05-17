@@ -47,7 +47,14 @@ class PsmonExecutor(Executor):
 
         del stats["error"]
 
-        return dict(run_id=self.run_id, verdict=verdict, **stats)
+        return dict(
+            run_id=self.run_id,
+            verdict=verdict,
+            cpu_time=stats["cpu_time"],
+            wall_time=stats["wall_time"],
+            max_memory=stats["max_memory"],
+            return_code=stats["return_code"],
+        )
 
     def run(
         self,

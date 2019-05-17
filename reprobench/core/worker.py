@@ -21,12 +21,6 @@ REQUEST_TIMEOUT = 15000
 
 
 class BenchmarkWorker:
-    """
-    Request for a work from server,
-    if there's no more work, terminate.
-    else, do the work and request for more.
-    """
-
     def __init__(self, server_address, run_id):
         self.server_address = server_address
         self.run_id = run_id
@@ -52,7 +46,9 @@ class BenchmarkWorker:
         context["tool"] = tool
         context["run"] = run
         logger.info(f"Processing task: {run['directory']}")
-        Path(run["directory"]).mkdir(parents=True, exist_ok=True)
+
+        directory = Path(run["directory"])
+        directory.mkdir(parents=True, exist_ok=True)
 
         payload = dict(tool_version=tool.version(), run_id=self.run_id)
         send_event(self.socket, RUN_START, payload)
@@ -66,6 +62,7 @@ class BenchmarkWorker:
             send_event(self.socket, RUN_STEP, payload)
 
         send_event(self.socket, RUN_FINISH, self.run_id)
+        atexit.unregister(self.killed)
         send_event(self.socket, WORKER_LEAVE, self.run_id)
 
 

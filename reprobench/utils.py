@@ -2,17 +2,19 @@ import importlib
 import re
 import tarfile
 import zipfile
+from ast import literal_eval
 from collections.abc import Iterable
 from pathlib import Path
 from shutil import which
 
+import numpy
 import requests
 import strictyaml
-from tqdm import tqdm
-
 from reprobench.core.db import db
-from reprobench.core.exceptions import ExecutableNotFoundError
+from reprobench.core.exceptions import ExecutableNotFoundError, NotSupportedError
 from reprobench.core.schema import schema
+from retrying import retry
+from tqdm import tqdm
 
 try:
     import msgpack
@@ -67,7 +69,7 @@ def is_range_str(range_str):
 def str_to_range(range_str):
     matches = ranged_numbers_re.match(range_str).groupdict()
     start = int(matches["start"])
-    end = int(matches["end"])
+    end = int(matches["end"]) + 1
 
     if matches["step"]:
         return range(start, end, int(matches["step"]))
@@ -82,11 +84,18 @@ def decode_message(msg):
     return msgpack.unpackb(msg, raw=False)
 
 
-def send_event(socket, event_type, payload=None):
+@retry(wait_exponential_multiplier=500)
+def send_event(socket, event_type, payload=None, enable_logging=True):
     """
     Used in the worker with a DEALER socket
     """
-    socket.send_multipart([event_type, encode_message(payload)])
+    event = [event_type, encode_message(payload)]
+    socket.send_multipart(event)
+
+    EVENT_SEPARATOR = b"\x00" * 4
+    if enable_logging:
+        with open("./reprobench_events.log", "ab") as f:
+            f.write(encode_message(event) + EVENT_SEPARATOR)
 
 
 def recv_event(socket):
@@ -103,7 +112,7 @@ def get_db_path(output_dir):
 
 
 def init_db(db_path):
-    database = APSWDatabase(db_path)
+    database = APSWDatabase(db_path, pragmas=(('journal_mode', 'wal'),))
     db.initialize(database)
 
 
@@ -152,3 +161,68 @@ def extract_archives(path):
         extract_zip(path, extract_path)
     elif tarfile.is_tarfile(path):
         extract_tar(path, extract_path)
+
+
+def get_pcs_parameter_range(parameter_str, is_categorical):
+    functions = dict(
+        range=range,
+        arange=numpy.arange,
+        linspace=numpy.linspace,
+        logspace=numpy.logspace,
+        geomspace=numpy.geomspace,
+    )
+
+    function_re = re.compile(r"(?P<function>[A-Za-z_]+)\((?P<arguments>.*)\)")
+
+    match = function_re.match(parameter_str)
+
+    parameter_range = None
+    if match:
+        function = match.group("function")
+        if function not in functions:
+            raise NotSupportedError(f"Declaring range with {function} is not supported")
+        args = literal_eval(match.group("arguments"))
+        parameter_range = functions[function](*args)
+    else:
+        parameter_range = literal_eval(parameter_str)
+        if not isinstance(parameter_range, Iterable) or isinstance(
+            parameter_range, str
+        ):
+            parameter_range = (parameter_range,)
+        if is_categorical:
+            parameter_range = map(str, parameter_range)
+
+    return parameter_range
+
+
+def parse_pcs_parameters(lines):
+    parameter_range_indicator = "-->"
+
+    parameters = {}
+    parameter_key = None
+    is_categorical = False
+
+    for line in lines:
+        if ("{" in line or "[" in line) and not line.startswith("#"):
+            parameter_key = line[: line.find(" ")]
+            is_categorical = "{" in line
+
+        if "#" not in line or parameter_range_indicator not in line:
+            continue
+
+        comment_pos = line.find("#")
+        pos = line.find(parameter_range_indicator, comment_pos)
+        parameter_str = line[pos + len(parameter_range_indicator) :].strip()
+
+        parameter_range = get_pcs_parameter_range(parameter_str, is_categorical)
+
+        parameters[parameter_key] = parameter_range
+
+    return parameters
+
+
+def check_valid_config_space(config_space, parameters):
+    base = config_space.get_default_configuration()
+    for key, value in parameters.items():
+        if key in base:
+            base[key] = value  # ValueError if invalid value

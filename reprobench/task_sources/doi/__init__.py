@@ -3,6 +3,7 @@ from reprobench.task_sources.doi.zenodo import ZenodoHandler, ZenodoSandboxHandl
 
 
 class DOISource(UrlSource):
+    TYPE = "doi"
     handlers = [ZenodoHandler, ZenodoSandboxHandler]
 
     def __init__(self, doi, **kwargs):

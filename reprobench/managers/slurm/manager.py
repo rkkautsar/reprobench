@@ -1,6 +1,7 @@
 import math
 import subprocess
 import sys
+from pathlib import Path
 
 from loguru import logger
 
@@ -17,6 +18,7 @@ class SlurmManager(BaseManager):
         self.output_dir = output_dir
 
     def prepare(self):
+        Path(self.output_dir).mkdir(parents=True, exist_ok=True)
         limits = self.config["limits"]
         time_limit_minutes = int(math.ceil(limits["time"] / 60.0))
 
