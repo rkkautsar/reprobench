@@ -18,7 +18,7 @@ class ExecutableTool(Tool):
         return [f"{self.prefix}{key}={value}" for key, value in self.parameters.items()]
 
     def get_cmdline(self):
-        return [self.path, *self.get_arguments()]
+        return [self.path, *self.get_arguments(), self.task]
 
     def get_out_path(self):
         return Path(self.cwd) / "run.out"
@@ -35,7 +35,7 @@ class ExecutableTool(Tool):
     def run(self, executor):
         logger.debug([*self.get_cmdline(), self.task])
         executor.run(
-            [*self.get_cmdline(), self.task],
+            self.get_cmdline(),
             directory=self.cwd,
             out_path=self.get_out_path(),
             err_path=self.get_err_path(),
