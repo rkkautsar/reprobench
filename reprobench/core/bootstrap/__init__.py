@@ -1,11 +1,15 @@
 import click
-import zmq
 from loguru import logger
 from reprobench.console.decorators import common, server_info
 from reprobench.core.events import BOOTSTRAP
 from reprobench.utils import read_config, send_event
 
 from .client import bootstrap as bootstrap_client
+
+try:
+    import zmq
+except ImportError:
+    pass
 
 
 @click.command(name="bootstrap")
@@ -25,7 +29,7 @@ def cli(server_address, config, output_dir, **kwargs):
     config = read_config(config, resolve_files=True)
 
     client_results = bootstrap_client(config)
-    bootstrapped_config = { **config, **client_results }
+    bootstrapped_config = {**config, **client_results}
 
     context = zmq.Context()
     socket = context.socket(zmq.DEALER)

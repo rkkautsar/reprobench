@@ -10,7 +10,6 @@ from shutil import which
 import numpy
 import requests
 import strictyaml
-from reprobench.core.db import db
 from reprobench.core.exceptions import ExecutableNotFoundError, NotSupportedError
 from reprobench.core.schema import schema
 from retrying import retry
@@ -19,8 +18,10 @@ from tqdm import tqdm
 try:
     import msgpack
     from playhouse.apsw_ext import APSWDatabase
+    from reprobench.core.db import db
 except ImportError:
-    pass
+    APSWDatabase = None
+    db = None
 
 
 def find_executable(executable):

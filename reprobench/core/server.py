@@ -22,10 +22,14 @@ class BenchmarkServer(object):
         self.frontend_address = frontend_address
         self.observers = [CoreObserver]
 
+    def receive_event(self):
+        address, event_type, payload = self.frontend.recv_multipart()
+        logger.trace((address, event_type, decode_message(payload)))
+        return address, event_type, payload
+
     def wait_for_bootstrap(self):
         while True:
-            address, event_type, payload = self.frontend.recv_multipart()
-            logger.trace((address, event_type, payload))
+            address, event_type, payload = self.receive_event()
             if event_type == BOOTSTRAP:
                 break
 
@@ -36,8 +40,7 @@ class BenchmarkServer(object):
 
     def loop(self):
         while True:
-            address, event_type, payload = self.frontend.recv_multipart()
-            logger.trace((address, event_type, payload))
+            address, event_type, payload = self.receive_event()
             self.backend.send_multipart([event_type, payload, address])
 
     def run(self):
