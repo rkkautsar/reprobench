@@ -757,6 +757,7 @@ python-versions = "*"
 version = "0.5.1"
 
 [extras]
+all = ["psmon", "psutil", "py-cpuinfo", "msgpack-python", "pyzmq", "gevent", "peewee", "apsw", "configspace", "pandas", "papermill"]
 analytics = ["peewee", "apsw", "pandas", "papermill"]
 client = ["pyzmq", "msgpack-python"]
 pcs = ["configspace"]
@@ -765,7 +766,7 @@ server = ["pyzmq", "gevent", "peewee", "apsw", "msgpack-python"]
 sysinfo = ["psutil", "py-cpuinfo"]
 
 [metadata]
-content-hash = "3b15cec7c0e3446e7d9b3e68a53eb97f4009aa4e89d9e6f7e139c4d6d4e97cac"
+content-hash = "6db5ba234af09fd7f6820d54901b993bb6cabe21d618f040d6b7b77840867285"
 python-versions = ">=3.6"
 
 [metadata.hashes]

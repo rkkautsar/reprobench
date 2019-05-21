@@ -19,7 +19,7 @@ def update_steps(config):
     step_categories = ((Step.RUN, "run"), (Step.ANALYSIS, "analysis"))
 
     for category, key in step_categories:
-        _update_step(category, config["steps"][key])
+        _update_step(category, config["steps"].get(key, []))
 
 
 def update(config=None, output_dir=None, repeat=1):

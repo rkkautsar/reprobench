@@ -12,7 +12,7 @@ Assuming a virtualenv has already been set up:
 
 ```sh
 (env) $ pip install poetry
-(env) $ poetry install
+(env) $ poetry install -E all
 (env) $ reprobench --help
 ```
 

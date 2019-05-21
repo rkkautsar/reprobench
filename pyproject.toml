@@ -35,6 +35,7 @@ psmon = ["psmon"]
 client = ["pyzmq", "msgpack-python"]
 pcs = ["configspace"]
 analytics = ["peewee", "apsw", "pandas", "papermill"]
+all = ["psmon", "psutil", "py-cpuinfo", "msgpack-python", "pyzmq", "gevent", "peewee", "apsw", "configspace", "pandas", "papermill"]
 
 [tool.poetry.dev-dependencies]
 black = "=19.3b0"
