@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "reprobench"
-version = "0.10.0"
+version = "0.10.1"
 readme = "README.md"
 description = "Reproducible Benchmark for Everyone"
 authors = ["Rakha Kanz Kautsar <rkkautsar@gmail.com>"]
@@ -44,5 +44,5 @@ black = "=19.3b0"
 reprobench = "reprobench.console.main:cli"
 
 [build-system]
-requires = ["poetry>=0.12"]
+requires = ["setuptools", "poetry>=0.12"]
 build-backend = "poetry.masonry.api"

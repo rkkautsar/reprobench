@@ -1,0 +1,146 @@
+{% set name = "reprobench" %}
+{% set version = "0.10.1" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+  sha256: a0a3d3e7fc80f63dfd049377323d2a311eb1e9b29f8b6889028bb04cd96f445b
+
+build:
+  number: 0
+  noarch: python
+  script: "python -m pip install --no-deps --ignore-installed ."
+
+requirements:
+  host:
+    - python >=3.6
+    - pip >=19
+    - poetry
+  run:
+    - python >=3.6
+    - strictyaml
+    - loguru
+    - click
+    - tqdm
+    - pathspec
+    - requests
+    - numpy
+    - retrying
+    - pyzmq
+    - zeromq
+    - gevent
+    - peewee
+    - apsw
+    - sqlite
+    - msgpack-python
+    - pandas
+    - papermill
+    - psutil
+    - py-cpuinfo
+
+test:
+  imports:
+    - reprobench
+    - reprobench.core.worker
+    - reprobench.core.server
+    - reprobench.console.main
+  commands:
+    - reprobench --version
+    - reprobench server --help
+    - reprobench worker --help
+    - reprobench manage --help
+    - reprobench manage local --help
+    - reprobench manage slurm --help
+    - reprobench status --help
+    - reprobench analyze --help
+
+# outputs:
+#   - name: reprobench
+#     test:
+#       imports:
+#         - reprobench
+#       commands:
+#         - reprobench --version
+#   - name: reprobench.server
+#     requirements:
+#       run:
+#         - {{ pin_subpackage('reprobench') }}
+#         - loguru
+#         - click
+#         - pyzmq
+#         - gevent
+#         - peewee
+#         - apsw
+#         - msgpack-python
+#         - sqlite
+#     test:
+#       imports:
+#         - reprobench.core.server
+#       commands:
+#         - reprobench server --help
+#   - name: reprobench.client
+#     requirements:
+#       run:
+#         - {{ pin_subpackage('reprobench') }}
+#         - pyzmq
+#         - msgpack-python
+#         - loguru
+#         - click
+#         - retrying
+#     test:
+#       imports:
+#         - reprobench.core.worker
+#         - reprobench.core.bootstrap
+#         - reprobench.managers.local
+#         - reprobench.managers.slurm
+#       commands:
+#         - reprobench worker --help
+#         - reprobench bootstrap --help
+#         - reprobench manager --help
+#         - reprobench manager local --help
+#         - reprobench manager slurm --help
+#   - name: reprobench.analytics
+#     requirements:
+#       run:
+#         - {{ pin_subpackage('reprobench') }}
+#         - peewee
+#         - apsw
+#         - pandas
+#         - papermill
+#         - sqlite
+#         - loguru
+#         - click
+#     test:
+#       imports:
+#         - reprobench.core.analyzer
+#         - reprobench.statistics.plots
+#         - reprobench.statistics.tables
+#       commands:
+#         - reprobench analyze --help
+#   - name: reprobench.sysinfo
+#     requirements:
+#       run:
+#         - {{ pin_subpackage('reprobench') }}
+#         - psutil
+#         - py-cpuinfo
+#       test:
+#         imports:
+#           - reprobench.core.sysinfo
+#           - psutil
+#           - cpuinfo
+#   - name: reprobench.recommended
+#     requirements:
+#       run:
+#         - {{ pin_subpackage('reprobench') }}
+#         - {{ pin_subpackage('reprobench.client') }}
+#         - {{ pin_subpackage('reprobench.server') }}
+#         - {{ pin_subpackage('reprobench.analytics') }}
+#   - name: reprobench.all
+#     requirements:
+#       run:
+#         - {{ pin_subpackage('reprobench') }}
+#         - {{ pin_subpackage('reprobench.recommended') }}
+#         - {{ pin_subpackage('reprobench.sysinfo') }}
