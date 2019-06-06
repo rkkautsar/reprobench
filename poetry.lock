@@ -462,9 +462,9 @@ version = "0.5.9"
 category = "main"
 description = "a little orm"
 name = "peewee"
-optional = false
+optional = true
 python-versions = "*"
-version = "3.9.5"
+version = "3.9.6"
 
 [[package]]
 category = "main"
@@ -812,7 +812,7 @@ pandocfilters = ["b3dd70e169bb5449e6bc6ff96aea89c5eea8c5f6ab5e207fc2f521a2cf4a0d
 papermill = ["1c565e1fe7a99aeb5c4ebe1035d2c8f17c10999256df85bd427160154ca86d2f", "e9a2b532550bb92fc72d048a1a6125fa0ab6c2b3fde27a8ccfb1981cf074ed2c"]
 parso = ["17cc2d7a945eb42c3569d4564cdf49bde221bc2b552af3eca9c1aad517dcdd33", "2e9574cb12e7112a87253e14e2c380ce312060269d04bd018478a3c92ea9a376"]
 pathspec = ["54a5eab895d89f342b52ba2bffe70930ef9f8d96e398cccf530d21fa0516a873"]
-peewee = ["f0249be468e3b119a8ad83f686e7fe161303197e0534e3cdff8fa5a5417c01a5"]
+peewee = ["bc879e1ffb7f7684f90d9dd236c77b5042118d079f94764f35e3806948829ac8"]
 pexpect = ["2094eefdfcf37a1fdbfb9aa090862c1a4878e5c7e0e7e7088bdb511c558e5cd1", "9e2c1fd0e6ee3a49b28f95d4b33bc389c89b20af6a1255906e90ff1262ce62eb"]
 pickleshare = ["87683d47965c1da65cdacaf31c8441d12b8044cdec9aca500cd78fc2c683afca", "9649af414d74d4df115d5d718f82acb59c9d418196b7b4290ed47a12ce62df56"]
 prompt-toolkit = ["11adf3389a996a6d45cc277580d0d53e8a5afd281d0c9ec71b28e6f121463780", "2519ad1d8038fd5fc8e770362237ad0364d16a7650fb5724af6997ed5515e3c1", "977c6583ae813a37dc1c2e1b715892461fcbdaa57f6fc62f33a528c4886c8f55"]
