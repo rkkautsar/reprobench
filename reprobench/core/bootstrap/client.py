@@ -10,6 +10,8 @@ def bootstrap_tasks(config):
     logger.info("Bootstrapping tasks...")
     available_sources = (FileSource, UrlSource, DOISource)
 
+    logger.trace(config)
+
     task_groups = {}
     for (group, task) in config["tasks"].items():
         logger.trace(f"Processing task group: {group}")
@@ -34,14 +36,8 @@ def bootstrap_tools(config):
 
     tools = {}
     for tool_name, tool in config["tools"].items():
-        tool_module = import_class(tool["module"])
-
-        if not tool_module.is_ready():
-            tool_module.setup()
-
-        version = import_class(tool["module"]).version()
         tools[tool_name] = dict(
-            module=tool["module"], version=version, parameters=tool.get("parameters")
+            module=tool["module"], parameters=tool.get("parameters")
         )
 
     return tools

@@ -1,5 +1,4 @@
 BOOTSTRAP = b"core:bootstrap"
-REQUEST_PENDING = b"server:request_pending"
 
 WORKER_JOIN = b"worker:join"
 WORKER_LEAVE = b"worker:leave"
