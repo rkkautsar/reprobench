@@ -11,6 +11,7 @@ class Observer:
 
     @classmethod
     def observe(cls, context, backend_address, reply):
+        observe_args = (context, backend_address, reply)
         socket = context.socket(zmq.SUB)
         socket.connect(backend_address)
 
@@ -19,7 +20,13 @@ class Observer:
 
         while True:
             event_type, payload, address = recv_event(socket)
-            cls.handle_event(event_type, payload, reply=reply, address=address)
+            cls.handle_event(
+                event_type,
+                payload,
+                reply=reply,
+                address=address,
+                observe_args=observe_args,
+            )
 
     @classmethod
     def handle_event(cls, event_type, payload, **kwargs):
@@ -40,7 +47,7 @@ class Tool:
     name = "Base Tool"
 
     def __init__(self, context):
-        self.cwd = context["run"]["directory"]
+        self.cwd = context["run"]["id"]
         self.parameters = context["run"]["parameters"]
         self.task = context["run"]["task"]
 

@@ -2,8 +2,6 @@
 
 import click
 
-from reprobench.core.bootstrap import cli as bootstrap_cli
-
 from .status import benchmark_status
 
 
@@ -12,8 +10,6 @@ from .status import benchmark_status
 def cli():
     pass
 
-
-cli.add_command(bootstrap_cli)
 
 try:
     from reprobench.core.server import cli as server_cli

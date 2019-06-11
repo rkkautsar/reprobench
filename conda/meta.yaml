@@ -40,6 +40,8 @@ requirements:
     - papermill
     - psutil
     - py-cpuinfo
+    - jupyter
+    - seaborn
 
 test:
   imports:

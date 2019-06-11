@@ -86,17 +86,12 @@ def decode_message(msg):
 
 
 @retry(wait_exponential_multiplier=500)
-def send_event(socket, event_type, payload=None, enable_logging=True):
+def send_event(socket, event_type, payload=None):
     """
     Used in the worker with a DEALER socket
     """
     event = [event_type, encode_message(payload)]
     socket.send_multipart(event)
-
-    EVENT_SEPARATOR = b"\x00" * 4
-    if enable_logging:
-        with open("./reprobench_events.log", "ab") as f:
-            f.write(encode_message(event) + EVENT_SEPARATOR)
 
 
 def recv_event(socket):

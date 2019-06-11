@@ -3,11 +3,10 @@ from functools import lru_cache
 from peewee import fn
 
 from reprobench.core.base import Observer
-from reprobench.core.update import update
+from reprobench.core.bootstrap.server import bootstrap
 from reprobench.core.db import Limit, Run, Step
 from reprobench.core.events import (
     BOOTSTRAP,
-    REQUEST_PENDING,
     RUN_FINISH,
     RUN_INTERRUPT,
     RUN_START,
@@ -18,14 +17,7 @@ from reprobench.utils import encode_message
 
 
 class CoreObserver(Observer):
-    SUBSCRIBED_EVENTS = (
-        BOOTSTRAP,
-        WORKER_JOIN,
-        RUN_START,
-        RUN_STEP,
-        RUN_FINISH,
-        REQUEST_PENDING,
-    )
+    SUBSCRIBED_EVENTS = (BOOTSTRAP, WORKER_JOIN, RUN_START, RUN_STEP, RUN_FINISH)
 
     @classmethod
     @lru_cache(maxsize=1)
@@ -53,8 +45,7 @@ class CoreObserver(Observer):
         run_dict = dict(
             id=run.id,
             task=run.task_id,
-            tool=run.tool_id,
-            directory=run.directory,
+            tool=run.tool.module,
             parameters=parameters,
             steps=list(runsteps.dicts()),
             limits=limits,
@@ -77,10 +68,10 @@ class CoreObserver(Observer):
     def handle_event(cls, event_type, payload, **kwargs):
         reply = kwargs.pop("reply")
         address = kwargs.pop("address")
+        observe_args = kwargs.pop("observe_args")
 
         if event_type == BOOTSTRAP:
-            update(**payload)
-        elif event_type == REQUEST_PENDING:
+            bootstrap(observe_args=observe_args, **payload)
             run_ids = cls.get_pending_run_ids()
             reply.send_multipart([address, encode_message(run_ids)])
         elif event_type == WORKER_JOIN:

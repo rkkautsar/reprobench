@@ -41,13 +41,16 @@ class BenchmarkWorker:
 
         tool = import_class(run["tool"])
 
+        if not tool.is_ready():
+            tool.setup()
+
         context = {}
         context["socket"] = self.socket
         context["tool"] = tool
         context["run"] = run
-        logger.info(f"Processing task: {run['directory']}")
+        logger.info(f"Processing task: {run['id']}")
 
-        directory = Path(run["directory"])
+        directory = Path(run["id"])
         directory.mkdir(parents=True, exist_ok=True)
 
         payload = dict(tool_version=tool.version(), run_id=self.run_id)

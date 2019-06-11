@@ -34,9 +34,8 @@ class Task(BaseModel):
 
 
 class Tool(BaseModel):
-    module = CharField(primary_key=True)
-    name = CharField()
-    version = CharField(null=True)
+    module = CharField()
+    name = CharField(primary_key=True)
 
 
 class ParameterGroup(BaseModel):
@@ -91,14 +90,15 @@ class Run(BaseModel):
         (DONE, "Done"),
     )
 
+    id = CharField(null=True, primary_key=True)
     created_at = DateTimeField(default=datetime.now)
     tool = ForeignKeyField(Tool, backref="runs")
     tool_version = CharField(null=True)
     parameter_group = ForeignKeyField(ParameterGroup, backref="runs")
     task = ForeignKeyField(Task, backref="runs")
     status = IntegerField(choices=STATUS_CHOICES, default=PENDING)
-    directory = CharField(null=True)
     last_step = ForeignKeyField(Step, null=True)
+    iteration = IntegerField(default=0)
 
 
 MODELS = (Limit, TaskGroup, Task, Tool, ParameterGroup, Parameter, Run, Step, Observer)
