@@ -41,6 +41,9 @@ class BenchmarkWorker:
 
         tool = import_class(run["tool"])
 
+        if not tool.is_ready():
+            tool.setup()
+
         context = {}
         context["socket"] = self.socket
         context["tool"] = tool
