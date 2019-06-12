@@ -1,6 +1,6 @@
 import click
 
-from reprobench.console.decorators import common, server_info
+from reprobench.console.decorators import common, server_info, use_tunneling
 from reprobench.utils import read_config
 
 from .manager import SlurmManager
@@ -14,6 +14,7 @@ from .manager import SlurmManager
 @click.argument("command", type=click.Choice(("run", "stop")))
 @click.argument("config", type=click.Path(), default="./benchmark.yml")
 @server_info
+@use_tunneling
 @common
 def cli(command, **kwargs):
     manager = SlurmManager(**kwargs)

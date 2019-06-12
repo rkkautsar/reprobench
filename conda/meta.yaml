@@ -42,6 +42,7 @@ requirements:
     - py-cpuinfo
     - jupyter
     - seaborn
+    - sshtunnel
 
 test:
   imports:

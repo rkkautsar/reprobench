@@ -25,10 +25,10 @@ class CoreObserver(Observer):
         return {l.key: l.value for l in Limit.select()}
 
     @classmethod
-    def get_run(cls, run_id):
-        run = Run.get_by_id(run_id)
-
-        if run is None:
+    def get_next_pending_run(cls):
+        try:
+            run = Run.select().where(Run.status == Run.PENDING).limit(1).get()
+        except Run.DoesNotExist:
             return None
 
         run.status = Run.SUBMITTED
@@ -54,15 +54,15 @@ class CoreObserver(Observer):
         return run_dict
 
     @classmethod
-    def get_pending_run_ids(cls):
+    def get_pending_runs(cls):
         last_step = (
             Step.select(fn.MAX(Step.id)).where(Step.category == Step.RUN).scalar()
         )
         Run.update(status=Run.PENDING).where(
             (Run.status < Run.DONE) | (Run.last_step_id != last_step)
         ).execute()
-        pending_runs = Run.select(Run.id).where(Run.status == Run.PENDING)
-        return [r.id for r in pending_runs]
+        pending_runs = Run.select(Run.id).where(Run.status == Run.PENDING).count()
+        return pending_runs
 
     @classmethod
     def handle_event(cls, event_type, payload, **kwargs):
@@ -72,10 +72,10 @@ class CoreObserver(Observer):
 
         if event_type == BOOTSTRAP:
             bootstrap(observe_args=observe_args, **payload)
-            run_ids = cls.get_pending_run_ids()
-            reply.send_multipart([address, encode_message(run_ids)])
+            pending_runs = cls.get_pending_runs()
+            reply.send_multipart([address, encode_message(pending_runs)])
         elif event_type == WORKER_JOIN:
-            run = cls.get_run(payload)
+            run = cls.get_next_pending_run()
             reply.send_multipart([address, encode_message(run)])
         elif event_type == RUN_INTERRUPT:
             Run.update(status=Run.PENDING).where(Run.id == payload).execute()

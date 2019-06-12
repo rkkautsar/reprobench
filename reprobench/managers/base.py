@@ -7,15 +7,15 @@ from reprobench.utils import decode_message, read_config, send_event
 
 
 class BaseManager(object):
-    def __init__(self, config, server_address, **kwargs):
+    def __init__(self, config, server_address, tunneling, **kwargs):
         self.server_address = server_address
+        self.tunneling = tunneling
         self.config = read_config(config, resolve_files=True)
         self.output_dir = kwargs.pop("output_dir")
         self.repeat = kwargs.pop("repeat")
 
         context = zmq.Context()
         self.socket = context.socket(zmq.DEALER)
-        self.socket.connect(self.server_address)
 
     def prepare(self):
         pass
@@ -24,6 +24,8 @@ class BaseManager(object):
         raise NotImplementedError
 
     def bootstrap(self):
+        self.socket.connect(self.server_address)
+
         client_results = bootstrap_client(self.config)
         bootstrapped_config = {**self.config, **client_results}
 
@@ -33,7 +35,7 @@ class BaseManager(object):
         )
         send_event(self.socket, BOOTSTRAP, payload)
 
-        self.queue = decode_message(self.socket.recv())
+        self.pending = decode_message(self.socket.recv())
 
     def wait(self):
         pass

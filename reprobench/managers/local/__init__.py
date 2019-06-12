@@ -3,7 +3,7 @@ from multiprocessing import cpu_count
 import click
 from loguru import logger
 
-from reprobench.console.decorators import server_info, common
+from reprobench.console.decorators import server_info, common, use_tunneling
 
 from .manager import LocalManager
 
@@ -17,6 +17,7 @@ from .manager import LocalManager
 @click.argument("command", type=click.Choice(("run",)))
 @click.argument("config", type=click.Path(), default="./benchmark.yml")
 @server_info
+@use_tunneling
 @common
 def cli(command, **kwargs):
     manager = LocalManager(**kwargs)

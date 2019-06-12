@@ -138,13 +138,12 @@ def create_parameter_group(tool, group, parameters):
     }
 
     if len(ranged_parameters) == 0:
-        parameter_group = (
-            ParameterGroup.insert(name=group, tool=tool).on_conflict("ignore").execute()
-        )
+        parameter_group, _ = ParameterGroup.get_or_create(name=group, tool=tool)
+
         for (key, value) in parameters.items():
             query = Parameter.insert(
                 group=parameter_group, key=key, value=value
-            ).on_conflict("ignore")
+            ).on_conflict("replace")
             query.execute()
         return
 
@@ -163,10 +162,9 @@ def create_parameter_group(tool, group, parameters):
             check_valid_config_space(config_space, parameters)
 
         combination_str = ",".join(f"{key}={value}" for key, value in combination)
-        query = ParameterGroup.insert(
-            name=f"{group}[{combination_str}]", tool=tool
-        ).on_conflict("ignore")
-        parameter_group = query.execute()
+        group_name = f"{group}[{combination_str}]"
+
+        parameter_group, _ = ParameterGroup.get_or_create(name=group_name, tool=tool)
 
         for (key, value) in parameters.items():
             query = Parameter.insert(
