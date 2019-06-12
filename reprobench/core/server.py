@@ -9,15 +9,13 @@ from reprobench.core.bootstrap.server import bootstrap
 from reprobench.core.db import Observer
 from reprobench.core.events import BOOTSTRAP
 from reprobench.core.observers import CoreObserver
-from reprobench.utils import decode_message, get_db_path, import_class, init_db
+from reprobench.utils import decode_message, import_class
 
 
 class BenchmarkServer(object):
     BACKEND_ADDRESS = "inproc://backend"
 
-    def __init__(self, output_dir, frontend_address, **kwargs):
-        db_path = get_db_path(output_dir)
-        init_db(db_path)
+    def __init__(self, frontend_address, **kwargs):
         self.frontend_address = frontend_address
 
     def receive_event(self):
@@ -52,13 +50,10 @@ class BenchmarkServer(object):
 
 
 @click.command(name="server")
-@click.option(
-    "-d", "--output-dir", type=click.Path(), default="./output", show_default=True
-)
 @server_info
 @common
-def cli(server_address, output_dir, **kwargs):
-    server = BenchmarkServer(output_dir, server_address, **kwargs)
+def cli(server_address, **kwargs):
+    server = BenchmarkServer(server_address, **kwargs)
     server.run()
 
 
