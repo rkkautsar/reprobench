@@ -4,8 +4,11 @@ import json
 import shutil
 from pathlib import Path
 
+import gevent
 from loguru import logger
 from peewee import chunked
+from tqdm import tqdm
+
 from reprobench.core.db import (
     MODELS,
     Limit,
@@ -28,7 +31,6 @@ from reprobench.utils import (
     parse_pcs_parameters,
     str_to_range,
 )
-from tqdm import tqdm
 
 try:
     from ConfigSpace.read_and_write import pcs
@@ -40,39 +42,52 @@ def bootstrap_db(output_dir):
     db_path = get_db_path(output_dir)
     init_db(db_path)
     db.connect()
-    db.create_tables(MODELS)
+    db.create_tables(MODELS, safe=True)
 
 
 def bootstrap_limits(config):
-    Limit.insert_many(
+    # TODO: handle limit changes
+    query = Limit.insert_many(
         [{"key": key, "value": value} for (key, value) in config["limits"].items()]
-    ).execute()
+    ).on_conflict("ignore")
+    query.execute()
 
 
 def bootstrap_steps(config):
-    Step.insert_many(
-        [
-            {
-                "category": key,
-                "module": step["module"],
-                "config": json.dumps(step.get("config", None)),
-            }
-            for key, steps in config["steps"].items()
-            for step in steps
-        ]
-    ).execute()
+    count = Step.select().count()
+    new_steps = config["steps"]["run"][count:]
+    if len(new_steps) > 0:
+        query = Step.insert_many(
+            [
+                {
+                    "category": "run",
+                    "module": step["module"],
+                    "config": json.dumps(step.get("config", None)),
+                }
+                for step in new_steps
+            ]
+        )
+        query.execute()
 
 
-def bootstrap_observers(config):
-    Observer.insert_many(
-        [
-            {
-                "module": observer["module"],
-                "config": json.dumps(observer.get("config", None)),
-            }
-            for observer in config["observers"]
-        ]
-    ).execute()
+def bootstrap_observers(config, observe_args):
+    count = Observer.select().count()
+    new_observers = config["observers"][count:]
+    if len(new_observers) > 0:
+        query = Observer.insert_many(
+            [
+                {
+                    "module": observer["module"],
+                    "config": json.dumps(observer.get("config", None)),
+                }
+                for observer in new_observers
+            ]
+        )
+        query.execute()
+
+        for observer in new_observers:
+            observer_class = import_class(observer["module"])
+            gevent.spawn(observer_class.observe, *observe_args)
 
 
 def register_steps(config):
@@ -83,12 +98,13 @@ def register_steps(config):
 
 def bootstrap_tasks(config):
     for (name, tasks) in config["tasks"].items():
-        TaskGroup.create(name=name)
+        TaskGroup.insert(name=name).on_conflict("ignore").execute()
         with db.atomic():
             for batch in chunked(tasks, 100):
-                Task.insert_many(
+                query = Task.insert_many(
                     [{"path": task, "group": name} for task in batch]
-                ).execute()
+                ).on_conflict("ignore")
+                query.execute()
 
 
 def create_parameter_group(tool, group, parameters):
@@ -122,9 +138,13 @@ def create_parameter_group(tool, group, parameters):
     }
 
     if len(ranged_parameters) == 0:
-        parameter_group = ParameterGroup.create(name=group, tool=tool)
+        parameter_group, _ = ParameterGroup.get_or_create(name=group, tool=tool)
+
         for (key, value) in parameters.items():
-            Parameter.create(group=parameter_group, key=key, value=value)
+            query = Parameter.insert(
+                group=parameter_group, key=key, value=value
+            ).on_conflict("replace")
+            query.execute()
         return
 
     constant_parameters = {
@@ -142,26 +162,32 @@ def create_parameter_group(tool, group, parameters):
             check_valid_config_space(config_space, parameters)
 
         combination_str = ",".join(f"{key}={value}" for key, value in combination)
-        parameter_group = ParameterGroup.create(
-            name=f"{group}[{combination_str}]", tool=tool
-        )
+        group_name = f"{group}[{combination_str}]"
+
+        parameter_group, _ = ParameterGroup.get_or_create(name=group_name, tool=tool)
 
         for (key, value) in parameters.items():
-            Parameter.create(group=parameter_group, key=key, value=value)
+            query = Parameter.insert(
+                group=parameter_group, key=key, value=value
+            ).on_conflict("replace")
+            query.execute()
 
 
 def bootstrap_tools(config):
     logger.info("Bootstrapping tools...")
 
     for tool_name, tool in config["tools"].items():
-        Tool.create(name=tool_name, module=tool["module"], version=tool["version"])
+        query = Tool.insert(name=tool_name, module=tool["module"]).on_conflict(
+            "replace"
+        )
+        query.execute()
 
         if "parameters" not in tool:
-            create_parameter_group(tool["module"], "default", {})
+            create_parameter_group(tool_name, "default", {})
             continue
 
         for group, parameters in tool["parameters"].items():
-            create_parameter_group(tool["module"], group, parameters)
+            create_parameter_group(tool_name, group, parameters)
 
 
 def bootstrap_runs(config, output_dir, repeat=1):
@@ -175,34 +201,34 @@ def bootstrap_runs(config, output_dir, repeat=1):
             desc="Bootstrapping runs",
             total=total,
         ):
-            directory = (
-                Path(output_dir)
-                / parameter_group.tool_id
-                / parameter_group.name
-                / task.group_id
-                / Path(task.path).name
-            )
-            for _ in range(repeat):
-                Run.create(
+            for iteration in range(repeat):
+                directory = (
+                    Path(output_dir)
+                    / parameter_group.tool_id
+                    / parameter_group.name
+                    / task.group_id
+                    / Path(task.path).name
+                    / str(iteration)
+                )
+
+                query = Run.insert(
+                    id=directory,
                     tool=parameter_group.tool_id,
                     task=task,
                     parameter_group=parameter_group,
-                    directory=directory,
                     status=Run.PENDING,
-                )
+                    iteration=iteration,
+                ).on_conflict("ignore")
+                query.execute()
 
 
-def bootstrap(config=None, output_dir=None, repeat=1):
+def bootstrap(config=None, output_dir=None, repeat=1, observe_args=None):
     Path(output_dir).mkdir(parents=True, exist_ok=True)
-    atexit.register(shutil.rmtree, output_dir)
-
     bootstrap_db(output_dir)
     bootstrap_limits(config)
     bootstrap_steps(config)
-    bootstrap_observers(config)
+    bootstrap_observers(config, observe_args)
     register_steps(config)
     bootstrap_tasks(config)
     bootstrap_tools(config)
     bootstrap_runs(config, output_dir, repeat)
-
-    atexit.unregister(shutil.rmtree)

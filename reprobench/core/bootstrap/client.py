@@ -1,14 +1,16 @@
 from loguru import logger
 
 from reprobench.task_sources.doi import DOISource
-from reprobench.task_sources.local import LocalSource
+from reprobench.task_sources.file import FileSource
 from reprobench.task_sources.url import UrlSource
 from reprobench.utils import import_class
 
 
 def bootstrap_tasks(config):
     logger.info("Bootstrapping tasks...")
-    available_sources = (LocalSource, UrlSource, DOISource)
+    available_sources = (FileSource, UrlSource, DOISource)
+
+    logger.trace(config)
 
     task_groups = {}
     for (group, task) in config["tasks"].items():
@@ -23,7 +25,8 @@ def bootstrap_tasks(config):
                 f"No implementation for task source {task['type']}"
             )
 
-        task_groups[group] = [str(task) for task in source.setup()]
+        tasks = source.setup()
+        task_groups[group] = [str(task) for task in tasks]
 
     return task_groups
 
@@ -33,14 +36,8 @@ def bootstrap_tools(config):
 
     tools = {}
     for tool_name, tool in config["tools"].items():
-        tool_module = import_class(tool["module"])
-
-        if not tool_module.is_ready():
-            tool_module.setup()
-
-        version = import_class(tool["module"]).version()
         tools[tool_name] = dict(
-            module=tool["module"], version=version, parameters=tool.get("parameters")
+            module=tool["module"], parameters=tool.get("parameters")
         )
 
     return tools

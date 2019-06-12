@@ -3,8 +3,12 @@ import time
 import click
 from tqdm import tqdm
 
-from reprobench.core.db import Run
 from reprobench.utils import init_db
+
+try:
+    from reprobench.core.db import Run
+except ImportError:
+    Run = None
 
 
 def get_total_count():

@@ -11,6 +11,10 @@ steps:
     - module: reprobench.core.sysinfo.CollectSystemInfo
     - module: reprobench.executors.PsmonExecutor
     - module: sat.validate.SATValidator
+  analysis:
+    - module: reprobench.statistics.tables.RunSummaryTable
+      config:
+        output: statistics/summary.csv
 
 observers:
   - module: reprobench.core.sysinfo.SystemInfoObserver

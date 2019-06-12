@@ -12,7 +12,6 @@ from shutil import which
 import numpy
 import requests
 import strictyaml
-from reprobench.core.db import db
 from reprobench.core.exceptions import ExecutableNotFoundError, NotSupportedError
 from reprobench.core.schema import schema
 from retrying import retry
@@ -21,8 +20,10 @@ from tqdm import tqdm
 try:
     import msgpack
     from playhouse.apsw_ext import APSWDatabase
+    from reprobench.core.db import db
 except ImportError:
-    pass
+    APSWDatabase = None
+    db = None
 
 
 def find_executable(executable):
@@ -176,23 +177,16 @@ def decode_message(msg):
 
 
 @retry(wait_exponential_multiplier=500)
-def send_event(socket, event_type, payload=None, enable_logging=True):
+def send_event(socket, event_type, payload=None):
     """Used in the worker with a DEALER socket to send events to the server.
 
     Args:
         socket (zmq.Socket): the socket for sending the event
         event_type (str): event type agreed between the parties
         payload (any, optional): the payload for the event
-        enable_logging(bool, optional): enable logging to
-            `./reprobench_events.log`. Defaults to True.
     """
     event = [event_type, encode_message(payload)]
     socket.send_multipart(event)
-
-    EVENT_SEPARATOR = b"\x00" * 4
-    if enable_logging:
-        with open("./reprobench_events.log", "ab") as f:
-            f.write(encode_message(event) + EVENT_SEPARATOR)
 
 
 def recv_event(socket):

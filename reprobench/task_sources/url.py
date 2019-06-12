@@ -2,10 +2,10 @@ from pathlib import Path
 from loguru import logger
 from reprobench.utils import download_file, extract_archives
 
-from .local import LocalSource
+from .file import FileSource
 
 
-class UrlSource(LocalSource):
+class UrlSource(FileSource):
     TYPE = "url"
 
     def __init__(

@@ -3,8 +3,8 @@ from pathlib import Path
 from .base import BaseTaskSource
 
 
-class LocalSource(BaseTaskSource):
-    TYPE = "local"
+class FileSource(BaseTaskSource):
+    TYPE = "file"
 
     def __init__(self, path=None, patterns="", **kwargs):
         super().__init__(path)

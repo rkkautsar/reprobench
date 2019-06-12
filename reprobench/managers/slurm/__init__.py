@@ -1,6 +1,6 @@
 import click
 
-from reprobench.console.decorators import common, server_info
+from reprobench.console.decorators import common, server_info, use_tunneling
 from reprobench.utils import read_config
 
 from .manager import SlurmManager
@@ -8,19 +8,16 @@ from .manager import SlurmManager
 
 @click.command("slurm")
 @click.option(
-    "-d",
-    "--output-dir",
-    type=click.Path(),
-    default="./output",
-    required=True,
-    show_default=True,
+    "-d", "--output-dir", type=click.Path(), default="./output", show_default=True
 )
+@click.option("-r", "--repeat", type=int, default=1)
 @click.argument("command", type=click.Choice(("run", "stop")))
 @click.argument("config", type=click.Path(), default="./benchmark.yml")
 @server_info
+@use_tunneling
 @common
-def cli(command, *args, **kwargs):
-    manager = SlurmManager(*args, **kwargs)
+def cli(command, **kwargs):
+    manager = SlurmManager(**kwargs)
 
     if command == "run":
         manager.run()
