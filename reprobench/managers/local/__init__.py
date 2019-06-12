@@ -3,7 +3,7 @@ from multiprocessing import cpu_count
 import click
 from loguru import logger
 
-from reprobench.console.decorators import server_info, common
+from reprobench.console.decorators import server_info, common, use_tunneling
 
 from .manager import LocalManager
 
@@ -11,17 +11,13 @@ from .manager import LocalManager
 @click.command("local")
 @click.option("-w", "--num-workers", type=int, default=cpu_count(), show_default=True)
 @click.option(
-    "-d",
-    "--output-dir",
-    type=click.Path(),
-    default="./output",
-    required=True,
-    show_default=True,
+    "-d", "--output-dir", type=click.Path(), default="./output", show_default=True
 )
 @click.option("-r", "--repeat", type=int, default=1)
 @click.argument("command", type=click.Choice(("run",)))
 @click.argument("config", type=click.Path(), default="./benchmark.yml")
 @server_info
+@use_tunneling
 @common
 def cli(command, **kwargs):
     manager = LocalManager(**kwargs)
