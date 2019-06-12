@@ -11,12 +11,7 @@ from .manager import LocalManager
 @click.command("local")
 @click.option("-w", "--num-workers", type=int, default=cpu_count(), show_default=True)
 @click.option(
-    "-d",
-    "--output-dir",
-    type=click.Path(),
-    default="./output",
-    required=True,
-    show_default=True,
+    "-d", "--output-dir", type=click.Path(), default="./output", show_default=True
 )
 @click.option("-r", "--repeat", type=int, default=1)
 @click.argument("command", type=click.Choice(("run",)))

@@ -12,11 +12,6 @@ from .utils import to_comma_range
 
 
 class SlurmManager(BaseManager):
-    def __init__(self, config, output_dir, **kwargs):
-        super().__init__(**kwargs)
-        self.config = read_config(config)
-        self.output_dir = output_dir
-
     def prepare(self):
         Path(self.output_dir).mkdir(parents=True, exist_ok=True)
         limits = self.config["limits"]

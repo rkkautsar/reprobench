@@ -7,9 +7,9 @@ from reprobench.utils import decode_message, read_config, send_event
 
 
 class BaseManager(object):
-    def __init__(self, server_address, **kwargs):
+    def __init__(self, config, server_address, **kwargs):
         self.server_address = server_address
-        self.config = kwargs.pop("config")
+        self.config = read_config(config, resolve_files=True)
         self.output_dir = kwargs.pop("output_dir")
         self.repeat = kwargs.pop("repeat")
 
@@ -24,10 +24,8 @@ class BaseManager(object):
         raise NotImplementedError
 
     def bootstrap(self):
-        config = read_config(self.config, resolve_files=True)
-
-        client_results = bootstrap_client(config)
-        bootstrapped_config = {**config, **client_results}
+        client_results = bootstrap_client(self.config)
+        bootstrapped_config = {**self.config, **client_results}
 
         logger.info("Sending bootstrap event to server")
         payload = dict(
