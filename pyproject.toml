@@ -40,7 +40,7 @@ all = ["psmon", "psutil", "py-cpuinfo", "msgpack-python", "pyzmq", "gevent", "pe
 
 [tool.poetry.dev-dependencies]
 black = "=19.3b0"
-sphinx = "^2.0"
+sphinx = "^2.1"
 sphinx_rtd_theme = "^0.4.3"
 
 [tool.poetry.scripts]
