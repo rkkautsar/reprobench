@@ -3,6 +3,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - alabaster=0.7.12=py_0
   - anaconda-client=1.7.2=py_0
   - ansimarkup=1.4.0=py_0
   - ansiwrap=0.8.4=py_0
@@ -10,6 +11,7 @@ dependencies:
   - apsw=3.25.2.r1=py37hb402a30_1000
   - asn1crypto=0.24.0=py37_1003
   - attrs=19.1.0=py_0
+  - babel=2.7.0=py_0
   - backcall=0.1.0=py_0
   - backports=1.0=py_2
   - backports.tempfile=1.0=py_0
@@ -19,22 +21,23 @@ dependencies:
   - better_exceptions_fork=0.2.1.post6=py_0
   - bleach=3.1.0=py_0
   - bzip2=1.0.6=h1de35cc_1002
-  - ca-certificates=2019.3.9=hecc5488_0
-  - certifi=2019.3.9=py37_0
+  - ca-certificates=2019.6.16=hecc5488_0
+  - certifi=2019.6.16=py37_1
   - cffi=1.12.3=py37hccf1714_0
   - chardet=3.0.4=py37_1003
   - click=7.0=py_0
   - clyent=1.2.2=py_1
   - colorama=0.4.1=py_0
   - conda=4.6.14=py37_0
-  - conda-build=3.18.1=py37_0
-  - conda-package-handling=1.1.5=py37_0
+  - conda-build=3.18.7=py37_1
+  - conda-package-handling=1.3.11=py37_0
   - conda-verify=3.1.1=py37_1000
   - cryptography=2.6.1=py37h212c5bf_0
   - cycler=0.10.0=py_1
   - dbus=1.13.6=h2f22bb5_0
   - decorator=4.4.0=py_0
   - defusedxml=0.5.0=py_1
+  - docutils=0.14=py37_1001
   - entrypoints=0.3=py37_1000
   - expat=2.2.5=h0a44026_1002
   - filelock=3.0.10=py_0
@@ -47,6 +50,7 @@ dependencies:
   - greenlet=0.4.15=py37h01d97ff_0
   - icu=58.2=h0a44026_1000
   - idna=2.8=py37_1000
+  - imagesize=1.1.0=py_0
   - ipykernel=5.1.1=py37h24bf2e0_0
   - ipython=7.5.0=py37h24bf2e0_0
   - ipython_genutils=0.2.0=py_1
@@ -71,6 +75,7 @@ dependencies:
   - libiconv=1.15=h01d97ff_1005
   - liblapack=3.8.0=10_openblas
   - liblief=0.9.0=h2a1bed3_1
+  - libopenblas=0.3.6=hd44dcd8_4
   - libpng=1.6.37=h2573ce8_0
   - libsodium=1.0.16=h1de35cc_1001
   - libxml2=2.9.9=hd80cff7_0
@@ -86,8 +91,9 @@ dependencies:
   - ncurses=6.1=h0a44026_1002
   - notebook=5.7.8=py37_1
   - numpy=1.16.3=py37hdf140aa_0
-  - openblas=0.3.6=hd44dcd8_2
-  - openssl=1.1.1b=h01d97ff_2
+  - openblas=0.3.6=hd44dcd8_4
+  - openssl=1.1.1c=h01d97ff_0
+  - packaging=19.0=py_0
   - pandas=0.24.2=py37h0a44026_0
   - pandoc=2.7.2=0
   - pandocfilters=1.4.2=py_1
@@ -139,9 +145,16 @@ dependencies:
   - sip=4.19.8=py37h0a44026_1000
   - six=1.12.0=py37_1000
   - snappy=1.1.7=h0a44026_1002
+  - snowballstemmer=1.2.1=py_1
   - soupsieve=1.9.1=py37_0
-  - sqlite=3.26.0=h1765d9f_1001
-  - sshtunnel=0.1.4=1
+  - sphinx=2.1.1=py_0
+  - sphinxcontrib-applehelp=1.0.1=py_0
+  - sphinxcontrib-devhelp=1.0.1=py_0
+  - sphinxcontrib-htmlhelp=1.0.2=py_0
+  - sphinxcontrib-jsmath=1.0.1=py_0
+  - sphinxcontrib-qthelp=1.0.2=py_0
+  - sphinxcontrib-serializinghtml=1.1.1=py_0
+  - sqlite=3.28.0=h9721f7c_0
   - statsmodels=0.9.0=py37h917ab60_1000
   - strictyaml=1.0.1=py_0
   - tenacity=5.0.4=py37_0
@@ -163,8 +176,13 @@ dependencies:
   - zlib=1.2.11=h1de35cc_1004
   - zstd=1.3.3=1
   - pip:
-      - configspace==0.4.10
-      - cython==0.29.7
-      - psmon==1.1.1
-      - typing==3.6.6
+    - configspace==0.4.10
+    - cython==0.29.7
+    - livereload==2.6.1
+    - psmon==1.1.1
+    - reprobench==0.11.0.dev13
+    - sphinx-reload==0.2.0
+    - sphinx-rtd-theme==0.4.3
+    - sshtunnel==0.1.5
+    - typing==3.6.6
 prefix: /Users/rkkautsar/.pyenv/versions/miniconda3-4.3.30/envs/reprobench

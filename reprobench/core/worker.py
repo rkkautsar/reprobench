@@ -23,7 +23,7 @@ REQUEST_TIMEOUT = 15000
 
 
 class BenchmarkWorker:
-    def __init__(self, server_address, tunneling):
+    def __init__(self, server_address, tunneling=None):
         self.server_address = server_address
 
         if tunneling is not None:

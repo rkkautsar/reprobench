@@ -1,5 +1,6 @@
 {% set name = "reprobench" %}
-{% set version = "0.10.1" %}
+{% set version = "0.11.1" %}
+{% set sha256 = "7e7ba91c38b1cf9a3cfb6a0beb311f31e672ffe2b64975681dd20b54b1ab598d" %}
 
 package:
   name: {{ name|lower }}
@@ -7,12 +8,17 @@ package:
 
 source:
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: a0a3d3e7fc80f63dfd049377323d2a311eb1e9b29f8b6889028bb04cd96f445b
+  sha256: {{ sha256 }}
+
+about:
+  home: https://github.com/rkkautsar/reprobench
+  license: MIT
+  license_file: LICENSE
 
 build:
   number: 0
   noarch: python
-  script: "python -m pip install --no-deps --ignore-installed ."
+  script: "python setup.py install"
 
 requirements:
   host:
@@ -20,7 +26,6 @@ requirements:
     - pip >=19
     - poetry
   run:
-    - python >=3.6
     - strictyaml
     - loguru
     - click
@@ -30,19 +35,17 @@ requirements:
     - numpy
     - retrying
     - pyzmq
-    - zeromq
     - gevent
     - peewee
     - apsw
-    - sqlite
     - msgpack-python
     - pandas
     - papermill
     - psutil
     - py-cpuinfo
+    - sshtunnel
     - jupyter
     - seaborn
-    - sshtunnel
 
 test:
   imports:

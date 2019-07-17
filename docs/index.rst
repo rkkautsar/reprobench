@@ -6,13 +6,13 @@
 Welcome to reprobench's documentation!
 ======================================
 
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    reprobench
-
-
+   guide/index.rst
 
 Indices and tables
 ==================
