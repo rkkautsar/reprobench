@@ -17,15 +17,11 @@ version = "1.4.0"
 [package.dependencies]
 colorama = "*"
 
-[package.extras]
-devel = ["bumpversion (>=0.5.2)", "check-manifest (>=0.35)", "readme-renderer (>=16.0)", "flake8", "pep8-naming"]
-tests = ["tox (>=2.6.0)", "pytest (>=3.0.3)", "pytest-cov (>=2.3.1)"]
-
 [[package]]
 category = "main"
 description = "textwrap, but savvy to ANSI colors and styles"
 name = "ansiwrap"
-optional = true
+optional = false
 python-versions = "*"
 version = "0.8.4"
 
@@ -45,7 +41,7 @@ category = "main"
 description = "Disable App Nap on OS X 10.9"
 marker = "sys_platform == \"darwin\""
 name = "appnope"
-optional = true
+optional = false
 python-versions = "*"
 version = "0.1.0"
 
@@ -53,7 +49,7 @@ version = "0.1.0"
 category = "main"
 description = "Another Python SQLite Wrapper"
 name = "apsw"
-optional = true
+optional = false
 python-versions = "*"
 version = "3.9.2-r1"
 
@@ -73,11 +69,6 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 version = "19.1.0"
 
-[package.extras]
-dev = ["coverage", "hypothesis", "pympler", "pytest", "six", "zope.interface", "sphinx", "pre-commit"]
-docs = ["sphinx", "zope.interface"]
-tests = ["coverage", "hypothesis", "pympler", "pytest", "six", "zope.interface"]
-
 [[package]]
 category = "dev"
 description = "Internationalization utilities"
@@ -93,7 +84,7 @@ pytz = ">=2015.7"
 category = "main"
 description = "Specifications for callback functions passed in to an API"
 name = "backcall"
-optional = true
+optional = false
 python-versions = "*"
 version = "0.1.0"
 
@@ -108,9 +99,6 @@ version = "3.1.6"
 [package.dependencies]
 cffi = ">=1.1"
 six = ">=1.4.1"
-
-[package.extras]
-tests = ["pytest (>=3.2.1,<3.3.0 || >3.3.0)"]
 
 [[package]]
 category = "main"
@@ -139,14 +127,11 @@ attrs = ">=18.1.0"
 click = ">=6.5"
 toml = ">=0.9.4"
 
-[package.extras]
-d = ["aiohttp (>=3.3.2)", "aiohttp-cors"]
-
 [[package]]
 category = "main"
 description = "An easy safelist-based HTML-sanitizing tool."
 name = "bleach"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 version = "3.1.0"
 
@@ -201,7 +186,7 @@ version = "0.4.1"
 category = "main"
 description = "Creation and manipulation of parameter configuration spaces for automated algorithm configuration and hyperparameter tuning."
 name = "configspace"
-optional = true
+optional = false
 python-versions = ">=3.4.*"
 version = "0.4.10"
 
@@ -224,18 +209,11 @@ asn1crypto = ">=0.21.0"
 cffi = ">=1.8,<1.11.3 || >1.11.3"
 six = ">=1.4.1"
 
-[package.extras]
-docs = ["sphinx (>=1.6.5,<1.8.0 || >1.8.0)", "sphinx-rtd-theme"]
-docstest = ["doc8", "pyenchant (>=1.6.11)", "twine (>=1.12.0)", "sphinxcontrib-spelling (>=4.0.1)"]
-idna = ["idna (>=2.1)"]
-pep8test = ["flake8", "flake8-import-order", "pep8-naming"]
-test = ["pytest (>=3.6.0,<3.9.0 || >3.9.0,<3.9.1 || >3.9.1,<3.9.2 || >3.9.2)", "pretend", "iso8601", "pytz", "hypothesis (>=1.11.4,<3.79.2 || >3.79.2)"]
-
 [[package]]
 category = "main"
 description = "The Cython compiler for writing C extensions for the Python language."
 name = "cython"
-optional = true
+optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 version = "0.29.10"
 
@@ -243,7 +221,7 @@ version = "0.29.10"
 category = "main"
 description = "Better living through Python with decorators"
 name = "decorator"
-optional = true
+optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*"
 version = "4.4.0"
 
@@ -251,7 +229,7 @@ version = "4.4.0"
 category = "main"
 description = "XML bomb protection for Python stdlib modules"
 name = "defusedxml"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 version = "0.6.0"
 
@@ -267,7 +245,7 @@ version = "0.14"
 category = "main"
 description = "Discover and load entry points from installed packages."
 name = "entrypoints"
-optional = true
+optional = false
 python-versions = ">=2.7"
 version = "0.3"
 
@@ -275,7 +253,7 @@ version = "0.3"
 category = "main"
 description = "Clean single-source support for Python 3 and 2"
 name = "future"
-optional = true
+optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 version = "0.17.1"
 
@@ -283,7 +261,7 @@ version = "0.17.1"
 category = "main"
 description = "Coroutine-based network library"
 name = "gevent"
-optional = true
+optional = false
 python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*"
 version = "1.4.0"
 
@@ -291,18 +269,12 @@ version = "1.4.0"
 cffi = ">=1.11.5"
 greenlet = ">=0.4.14"
 
-[package.extras]
-dnspython = ["dnspython", "idna"]
-doc = ["repoze.sphinx.autointerface"]
-events = ["zope.event", "zope.interface"]
-test = ["zope.interface", "zope.event", "requests", "objgraph", "psutil", "futures", "mock", "coverage (>=5.0a3)", "coveralls (>=1.0)"]
-
 [[package]]
 category = "main"
 description = "Lightweight in-process concurrent programming"
 marker = "platform_python_implementation == \"CPython\""
 name = "greenlet"
-optional = true
+optional = false
 python-versions = "*"
 version = "0.4.15"
 
@@ -326,7 +298,7 @@ version = "1.1.0"
 category = "main"
 description = "IPython: Productive Interactive Computing"
 name = "ipython"
-optional = true
+optional = false
 python-versions = ">=3.5"
 version = "7.5.0"
 
@@ -343,22 +315,11 @@ pygments = "*"
 setuptools = ">=18.5"
 traitlets = ">=4.2"
 
-[package.extras]
-all = ["nbconvert", "ipywidgets", "pygments", "ipykernel", "notebook", "ipyparallel", "requests", "Sphinx (>=1.3)", "nbformat", "nose (>=0.10.1)", "numpy", "testpath", "qtconsole"]
-doc = ["Sphinx (>=1.3)"]
-kernel = ["ipykernel"]
-nbconvert = ["nbconvert"]
-nbformat = ["nbformat"]
-notebook = ["notebook", "ipywidgets"]
-parallel = ["ipyparallel"]
-qtconsole = ["qtconsole"]
-test = ["nose (>=0.10.1)", "requests", "testpath", "pygments", "nbformat", "ipykernel", "numpy"]
-
 [[package]]
 category = "main"
 description = "Vestigial utilities from IPython"
 name = "ipython-genutils"
-optional = true
+optional = false
 python-versions = "*"
 version = "0.2.0"
 
@@ -366,15 +327,12 @@ version = "0.2.0"
 category = "main"
 description = "An autocompletion tool for Python that can be used for text editors."
 name = "jedi"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 version = "0.13.3"
 
 [package.dependencies]
 parso = ">=0.3.0"
-
-[package.extras]
-testing = ["colorama", "docopt", "pytest (>=3.1.0)"]
 
 [[package]]
 category = "main"
@@ -387,14 +345,11 @@ version = "2.10.1"
 [package.dependencies]
 MarkupSafe = ">=0.23"
 
-[package.extras]
-i18n = ["Babel (>=0.8)"]
-
 [[package]]
 category = "main"
 description = "An implementation of JSON Schema validation for Python"
 name = "jsonschema"
-optional = true
+optional = false
 python-versions = "*"
 version = "3.0.1"
 
@@ -404,14 +359,11 @@ pyrsistent = ">=0.14.0"
 setuptools = "*"
 six = ">=1.11.0"
 
-[package.extras]
-format = ["idna", "jsonpointer (>1.13)", "rfc3987", "strict-rfc3339", "webcolors"]
-
 [[package]]
 category = "main"
 description = "Jupyter protocol implementation and client libraries"
 name = "jupyter-client"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 version = "5.2.4"
 
@@ -422,14 +374,11 @@ pyzmq = ">=13"
 tornado = ">=4.1"
 traitlets = "*"
 
-[package.extras]
-test = ["ipykernel", "ipython", "mock", "pytest", "pytest (<3.3.0)"]
-
 [[package]]
 category = "main"
 description = "Jupyter core package. A base package on which Jupyter projects rely."
 name = "jupyter-core"
-optional = true
+optional = false
 python-versions = "*"
 version = "4.4.0"
 
@@ -449,9 +398,6 @@ ansimarkup = ">=1.4.0"
 better-exceptions-fork = ">=0.2.1.post6"
 colorama = ">=0.3.4"
 
-[package.extras]
-dev = ["codecov (>=2.0.15)", "isort (>=4.3.4)", "pytest (>=3.9.0)", "pytest-cov (>=2.5.1)", "Sphinx (>=1.7.4)", "sphinx-autobuild (>=0.7)", "sphinx-rtd-theme (>=0.3)"]
-
 [[package]]
 category = "main"
 description = "Safely add untrusted strings to HTML/XML markup."
@@ -464,7 +410,7 @@ version = "1.1.1"
 category = "main"
 description = "The fastest markdown parser in pure Python"
 name = "mistune"
-optional = true
+optional = false
 python-versions = "*"
 version = "0.8.4"
 
@@ -472,7 +418,7 @@ version = "0.8.4"
 category = "main"
 description = "MessagePack (de)serializer."
 name = "msgpack-python"
-optional = true
+optional = false
 python-versions = "*"
 version = "0.5.6"
 
@@ -480,7 +426,7 @@ version = "0.5.6"
 category = "main"
 description = "Converting Jupyter Notebooks"
 name = "nbconvert"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 version = "5.5.0"
 
@@ -497,18 +443,11 @@ pygments = "*"
 testpath = "*"
 traitlets = ">=4.2"
 
-[package.extras]
-all = ["pytest", "pytest-cov", "ipykernel", "jupyter-client (>=4.2)", "ipywidgets (>=7)", "tornado (>=4.0)", "sphinx (>=1.5.1)", "sphinx-rtd-theme", "nbsphinx (>=0.2.12)", "sphinxcontrib-github-alt", "ipython"]
-docs = ["sphinx (>=1.5.1)", "sphinx-rtd-theme", "nbsphinx (>=0.2.12)", "sphinxcontrib-github-alt", "ipython", "jupyter-client (>=4.2)"]
-execute = ["jupyter-client (>=4.2)"]
-serve = ["tornado (>=4.0)"]
-test = ["pytest", "pytest-cov", "ipykernel", "jupyter-client (>=4.2)", "ipywidgets (>=7)"]
-
 [[package]]
 category = "main"
 description = "The Jupyter Notebook format"
 name = "nbformat"
-optional = true
+optional = false
 python-versions = "*"
 version = "4.4.0"
 
@@ -517,9 +456,6 @@ ipython-genutils = "*"
 jsonschema = ">=2.4,<2.5.0 || >2.5.0"
 jupyter-core = "*"
 traitlets = ">=4.1"
-
-[package.extras]
-test = ["pytest", "pytest-cov", "testpath"]
 
 [[package]]
 category = "main"
@@ -545,7 +481,7 @@ six = "*"
 category = "main"
 description = "Powerful data structures for data analysis, time series, and statistics"
 name = "pandas"
-optional = true
+optional = false
 python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*"
 version = "0.24.2"
 
@@ -558,7 +494,7 @@ pytz = ">=2011k"
 category = "main"
 description = "Utilities for writing pandoc filters in python"
 name = "pandocfilters"
-optional = true
+optional = false
 python-versions = "*"
 version = "1.4.2"
 
@@ -566,7 +502,7 @@ version = "1.4.2"
 category = "main"
 description = "Parametrize and run Jupyter and nteract Notebooks"
 name = "papermill"
-optional = true
+optional = false
 python-versions = "*"
 version = "1.0.1"
 
@@ -585,14 +521,6 @@ six = "*"
 tenacity = "*"
 tqdm = ">=4.29.1"
 
-[package.extras]
-all = ["boto3", "azure-datalake-store (>=0.0.30)", "azure-storage-blob", "requests (>=2.21.0)", "gcsfs (>=0.2.0)"]
-azure = ["azure-datalake-store (>=0.0.30)", "azure-storage-blob", "requests (>=2.21.0)"]
-dev = ["codecov", "coverage", "notebook", "mock", "pytest (>=4.1)", "pytest-cov (>=2.6.1)", "pytest-mock (>=1.10)", "pytest-env (>=0.6.2)", "moto", "check-manifest", "attrs (>=17.4.0)", "pre-commit", "boto3", "botocore", "ipywidgets", "flake8", "tox", "bumpversion", "pip (>=18.1)", "wheel (>=0.31.0)", "setuptools (>=38.6.0)", "twine (>=1.11.0)", "google-compute-engine", "azure-datalake-store (>=0.0.30)", "azure-storage-blob", "requests (>=2.21.0)", "gcsfs (>=0.2.0)", "black"]
-gcs = ["gcsfs (>=0.2.0)"]
-s3 = ["boto3"]
-test = ["codecov", "coverage", "notebook", "mock", "pytest (>=4.1)", "pytest-cov (>=2.6.1)", "pytest-mock (>=1.10)", "pytest-env (>=0.6.2)", "moto", "check-manifest", "attrs (>=17.4.0)", "pre-commit", "boto3", "botocore", "ipywidgets", "flake8", "tox", "bumpversion", "pip (>=18.1)", "wheel (>=0.31.0)", "setuptools (>=38.6.0)", "twine (>=1.11.0)", "google-compute-engine", "azure-datalake-store (>=0.0.30)", "azure-storage-blob", "requests (>=2.21.0)", "gcsfs (>=0.2.0)", "black"]
-
 [[package]]
 category = "main"
 description = "SSH2 protocol library"
@@ -610,12 +538,9 @@ pynacl = ">=1.0.1"
 category = "main"
 description = "A Python Parser"
 name = "parso"
-optional = true
+optional = false
 python-versions = "*"
 version = "0.4.0"
-
-[package.extras]
-testing = ["docopt", "pytest (>=3.0.7)"]
 
 [[package]]
 category = "main"
@@ -629,7 +554,7 @@ version = "0.5.9"
 category = "main"
 description = "a little orm"
 name = "peewee"
-optional = true
+optional = false
 python-versions = "*"
 version = "3.9.6"
 
@@ -638,7 +563,7 @@ category = "main"
 description = "Pexpect allows easy control of interactive console applications."
 marker = "sys_platform != \"win32\""
 name = "pexpect"
-optional = true
+optional = false
 python-versions = "*"
 version = "4.7.0"
 
@@ -649,7 +574,7 @@ ptyprocess = ">=0.5"
 category = "main"
 description = "Tiny 'shelve'-like database with concurrency support"
 name = "pickleshare"
-optional = true
+optional = false
 python-versions = "*"
 version = "0.7.5"
 
@@ -657,7 +582,7 @@ version = "0.7.5"
 category = "main"
 description = "Library for building powerful interactive command lines in Python"
 name = "prompt-toolkit"
-optional = true
+optional = false
 python-versions = "*"
 version = "2.0.9"
 
@@ -669,7 +594,7 @@ wcwidth = "*"
 category = "main"
 description = "Process monitoring"
 name = "psmon"
-optional = true
+optional = false
 python-versions = ">=3.6"
 version = "1.1.1"
 
@@ -681,19 +606,16 @@ psutil = ">=5.5,<6.0"
 category = "main"
 description = "Cross-platform lib for process and system monitoring in Python."
 name = "psutil"
-optional = true
+optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 version = "5.6.3"
-
-[package.extras]
-enum = ["enum34"]
 
 [[package]]
 category = "main"
 description = "Run a subprocess in a pseudo terminal"
 marker = "sys_platform != \"win32\""
 name = "ptyprocess"
-optional = true
+optional = false
 python-versions = "*"
 version = "0.6.0"
 
@@ -701,7 +623,7 @@ version = "0.6.0"
 category = "main"
 description = "Get CPU info with pure Python 2 & 3"
 name = "py-cpuinfo"
-optional = true
+optional = false
 python-versions = "*"
 version = "5.0.0"
 
@@ -710,7 +632,7 @@ category = "main"
 description = "C parser in Python"
 name = "pycparser"
 optional = false
-python-versions = "*"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 version = "2.19"
 
 [[package]]
@@ -733,10 +655,6 @@ version = "1.3.0"
 cffi = ">=1.4.1"
 six = "*"
 
-[package.extras]
-docs = ["sphinx (>=1.6.5)", "sphinx-rtd-theme"]
-tests = ["pytest (>=3.2.1,<3.3.0 || >3.3.0)", "hypothesis (>=3.27.0)"]
-
 [[package]]
 category = "main"
 description = "Python parsing module"
@@ -749,7 +667,7 @@ version = "2.4.0"
 category = "main"
 description = "Persistent/Functional/Immutable data structures"
 name = "pyrsistent"
-optional = true
+optional = false
 python-versions = "*"
 version = "0.15.2"
 
@@ -779,15 +697,15 @@ version = "2019.1"
 category = "main"
 description = "YAML parser and emitter for Python"
 name = "pyyaml"
-optional = true
-python-versions = "*"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 version = "5.1.1"
 
 [[package]]
 category = "main"
 description = "Python bindings for 0MQ"
 name = "pyzmq"
-optional = true
+optional = false
 python-versions = ">=2.7,!=3.0*,!=3.1*,!=3.2*"
 version = "18.0.1"
 
@@ -804,10 +722,6 @@ certifi = ">=2017.4.17"
 chardet = ">=3.0.2,<3.1.0"
 idna = ">=2.5,<2.9"
 urllib3 = ">=1.21.1,<1.25.0 || >1.25.0,<1.25.1 || >1.25.1,<1.26"
-
-[package.extras]
-security = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)"]
-socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7)", "win-inet-pton"]
 
 [[package]]
 category = "main"
@@ -827,10 +741,6 @@ name = "ruamel.yaml"
 optional = false
 python-versions = "*"
 version = "0.15.97"
-
-[package.extras]
-docs = ["ryd"]
-jinja2 = ["ruamel.yaml.jinja2 (>=0.2)"]
 
 [[package]]
 category = "main"
@@ -854,7 +764,7 @@ description = "Python documentation generator"
 name = "sphinx"
 optional = false
 python-versions = ">=3.5"
-version = "2.1.1"
+version = "2.1.2"
 
 [package.dependencies]
 Jinja2 = ">=2.3"
@@ -875,10 +785,6 @@ sphinxcontrib-jsmath = "*"
 sphinxcontrib-qthelp = "*"
 sphinxcontrib-serializinghtml = "*"
 
-[package.extras]
-docs = ["sphinxcontrib-websupport"]
-test = ["pytest", "pytest-cov", "html5lib", "flake8 (>=3.5.0)", "flake8-import-order", "mypy (>=0.590)", "docutils-stubs"]
-
 [[package]]
 category = "dev"
 description = "Read the Docs theme for Sphinx"
@@ -898,9 +804,6 @@ optional = false
 python-versions = "*"
 version = "1.0.1"
 
-[package.extras]
-test = ["pytest", "flake8", "mypy"]
-
 [[package]]
 category = "dev"
 description = ""
@@ -908,9 +811,6 @@ name = "sphinxcontrib-devhelp"
 optional = false
 python-versions = "*"
 version = "1.0.1"
-
-[package.extras]
-test = ["pytest", "flake8", "mypy"]
 
 [[package]]
 category = "dev"
@@ -920,9 +820,6 @@ optional = false
 python-versions = "*"
 version = "1.0.2"
 
-[package.extras]
-test = ["pytest", "flake8", "mypy", "html5lib"]
-
 [[package]]
 category = "dev"
 description = "A sphinx extension which renders display math in HTML via JavaScript"
@@ -930,9 +827,6 @@ name = "sphinxcontrib-jsmath"
 optional = false
 python-versions = ">=3.5"
 version = "1.0.1"
-
-[package.extras]
-test = ["pytest", "flake8", "mypy"]
 
 [[package]]
 category = "dev"
@@ -942,9 +836,6 @@ optional = false
 python-versions = "*"
 version = "1.0.2"
 
-[package.extras]
-test = ["pytest", "flake8", "mypy"]
-
 [[package]]
 category = "dev"
 description = ""
@@ -952,9 +843,6 @@ name = "sphinxcontrib-serializinghtml"
 optional = false
 python-versions = "*"
 version = "1.1.3"
-
-[package.extras]
-test = ["pytest", "flake8", "mypy"]
 
 [[package]]
 category = "main"
@@ -966,11 +854,6 @@ version = "0.1.4"
 
 [package.dependencies]
 paramiko = ">=1.15.2"
-
-[package.extras]
-build_sphinx = ["sphinx", "sphinxcontrib-napoleon"]
-dev = ["check-manifest"]
-test = ["tox (>=1.8.1)"]
 
 [[package]]
 category = "main"
@@ -988,7 +871,7 @@ python-dateutil = ">=2.6.0"
 category = "main"
 description = "Retry code until it succeeeds"
 name = "tenacity"
-optional = true
+optional = false
 python-versions = "*"
 version = "5.0.4"
 
@@ -999,18 +882,15 @@ six = ">=1.9.0"
 category = "main"
 description = "Test utilities for code working with files and commands"
 name = "testpath"
-optional = true
+optional = false
 python-versions = "*"
 version = "0.4.2"
-
-[package.extras]
-test = ["pathlib2"]
 
 [[package]]
 category = "main"
 description = "textwrap from Python 3.6 backport (plus a few tweaks)"
 name = "textwrap3"
-optional = true
+optional = false
 python-versions = "*"
 version = "0.9.2"
 
@@ -1026,7 +906,7 @@ version = "0.10.0"
 category = "main"
 description = "Tornado is a Python web framework and asynchronous networking library, originally developed at FriendFeed."
 name = "tornado"
-optional = true
+optional = false
 python-versions = ">= 3.5"
 version = "6.0.2"
 
@@ -1038,14 +918,11 @@ optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*"
 version = "4.32.1"
 
-[package.extras]
-dev = ["py-make (>=0.1.0)", "twine", "argopt", "pydoc-markdown"]
-
 [[package]]
 category = "main"
 description = "Traitlets Python config system"
 name = "traitlets"
-optional = true
+optional = false
 python-versions = "*"
 version = "4.3.2"
 
@@ -1054,14 +931,11 @@ decorator = "*"
 ipython-genutils = "*"
 six = "*"
 
-[package.extras]
-test = ["pytest", "mock"]
-
 [[package]]
 category = "main"
 description = "Type Hints for Python"
 name = "typing"
-optional = true
+optional = false
 python-versions = "*"
 version = "3.6.6"
 
@@ -1073,15 +947,11 @@ optional = false
 python-versions = "*"
 version = "1.22"
 
-[package.extras]
-secure = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "certifi", "ipaddress"]
-socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7,<2.0)"]
-
 [[package]]
 category = "main"
 description = "Measures number of Terminal column cells of wide-character codes"
 name = "wcwidth"
-optional = true
+optional = false
 python-versions = "*"
 version = "0.1.7"
 
@@ -1089,7 +959,7 @@ version = "0.1.7"
 category = "main"
 description = "Character encoding aliases for legacy web content"
 name = "webencodings"
-optional = true
+optional = false
 python-versions = "*"
 version = "0.5.1"
 
@@ -1103,7 +973,7 @@ server = ["pyzmq", "gevent", "peewee", "apsw", "msgpack-python"]
 sysinfo = ["psutil", "py-cpuinfo"]
 
 [metadata]
-content-hash = "93f1c314783319b8d38fbcc267de094ad5999f50c71fd3b742eef215923861c2"
+content-hash = "b8363fc80c9e863e9743328ef058f2522e5add8f5e75c4204ce049e231b9d49c"
 python-versions = ">=3.6"
 
 [metadata.hashes]
@@ -1181,7 +1051,7 @@ retrying = ["08c039560a6da2fe4f2c426d0766e284d3b736e355f8dd24b37367b0bb41973b"]
 "ruamel.yaml" = ["17dbf6b7362e7aee8494f7a0f5cffd44902a6331fe89ef0853b855a7930ab845", "23731c9efb79f3f5609dedffeb6c5c47a68125fd3d4b157d9fc71b1cd49076a9", "2bbdd598ae57bac20968cf9028cc67d37d83bdb7942a94b9478110bc72193148", "34586084cdd60845a3e1bece2b58f0a889be25450db8cc0ea143ddf0f40557a2", "35957fedbb287b01313bb5c556ffdc70c0277c3500213b5e73dfd8716f748d77", "414cb87a40974a575830b406ffab4ab8c6cbd82eeb73abd2a9d1397c1f0223e1", "428775be75db68d908b17e4e8dda424c410222f170dc173246aa63e972d094b3", "514f670f7d36519bda504d507edfe63e3c20489f86c86d42bc4d9a6dbdf82c7b", "5cb962c1ac6887c5da29138fbbe3b4b7705372eb54e599907fa63d4cd743246d", "5f6e30282cf70fb7754e1a5f101e27b5240009766376e131b31ab49f14fe81be", "86f8e010af6af0b4f42de2d0d9b19cb441e61d3416082186f9dd03c8552d13ad", "8d47ed1e557d546bd2dfe54f504d7274274602ff7a0652cde84c258ad6c2d96d", "98668876720bce1ac08562d8b93a564a80e3397e442c7ea19cebdcdf73da7f74", "9e1f0ddc18d8355dcf5586a5d90417df56074f237812b8682a93b62cca9d2043", "a7bc812a72a79d6b7dbb96fa5bee3950464b65ec055d3abc4db6572f2373a95c", "b72e13f9f206ee103247b07afd5a39c8b1aa98e8eba80ddba184d030337220ba", "bcff8ea9d916789e85e24beed8830c157fb8bc7c313e554733a8151540e66c01", "c76e78b3bab652069b8d6f7889b0e72f3455c2b854b2e0a8818393d149ad0a0d"]
 six = ["3350809f0555b11f552448330d0b52d5f24c91a322ea4a15ef22629740f3761c", "d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73"]
 snowballstemmer = ["919f26a68b2c17a7634da993d91339e288964f93c274f1343e3bbbe2096e1128", "9f3bcd3c401c3e862ec0ebe6d2c069ebc012ce142cce209c098ccb5b09136e89"]
-sphinx = ["15143166e786c7faa76fa990d3b6b38ebffe081ef81cffd1d656b07f3b28a1fa", "5fd62ba64235d77a81554d47ff6b17578171b6dbbc992221e9ebc684898fff59"]
+sphinx = ["22538e1bbe62b407cf5a8aabe1bb15848aa66bb79559f42f5202bbce6b757a69", "f9a79e746b87921cabc3baa375199c6076d1270cee53915dbd24fdbeaaacc427"]
 sphinx-rtd-theme = ["00cf895504a7895ee433807c62094cf1e95f065843bf3acd17037c3e9a2becd4", "728607e34d60456d736cc7991fd236afb828b21b82f956c5ea75f94c8414040a"]
 sphinxcontrib-applehelp = ["edaa0ab2b2bc74403149cb0209d6775c96de797dfd5b5e2a71981309efab3897", "fb8dee85af95e5c30c91f10e7eb3c8967308518e0f7488a2828ef7bc191d0d5d"]
 sphinxcontrib-devhelp = ["6c64b077937330a9128a4da74586e8c2130262f014689b4b89e2d08ee7294a34", "9512ecb00a2b0821a146736b39f7aeb90759834b07e81e8cc23a9c70bacb9981"]
