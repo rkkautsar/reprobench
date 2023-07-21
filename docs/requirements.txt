@@ -79,7 +79,7 @@ tenacity==5.0.3
 testpath==0.4.2
 textwrap3==0.9.2
 toml==0.10.0
-tornado==6.0.2
+tornado==6.3.2
 tqdm==4.32.1
 traitlets==4.3.2
 typing==3.6.6
