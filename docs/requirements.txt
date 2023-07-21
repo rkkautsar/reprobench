@@ -53,7 +53,7 @@ psmon==1.1.1
 psutil==5.6.1
 ptyprocess==0.6.0
 py-cpuinfo==5.0.0
-Pygments==2.4.0
+Pygments==2.15.0
 pyparsing==2.4.0
 pyrsistent==0.14.11
 python-dateutil==2.8.0
